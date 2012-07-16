@@ -1,0 +1,4 @@
+pyramid
+pyramid_debugtoolbar
+pyramid_fanstatic
+js.lesscss
