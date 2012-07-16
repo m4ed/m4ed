@@ -6,16 +6,24 @@ define([
   'collections/items',
   'views/items/show'
 
-], function($, _, Backbone, ItemCollection, ItemView){
+], function($, _, Backbone, ItemCollection, ItemView, EditorView){
 
   var ItemListView = Backbone.View.extend({
+
     el: '.container',
+
+    events: {
+
+    },
+    
     initialize: function(){
 
+      this.editor = new EditorView();
       this.collection = new ItemCollection();
+      var parentView = this;
       this.collection.on('add', function(item, collection, options) {
         console.log(options.$el, options.index);
-        new ItemView({model: item, el: options.$el})
+        var item = new ItemView({el: options.$el, parent: parentView});
       });
 
       var self = this;
@@ -23,8 +31,6 @@ define([
       $('.item').each(function(index) {
         self.collection.add({}, {$el: $(this)});
       });
-
-      console.log('ItemListView initialized.')
 
     }
 

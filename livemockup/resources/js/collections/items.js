@@ -1,10 +1,9 @@
 // Filename: collections/items.js
 define([
-  'backbone',
   'underscore',
   'backbone',
   'models/items'
-], function($, _, Backbone, Item) {
+], function(_, Backbone, Item) {
 
     var itemCollection = Backbone.Collection.extend({
 
