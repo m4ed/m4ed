@@ -333,9 +333,9 @@ table .span21{float:none;width:1654px;margin-left:0;float:none;width:1654px;marg
 table .span22{float:none;width:1734px;margin-left:0;float:none;width:1734px;margin-left:0;}
 table .span23{float:none;width:1814px;margin-left:0;float:none;width:1814px;margin-left:0;}
 table .span24{float:none;width:1894px;margin-left:0;float:none;width:1894px;margin-left:0;}
-[class^="icon-"],[class*=" icon-"]{display:inline-block;width:14px;height:14px;*margin-right:.3em;*margin-right:.3em;line-height:14px;vertical-align:text-top;background-image:url("../img/glyphicons-halflings.png");background-position:14px 14px;background-repeat:no-repeat;}[class^="icon-"]:last-child,[class*=" icon-"]:last-child{*margin-left:0;}
+[class^="icon-"],[class*=" icon-"]{display:inline-block;width:14px;height:14px;*margin-right:.3em;*margin-right:.3em;line-height:14px;vertical-align:text-top;background-image:url("../bootstrap/img/glyphicons-halflings.png");background-position:14px 14px;background-repeat:no-repeat;}[class^="icon-"]:last-child,[class*=" icon-"]:last-child{*margin-left:0;}
 [class^="icon-"]:last-child,[class*=" icon-"]:last-child{*margin-left:0;}
-.icon-white{background-image:url("../img/glyphicons-halflings-white.png");}
+.icon-white{background-image:url("../bootstrap/img/glyphicons-halflings-white.png");}
 .icon-glass{background-position:0 0;}
 .icon-music{background-position:-24px 0;}
 .icon-search{background-position:-48px 0;}
@@ -852,7 +852,6 @@ a.label:hover,a.badge:hover{color:#ffffff;text-decoration:none;cursor:pointer;}
 .item-content{margin-left:60px;min-height:48px;}
 #editor .row{margin-top:8px;}
 #editor .btn-group{margin-bottom:8px;}
-#editor-textarea{height:264px;resize:vertical;}
-#picture-container{margin-top:8px;}
-#preview{min-height:256px;padding:8px;margin-bottom:8px;background-color:#d9edf7;border:1px solid #bce8f1;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;box-shadow:inset 0 0 24px #bce8f1,0 0 8px #ffffff;}
-#picture-container{padding:7px;overflow:auto;background-color:#fff;box-shadow:0 0 7px #aaa;}
+.editor-textarea{height:264px;resize:vertical;}
+.picture-container{margin-top:8px;padding:7px;overflow:auto;background-color:#fff;box-shadow:0 0 7px #aaa;}
+.preview{min-height:256px;padding:8px;margin-bottom:8px;background-color:#d9edf7;border:1px solid #bce8f1;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;box-shadow:inset 0 0 24px #bce8f1,0 0 8px #ffffff;}

@@ -21,7 +21,7 @@ function($, _, Backbone, wysiwym) {
       this.lastContent = null
 
       // init wysiwym.js
-      //this.$textarea.wysiwym(Wysiwym.Markdown, {containerButtons: this.$editorButtons});
+      this.$textarea.wysiwym(Wysiwym.Markdown, {containerButtons: this.$editorButtons});
     }
 
   });

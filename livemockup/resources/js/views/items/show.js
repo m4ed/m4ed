@@ -15,7 +15,7 @@ function(_, Backbone, Item) {
     events: {
       // dblclick
       "dblclick": "edit",
-      "mousedown": "noselect"
+      // "mousedown": "noselect"
     },
 
     noselect: function(e) {

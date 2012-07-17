@@ -7,18 +7,18 @@ var Wysiwym = {};
 
 $.fn.wysiwym = function(markupSet, options) {
     this.EDITORCLASS = 'wysiwym-editor';           // Class to use for the wysiwym editor
-    this.BUTTONCLASS = 'wysiwym-buttons';          // Class to use for the wysiwym buttons
+    this.BUTTONCLASS = 'wysiwym-buttons';          // Class to use for the wysiwym button container
     this.HELPCLASS = 'wysiwym-help';               // Class to use for the wysiwym help
     this.HELPTOGGLECLASS = 'wysiwym-help-toggle';  // Class to use for the wysiwym help
     this.textelem = this;                          // Javascript textarea element
     this.textarea = $(this);                       // jQuery textarea object
-    this.editor = undefined;                       // jQuery div wrapper around this editor
-    this.markup = new markupSet(this);             // Wysiwym Markup set to use
+    this.editor = undefined;
+    this.markup = new markupSet(this); // Wysiwym Markup set to use (markdown as default)
     this.defaults = {                              // Default option values
         containerButtons: undefined,               // jQuery elem to place buttons (makes one by default)
         containerHelp: undefined,                  // jQuery elem to place help (makes one by default)
-        helpEnabled: false,                         // Set true to display the help dropdown
-        helpToggle: false,                          // Set true to use a toggle link for help
+        helpEnabled: false,                        // Set true to display the help dropdown
+        helpToggle: false,                         // Set true to use a toggle link for help
         helpToggleElem: undefined,                 // jQuery elem to toggle help (makes <a> by default)
         helpTextShow: 'show markup syntax',        // Toggle text to display when help is not visible
         helpTextHide: 'hide markup syntax'         // Toggle text to display when help is visible
@@ -35,8 +35,9 @@ $.fn.wysiwym = function(markupSet, options) {
             // Create the button and apply first / last classes
             var button = markup.buttons[i];
             var jqbutton = button.create();
-            if (i === 0) { jqbutton.addClass('first'); }
-            if (i == markup.buttons.length-1) { jqbutton.addClass('last'); }
+            jqbutton.addClass('btn');
+            // if (i === 0) { jqbutton.addClass('first'); }
+            // if (i == markup.buttons.length-1) { jqbutton.addClass('last'); }
             // Bind the button data and click event callback
             var data = $.extend({markup:this.markup}, button.data);
             jqbutton.bind('click', data, button.callback);
@@ -527,11 +528,13 @@ Wysiwym.Textarea = function(textarea) {
  * Wysiwym Button
  * Represents a single button in the Wysiwym editor.
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.Button = function(name, callback, data, cssclass) {
+Wysiwym.Button = function(name, options, callback, data, cssclass) {
     this.name = name;                  // Button Name
+    this.icon = options.icon;          // Icon name
     this.callback = callback;          // Callback function for this button
     this.data = data ? data : {};      // Callback arguments
     this.cssclass = cssclass;          // CSS Class to apply to button
+    this.hidetext = options.hidetext ? options.hidetext : false;  // Show icon only?
 
     // Return the CSS Class for this button
     this.getCssClass = function() {
@@ -543,7 +546,10 @@ Wysiwym.Button = function(name, callback, data, cssclass) {
     // Create and return a new Button jQuery element
     this.create = function() {
         var text = $('<span class="text">'+ this.name +'</span>');
+        var i = $('<i class="icon-'+ this.icon +'"></i>');
         var wrap = $('<span class="wrap"></span>').append(text);
+        if (this.hidetext) text.hide();
+        if (this.icon !== undefined) wrap.append(i);
         var button = $('<div class="button"></div>').append(wrap);
         // Apply the title, css, and click bind.
         button.attr('title', this.name);
@@ -676,16 +682,16 @@ Wysiwym.Markdown = function(textarea) {
 
     // Initialize the Markdown Buttons
     this.buttons = [
-        new Wysiwym.Button('Heading 1',   Wysiwym.span,  {prefix:'# ', suffix:'', text:'Heading 1'}),
-        new Wysiwym.Button('Heading 2',   Wysiwym.span,  {prefix:'## ', suffix:'', text:'Heading 2'}),
-        new Wysiwym.Button('Heading 3',   Wysiwym.span,  {prefix:'### ', suffix:'', text:'Heading 3'}),
-        new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:'**', suffix:'**', text:'strong text'}),
-        new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:'_',  suffix:'_',  text:'italic text'}),
-        new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[',  suffix:'](http://example.com)', text:'link text'}),
-        new Wysiwym.Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
-        new Wysiwym.Button('Number List', Wysiwym.list, {prefix:'0. ', wrap:true, regex:/^\s*\d+\.\s/}),
-        new Wysiwym.Button('Quote',  Wysiwym.list,  {prefix:'> ',   wrap:true}),
-        new Wysiwym.Button('Code',   Wysiwym.block, {prefix:'    ', wrap:true})
+        new Wysiwym.Button('Heading 1', {icon: 'h1', hidetext: true}, Wysiwym.span,  {prefix:'# ', suffix:'', text:'Heading 1'}),
+        new Wysiwym.Button('Heading 2', {icon: 'h2', hidetext: true}, Wysiwym.span,  {prefix:'## ', suffix:'', text:'Heading 2'}),
+        new Wysiwym.Button('Heading 3',   {icon: 'h3', hidetext: true}, Wysiwym.span,  {prefix:'### ', suffix:'', text:'Heading 3'}),
+        new Wysiwym.Button('Bold',   {icon: 'bold', hidetext: true}, Wysiwym.span,  {prefix:'**', suffix:'**', text:'strong text'}),
+        new Wysiwym.Button('Italic', {icon: 'italic', hidetext: true}, Wysiwym.span,  {prefix:'_',  suffix:'_',  text:'italic text'}),
+        new Wysiwym.Button('Link',   {icon: 'link', hidetext: true}, Wysiwym.span,  {prefix:'[',  suffix:'](http://example.com)', text:'link text'}),
+        new Wysiwym.Button('Bullet List', {icon: 'list', hidetext: true}, Wysiwym.list, {prefix:'* ', wrap:true}),
+        new Wysiwym.Button('Number List', {icon: 'numbered-list', hidetext: true}, Wysiwym.list, {prefix:'0. ', wrap:true, regex:/^\s*\d+\.\s/}),
+        new Wysiwym.Button('Quote', {icon: 'quote', hidetext: true}, Wysiwym.list,  {prefix:'> ',   wrap:true}),
+        new Wysiwym.Button('Code',   {icon: 'code', hidetext: true}, Wysiwym.block, {prefix:'    ', wrap:true})
     ];
 
     // Configure auto-indenting
@@ -717,39 +723,39 @@ Wysiwym.Markdown = function(textarea) {
  * Media Wiki markup language for the Wysiwym editor
  * Reference: http://www.mediawiki.org/wiki/Help:Formatting
  *---------------------------------------------------------------------------- */
-Wysiwym.Mediawiki = function(textarea) {
-    this.textarea = textarea;    // jQuery textarea object
+// Wysiwym.Mediawiki = function(textarea) {
+//     this.textarea = textarea;    // jQuery textarea object
 
-    // Initialize the Markdown Buttons
-    this.buttons = [
-        new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"'''", suffix:"'''", text:'strong text'}),
-        new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"''",  suffix:"''",  text:'italic text'}),
-        new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[http://example.com ',  suffix:']', text:'link text'}),
-        new Wysiwym.Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
-        new Wysiwym.Button('Number List', Wysiwym.list, {prefix:'# ', wrap:true}),
-        new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'<blockquote>', suffix:'</blockquote>', text:'quote text'}),
-        new Wysiwym.Button('Code', Wysiwym.span,  {prefix:'<pre>', suffix:'</pre>', text:'code text'})
-    ];
+//     // Initialize the Markdown Buttons
+//     this.buttons = [
+//         new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"'''", suffix:"'''", text:'strong text'}),
+//         new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"''",  suffix:"''",  text:'italic text'}),
+//         new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[http://example.com ',  suffix:']', text:'link text'}),
+//         new Wysiwym.Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
+//         new Wysiwym.Button('Number List', Wysiwym.list, {prefix:'# ', wrap:true}),
+//         new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'<blockquote>', suffix:'</blockquote>', text:'quote text'}),
+//         new Wysiwym.Button('Code', Wysiwym.span,  {prefix:'<pre>', suffix:'</pre>', text:'code text'})
+//     ];
 
-    // Configure auto-indenting
-    this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
-    this.autoindents = [                // Regex lookups for auto-indent
-        /^\s*\*\s/,                     // Bullet list
-        /^\s*\#\s/                      // Number list
-    ];
+//     // Configure auto-indenting
+//     this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
+//     this.autoindents = [                // Regex lookups for auto-indent
+//         /^\s*\*\s/,                     // Bullet list
+//         /^\s*\#\s/                      // Number list
+//     ];
 
-    // Syntax items to display in the help box
-    this.help = [
-        { label: 'Header', syntax: '== Header ==' },
-        { label: 'Bold',   syntax: "'''bold'''" },
-        { label: 'Italic', syntax: "''italics''" },
-        { label: 'Link',   syntax: '[http://google.com pk!]' },
-        { label: 'Bullet List', syntax: '* list item' },
-        { label: 'Number List', syntax: '# list item' },
-        { label: 'Blockquote', syntax: '&lt;blockquote&gt;quote&lt;/blockquote&gt;' },
-        { label: 'Large Code Block', syntax: '&lt;pre&gt;Code block&lt;/pre&gt;' }
-    ];
-};
+//     // Syntax items to display in the help box
+//     this.help = [
+//         { label: 'Header', syntax: '== Header ==' },
+//         { label: 'Bold',   syntax: "'''bold'''" },
+//         { label: 'Italic', syntax: "''italics''" },
+//         { label: 'Link',   syntax: '[http://google.com pk!]' },
+//         { label: 'Bullet List', syntax: '* list item' },
+//         { label: 'Number List', syntax: '# list item' },
+//         { label: 'Blockquote', syntax: '&lt;blockquote&gt;quote&lt;/blockquote&gt;' },
+//         { label: 'Large Code Block', syntax: '&lt;pre&gt;Code block&lt;/pre&gt;' }
+//     ];
+// };
 
 
 /* ---------------------------------------------------------------------------
@@ -757,27 +763,27 @@ Wysiwym.Mediawiki = function(textarea) {
  * BBCode markup language for the Wysiwym editor
  * Reference: http://labs.spaceshipnofuture.org/icky/help/formatting/
  *---------------------------------------------------------------------------- */
-Wysiwym.BBCode = function(textarea) {
-    this.textarea = textarea;    // jQuery textarea object
+// Wysiwym.BBCode = function(textarea) {
+//     this.textarea = textarea;    // jQuery textarea object
 
-    // Initialize the Markdown Buttons
-    this.buttons = [
-        new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"[b]", suffix:"[/b]", text:'strong text'}),
-        new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"[i]",  suffix:"[/i]",  text:'italic text'}),
-        new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[url="http://example.com"]',  suffix:'[/url]', text:'link text'}),
-        new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'[quote]',  suffix:'[/quote]', text:'quote text'}),
-        new Wysiwym.Button('Code',   Wysiwym.span,  {prefix:'[code]',  suffix:'[/code]', text:'code text'})
-    ];
+//     // Initialize the Markdown Buttons
+//     this.buttons = [
+//         new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"[b]", suffix:"[/b]", text:'strong text'}),
+//         new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"[i]",  suffix:"[/i]",  text:'italic text'}),
+//         new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[url="http://example.com"]',  suffix:'[/url]', text:'link text'}),
+//         new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'[quote]',  suffix:'[/quote]', text:'quote text'}),
+//         new Wysiwym.Button('Code',   Wysiwym.span,  {prefix:'[code]',  suffix:'[/code]', text:'code text'})
+//     ];
 
-    // Syntax items to display in the help box
-    this.help = [
-        { label: 'Bold',   syntax: "[b]bold[/b]" },
-        { label: 'Italic', syntax: "[i]italics[/i]" },
-        { label: 'Link',   syntax: '[url="http://example.com"]pk![/url]' },
-        { label: 'Blockquote', syntax: '[quote]quote text[/quote]' },
-        { label: 'Large Code Block', syntax: '[code]code text[/code]' }
-    ];
-};
+//     // Syntax items to display in the help box
+//     this.help = [
+//         { label: 'Bold',   syntax: "[b]bold[/b]" },
+//         { label: 'Italic', syntax: "[i]italics[/i]" },
+//         { label: 'Link',   syntax: '[url="http://example.com"]pk![/url]' },
+//         { label: 'Blockquote', syntax: '[quote]quote text[/quote]' },
+//         { label: 'Large Code Block', syntax: '[code]code text[/code]' }
+//     ];
+// };
 
 
 /*----------------------------------------------------------------------
