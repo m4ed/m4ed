@@ -24,17 +24,6 @@
 
 </%block>
 
-<%block name="scripts">
-
-  ${parent.scripts()}
-
-  <script src="/fanstatic/livemockup/js/wysiwym.js"></script>
-  <script src="/fanstatic/livemockup/js/underscore-min.js"></script>
-
-  <script src="/fanstatic/livemockup/js/editor.js"></script>
-
-</%block>
-
 <%block name="content">
 
   % for i, lesson in enumerate(lessons):
@@ -43,12 +32,9 @@
         <img src="http://placehold.it/48x48" />
       </div>
       <div class="item-content">
-        <h4 class="title">${lesson.get('title')}</h4>
+        <h4 class="title"><span class="title editable">${lesson.get('title')}</span></h4>
         <p class="desc">Description of this lesson...</p>
       </div>
-      % if i == 1:
-        ${editor()}
-      % endif
     </div>
     % for exercise in lesson.get('exercises'):        
       <div class="well item exercise">
@@ -62,8 +48,45 @@
       </div>
     % endfor
   % endfor
+  <script id="editor-template" type="text/hogan">
+    ${hogan_editor()}
+  </script>
   
+
 </%block>
+
+<%def name="hogan_editor()">
+  <div class="row">
+    <div class="span6">
+      <div class="btn-group editor-buttons">
+      </div>
+      <textarea class="span6 editor-textarea">{{text}}</textarea>
+    </div>
+    <div class="span6">
+      <div id="preview-buttons" class="btn-group">
+        <button class="btn">Desktop</button>
+        <button class="btn">Tablet</button>
+        <button class="btn">Smartphone</button>
+        <button class="btn">Feature phone</button>
+      </div>
+      <div class="preview"></div>
+    </div>
+  </div>
+  
+  <div id="editor-controls">
+    <button class="btn btn-primary editor-btn">Save</button>
+    <button class="btn editor-btn cancel">Cancel</button>
+    <button class="btn editor-btn pictures">Pictures</button>
+  </div>
+    <div id="editor-pictures">
+    <div class="picture-container">
+      {{#images}}
+        <img class="picture" src="http://placehold.it/150x100" />
+      {{/images}}
+      <img class="picture" id="add-picture" />
+    </div>
+  </div>
+</%def>
 
 <%def name="editor()">
 

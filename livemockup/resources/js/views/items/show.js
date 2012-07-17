@@ -2,55 +2,83 @@
 define([
   'underscore',
   'backbone',
-  'models/items'
+  'models/items',
+  'views/items/editor'
 ],
-function(_, Backbone, Item) {
+function(_, Backbone, Item, EditorView) {
   var ItemView = Backbone.View.extend({
 
     initialize: function(options) {
       console.log('ItemView initialized.');
       //this.parent = options.parent;
+      this.model.bind('change', this.onModelChange, this);
+      this.editing = false;
+
+      //console.log(editorTemplate.render());
+      this.editor = null;
     },
 
     events: {
       // dblclick
-      "dblclick": "edit",
-      // "mousedown": "noselect"
+      "click .editable.title": "onTitleClick",
+      "click .item-content": "onContentClick"
+      
+      //"mousedown": "noselect"
     },
 
-    noselect: function(e) {
-      return false;
-    },
-
-    edit: function(e) {
-      e.preventDefault();
+    onTitleClick: function(e) {
       e.stopPropagation();
-      var editor = this.parent.editor
-        , $editor = editor.$el
-        , target = $(e.currentTarget);
-      //console.log('Woop');
-      // Check if editor is not attached to current item
-      if (editor.attachedTo !== target) {
-        // Check if editor is hidden
-        if ($editor.is(':visible')) {
-          // Hide editor, move it to selected item and show it
-          $editor.toggle('blind', function() {
-            $editor.appendTo(target);
-            $editor.attachedTo = target;
-            $editor.toggle('blind');
-          });
-          return false;
-        } else {
-          // No need to hide, just move
-          $editor.appendTo(target);
-          editor.attachedTo = target;
-        }
+      //e.currentTarget()
+      console.log('Editing!');
+    },
+
+    setEditorText: function(text) {
+      this.editor.setEditorText(text);
+    },
+
+    onModelChange: function(model) {
+      this.setEditorText(model.get('text'))
+    },
+
+    onContentClick: function(e) {
+      // {el: this.$('#editor')}
+      var self = this;
+      if (this.editor === null) {
+        this.editor = new EditorView();
+        this.editor.parent = this;
+        this.model.fetch({
+          success: function(model, response) {
+            self.editor.render(model);
+            self.editor.$el.hide().insertAfter(self.$el);
+            self.editor.toggle();
+            //self.setEditorText(model.get('text'));
+          },
+          error: function(model, response) {
+            alert(['Alerts suck! But we have to tell you that the AJAX request',
+                   'just failed!'].join(' '));
+            //self.setEditorText(response.html);
+          }
+        });
+      } else {
+        self.editor.toggle();
       }
-      // Show / hide editor 
-      $editor.toggle('blind');
+
+      e.stopPropagation();
+      this.clearSelection();
+      //if (!this.model.has('text')) {
+      
+      //this.trigger('toggleEditor', e);
       return false;
+    },
+
+    clearSelection: function() {
+      if (document.selection && document.selection.empty) {
+          document.selection.empty();
+      } else if (window.getSelection) {
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+      }
     }
-    
 
   });
   return ItemView;

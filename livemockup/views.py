@@ -32,7 +32,8 @@ def GET_api_items(request):
     print _id
     return dict(
         _id=_id,
-        text='This is text for item ID: {}'.format(_id)
+        text='This is text for item ID: {}'.format(_id),
+        images=[1, 2, 3, 4, 5, 6]
         )
 
 

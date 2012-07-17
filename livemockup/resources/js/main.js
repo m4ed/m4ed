@@ -3,12 +3,13 @@ requirejs.config({
   //enforceDefine: true,
   paths: {
     jquery: 'lib/jquery/jquery.min',
-    jqueryui: 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min',
-    jqueryautoellipsis: 'lib/jquery/jquery.autoellipsis.min',
-    jqueryplugins: 'lib/jquery/jquery.plugins',
+    'jquery.ui': 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min',
+    'jquery.autoellipsis': 'lib/jquery/jquery.autoellipsis.min',
+    'jquery.plugins': 'lib/jquery/jquery.plugins',
     json: 'lib/json/json2',
     underscore: 'lib/underscore/underscore',
     backbone: 'lib/backbone/backbone',
+    hogan: 'lib/hogan/hogan',
     domReady: 'lib/requirejs/domReady',
     wysiwym: 'lib/wysiwym/wysiwym'
   },

@@ -13,7 +13,7 @@ tutorial.db
 build/
 dist/
 bin/
-lib/
+tmp/
 include/
 .idea/
 distribute-*.tar.gz
