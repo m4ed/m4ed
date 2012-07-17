@@ -10,5 +10,6 @@ def main(global_config, **settings):
     config.add_route('home', '/pyramid')
     config.add_route('editor', '/')
     config.add_route('misaka', '/misaka')
+    config.add_route('api_items', '/api/items/:id')
     config.scan()
     return config.make_wsgi_app()

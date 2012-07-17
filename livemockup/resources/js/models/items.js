@@ -7,7 +7,7 @@ define([
     var Item = Backbone.Model.extend({
 
         initialize: function() {
-            console.log('Item initialized.');
+            //console.log('Item initialized.');
         }
 
     });

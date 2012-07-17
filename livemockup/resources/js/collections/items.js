@@ -3,18 +3,22 @@ define([
   'underscore',
   'backbone',
   'models/items'
-], function(_, Backbone, Item) {
+],
+function(_, Backbone, Item) {
 
-    var itemCollection = Backbone.Collection.extend({
+  var itemCollection = Backbone.Collection.extend({
 
-        model: Item,
+    url: 'api/items',
 
-        initialize: function() {
-          console.log('ItemCollection initialized.');
-        }
-        
-    });
+    model: Item,
 
-    return itemCollection;
+    initialize: function() {
+      
+      //console.log('ItemCollection initialized.');
+    }
+
+  });
+
+  return itemCollection;
 
 });

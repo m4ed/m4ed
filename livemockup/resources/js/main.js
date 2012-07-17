@@ -13,10 +13,6 @@ requirejs.config({
     wysiwym: 'lib/wysiwym/wysiwym'
   },
   shim: {
-    // 'underscore': {
-    //   deps: ['jquery'],
-    //   exports: '_'
-    // },
     'backbone': {
       deps: ['underscore', 'jquery'],
       exports: 'Backbone'
@@ -30,8 +26,6 @@ requirejs.config({
 });
 
 // , 'jquery', 'underscore', 'backbone' , $, _, Backbone
-require(['jquery','app'], function($, App) {
-  $(function() {
-    App.initialize();
-  });
+require(['app', 'domReady!'], function(App) {
+  App.initialize();
 });

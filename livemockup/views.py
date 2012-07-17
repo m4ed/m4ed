@@ -26,6 +26,16 @@ def editor(request):
     }
 
 
+@view_config(route_name='api_items', renderer='json')
+def GET_api_items(request):
+    _id = request.matchdict['id']
+    print _id
+    return dict(
+        _id=_id,
+        text='This is text for item ID: {}'.format(_id)
+        )
+
+
 @view_config(route_name='misaka', renderer='json', request_method='POST')
 def POST_misaka(request):
     text = request.params.get('md', '')

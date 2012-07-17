@@ -7,7 +7,7 @@ define([
 ], function($, _, Backbone, ItemListView) {
   var initialize = function() {
 
-    this.homeView = new ItemListView();
+    new ItemListView();
 
   };
 

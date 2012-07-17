@@ -4,9 +4,10 @@ define([
   'underscore',
   'backbone',
   'collections/items',
-  'views/items/show'
-
-], function($, _, Backbone, ItemCollection, ItemView, EditorView){
+  'views/items/show',
+  'views/items/editor'
+],
+function($, _, Backbone, ItemCollection, ItemView, EditorView){
 
   var ItemListView = Backbone.View.extend({
 
@@ -16,20 +17,27 @@ define([
 
     },
     
-    initialize: function(){
+    initialize: function() {
+      var self = this
+        , parentView = this;
 
-      this.editor = new EditorView();
+      this.editor = new EditorView({el: this.$('#editor')});
+      this.editor.parent = this;
+
       this.collection = new ItemCollection();
-      var parentView = this;
+
       this.collection.on('add', function(item, collection, options) {
-        console.log(options.$el, options.index);
-        var item = new ItemView({el: options.$el, parent: parentView});
+        var itemView = new ItemView({
+          model: item,
+          el: options.$el,
+        });
+        itemView.parent = parentView;
       });
 
-      var self = this;
+
 
       $('.item').each(function(index) {
-        self.collection.add({}, {$el: $(this)});
+        self.collection.add({/* Empty */}, {$el: $(this)});
       });
 
     }
