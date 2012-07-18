@@ -12,8 +12,6 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
 
   var ItemListView = Backbone.View.extend({
 
-    el: '.container',
-
     events: {
 
     },
@@ -35,18 +33,13 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
 
       $('.item').each(function(index) {
         // Temporary ID so we can test the dummy api
-        self.collection.add({id: index + 1}, {$el: $(this)});
+        self.collection.add({id: $(this).data('id')}, {$el: $(this)});
       });
 
     },
 
     setEditorText: function(text) {
       this.editor.setText(text);
-    },
-
-    attachEditor: function(e) {
-      //console.log('We should show it now imo');
-      this.editor.attachTo(this.$(e.currentTarget));
     }
 
   });

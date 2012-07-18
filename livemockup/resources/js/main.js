@@ -20,8 +20,8 @@ requirejs.config({
     },
     // Plugins that aren't wrapped in define() need their dependencies
     // defined in shim config
-    'jqueryui': ['jquery'],
-    'jqueryautoellipsis': ['jquery'],
+    'jquery.ui': ['jquery'],
+    'jquery.autoellipsis': ['jquery'],
     'wysiwym': ['jquery']
   }
 });

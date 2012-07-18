@@ -10,6 +10,25 @@ def main(global_config, **settings):
     config.add_route('home', '/pyramid')
     config.add_route('editor', '/')
     config.add_route('misaka', '/misaka')
-    config.add_route('api_items', '/api/items/:id')
+    config.include(api, route_prefix='/api')
     config.scan()
     return config.make_wsgi_app()
+
+
+def api(config):
+    config.include(item_api, route_prefix='/items')
+    config.include(folder_api, route_prefix='/folders')
+    config.add_route('api_all_media', '/media')
+    config.include(media_api, route_prefix='/media')
+
+
+def item_api(config):
+    config.add_route('api_items', '/:id')
+
+
+def folder_api(config):
+    config.add_route('api_folders', '/:id')
+
+
+def media_api(config):
+    config.add_route('api_media', '/:id')

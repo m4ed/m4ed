@@ -25,9 +25,9 @@
 </%block>
 
 <%block name="content">
-
+  <% temporary_exercise_counter = 100 %>
   % for i, lesson in enumerate(lessons):
-    <div class="well item lesson">
+    <div class="well item lesson" data-id="${i+1}">
       <div class="item-icon">
         <img src="http://placehold.it/48x48" />
       </div>
@@ -36,8 +36,9 @@
         <p class="desc">Description of this lesson...</p>
       </div>
     </div>
-    % for exercise in lesson.get('exercises'):        
-      <div class="well item exercise">
+    % for exercise in lesson.get('exercises'):
+      <% temporary_exercise_counter += 1 %>
+      <div class="well item exercise" data-id="${temporary_exercise_counter}">
         <div class="item-icon">
           <img src="http://placehold.it/48x48" />
         </div>
@@ -79,12 +80,9 @@
     <button class="btn editor-btn pictures">Pictures</button>
   </div>
     <div id="editor-pictures">
-    <div class="picture-container">
-      {{#images}}
-        <img class="picture" src="http://placehold.it/150x100" />
-      {{/images}}
-      <img class="picture" id="add-picture" />
-    </div>
+      <div class="picture-container">
+        <img class="picture" id="add-picture" />
+      </div>
   </div>
 </%def>
 

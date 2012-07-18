@@ -5,6 +5,8 @@
 *.pt.py
 *.txt.py
 *~
+*.sublime-*
+
 .coverage
 .tox/
 nosetests.xml

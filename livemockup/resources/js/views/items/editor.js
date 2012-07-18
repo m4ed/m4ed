@@ -3,34 +3,41 @@ define([
   'jquery',
   'underscore',
   'backbone',
+  'views/bottombar',
   'wysiwym',
   'hogan',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, wysiwym, hogan) {
+function($, _, Backbone, BottomBar, wysiwym, hogan) {
   var EditorView = Backbone.View.extend({
 
-    className: 'editor well',
+    tagName: 'div',
+
+    // These class names will be used for the element
+    className: 'well editor',
+
+    // The attributes for the div
+    attributes: {
+      'style': 'display:none;'
+    },
 
     initialize: function(options) {
-      //var $el = options.el
-      //  , self = this;
-
       this.template = hogan.compile($('#editor-template').html());
-      // Reference to the current element the editor is attached to
-      this.$attachedTo = null;
       this.activeXhr = null;
       this.lastContent = null;
-
-
     },
 
     render: function(model) {
-      // Render with placeholder data
-      this.$el.html(this.template.render(model.toJSON()));
       var $el = this.$el;
+      // Render the template with the model data
+      $el.html(this.template.render(model.toJSON()));
 
+      // Initiate a new bottom bar view
+      this.bottomBar = new BottomBar({el: $el.find('.picture-container')});
+      this.bottomBar.parent = this;
+
+      // Decorate the rendered elements with various libraries
       $preview = $el.find('.preview:first');
       $textarea = $el.find('.editor-textarea:first');
       $pictureContainer = $el.find('.picture-container:first');
@@ -38,14 +45,6 @@ function($, _, Backbone, wysiwym, hogan) {
 
       // init wysiwym.js
       $textarea.wysiwym(Wysiwym.Markdown, {containerButtons: $editorButtons});
-
-      // Make the Textarea prettier with jQueryUI
-      $('img', $pictureContainer).draggable({
-        revert: "invalid", // when not dropped, the item will revert back to its initial position
-        containment: this.el ? this.el : "document", // stick to editor (el) if present
-        helper: "clone",
-        cursor: "move"
-      });
 
       // let the textarea be droppable, accepting the pictures
       $textarea.droppable({
@@ -55,6 +54,11 @@ function($, _, Backbone, wysiwym, hogan) {
           $textarea.insertAtCaret('Picture added.');
         }
       });
+
+      // Stupid work around 
+      this.$el.insertAfter(this.parent.$el);
+
+
 
       return this;
     },
@@ -77,41 +81,6 @@ function($, _, Backbone, wysiwym, hogan) {
       this.$('.picture-container').slideToggle();
     },
 
-    attachTo: function($target) {
-      // Save this to self to avoid it being lost in callbacks 
-      var self = this
-        , $editor = this.$el;
-
-      // Check if editor is not attached to current item
-      if (!$target.hasClass('editing')) {
-        // Check that we're actually attached to something
-        // before trying to remove the editing class
-        if (self.$attachedTo) {
-          // Remove the old editing class from the element we are 
-          // currently attached to
-          self.$attachedTo.removeClass('editing');
-        }
-        // Attach the editing class to the new element
-        // and assign the new target
-        self.$attachedTo = $target;
-        self.$attachedTo.addClass('editing');
-
-        // Check if editor is hidden
-        if ($editor.is(':visible')) {
-          // Hide editor, move it to selected item and show it
-          $editor.toggle('blind', function() {
-            $editor.insertAfter($target);
-            $editor.toggle('blind');
-          });
-          return false;
-        }
-      }
-      $editor.insertAfter($target);
-      // Show / hide editor 
-      $editor.toggle('blind');
-      return false;
-    },
-
     setEditorText: function(text) {
       this.$('.editor-textarea').val(text);
     },
@@ -120,12 +89,12 @@ function($, _, Backbone, wysiwym, hogan) {
       return this.$('.editor-textarea').val();
     },
 
-    setPreviewHTML: function(text) {
-      this.$('.preview').html(text);
+    setPreviewHTML: function(html) {
+      this.$('.preview').html(html);
     },
 
     toggle: function() {
-      this.$el.toggle('blind')
+      this.$el.toggle('slidetoggle')
     },
 
     generatePreview: function() {
@@ -139,14 +108,20 @@ function($, _, Backbone, wysiwym, hogan) {
         'url': '/misaka',
         'data': {'md': mdContent},
         'type': 'POST',
-        'error': function(xhr) {
-          self.$preview.html(xhr.html);
+        error: function(jqXHR, textStatus, errorThrown) {
+          self.setPreviewHTML(errorThrown);
         },
-        'success': function(response) {
-          self.setPreviewHTML(response.html);
+        success: function(data, textStatus, jqXHR) {
+          self.setPreviewHTML(data.html);
+        },
+        complete: function(jqHXR, textStatus) {
           self.activeXhr = null;
         }
       });
+    },
+
+    updateImages: function() {
+      this.bottomBar.render();
     }
 
 

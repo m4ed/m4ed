@@ -32,9 +32,39 @@ def GET_api_items(request):
     print _id
     return dict(
         _id=_id,
-        text='This is text for item ID: {}'.format(_id),
-        images=[1, 2, 3, 4, 5, 6]
+        text='This is text for item ID: {}'.format(_id)
         )
+
+
+@view_config(route_name='api_folders', renderer='json')
+def GET_api_folders(request):
+    _id = request.matchdict['id']
+    return dict(
+        _id=_id,
+        title='A folder with _id {}.'.format(_id),
+        #images=['http://placehold.it/150x100'] * 6,
+        description='This is a description'
+        )
+
+
+@view_config(route_name='api_media', renderer='json')
+def GET_api_media(request):
+    return dict(
+        images=[
+            {'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
+            {'title': 'Test 2', 'src': 'http://placehold.it/150x100'}
+        ],
+    )
+
+
+@view_config(route_name='api_all_media', renderer='json')
+def GET_api_all_media(request):
+    return dict(
+        images=[
+            {'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
+            {'title': 'Test 2', 'src': 'http://placehold.it/150x100'}
+        ]
+    )
 
 
 @view_config(route_name='misaka', renderer='json', request_method='POST')

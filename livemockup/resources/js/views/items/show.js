@@ -9,12 +9,10 @@ function(_, Backbone, Item, EditorView) {
   var ItemView = Backbone.View.extend({
 
     initialize: function(options) {
-      console.log('ItemView initialized.');
+      //console.log('ItemView initialized.');
       //this.parent = options.parent;
       this.model.bind('change', this.onModelChange, this);
       this.editing = false;
-
-      //console.log(editorTemplate.render());
       this.editor = null;
     },
 
@@ -37,21 +35,28 @@ function(_, Backbone, Item, EditorView) {
     },
 
     onModelChange: function(model) {
-      this.setEditorText(model.get('text'))
+      if (model.hasChanged('text')) {
+        this.setEditorText(model.get('text'))
+      }
+      if (model.hasChanged('images')) {
+        this.editor.updateImages();
+      }
     },
 
     onContentClick: function(e) {
-      // {el: this.$('#editor')}
       var self = this;
+
+      e.stopPropagation();
+      //this.clearSelection();
+
+      // Check if we need a new editor view created
       if (this.editor === null) {
         this.editor = new EditorView();
         this.editor.parent = this;
         this.model.fetch({
           success: function(model, response) {
             self.editor.render(model);
-            self.editor.$el.hide().insertAfter(self.$el);
             self.editor.toggle();
-            //self.setEditorText(model.get('text'));
           },
           error: function(model, response) {
             alert(['Alerts suck! But we have to tell you that the AJAX request',
@@ -63,11 +68,6 @@ function(_, Backbone, Item, EditorView) {
         self.editor.toggle();
       }
 
-      e.stopPropagation();
-      this.clearSelection();
-      //if (!this.model.has('text')) {
-      
-      //this.trigger('toggleEditor', e);
       return false;
     },
 

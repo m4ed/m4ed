@@ -2,9 +2,10 @@
 define([
   'underscore',
   'backbone'
-], function(_, Backbone) {
+],
+function(_, Backbone) {
 
-    var Item = Backbone.Model.extend({
+    var item = Backbone.Model.extend({
 
         initialize: function() {
             //console.log('Item initialized.');
@@ -12,5 +13,5 @@ define([
 
     });
 
-    return Item;
+    return item;
 });
