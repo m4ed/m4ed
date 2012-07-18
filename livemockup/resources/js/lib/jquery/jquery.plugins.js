@@ -1,5 +1,8 @@
 define(['jquery'], function($) {
     $.fn.extend({
+
+      // Insert value at caret position
+      // http://stackoverflow.com/a/3651124
       insertAtCaret: function(myValue){
       var obj;
       //console.log(this);
@@ -31,7 +34,7 @@ define(['jquery'], function($) {
     // Get css value as an integer
     $.fn.extend({
       cssValueAsInteger: function(property){
-        var v = parseInt(this.css(property),10);
+        var v = parseInt(this.css(property), 10);
         return isNaN(v) ? 0 : v;
       }
     });

@@ -11,7 +11,8 @@ requirejs.config({
     backbone: 'lib/backbone/backbone',
     hogan: 'lib/hogan/hogan',
     domReady: 'lib/requirejs/domReady',
-    wysiwym: 'lib/wysiwym/wysiwym'
+    'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
+    wysiwym: 'lib/wysiwym/wysiwym',
   },
   shim: {
     'backbone': {
@@ -22,7 +23,9 @@ requirejs.config({
     // defined in shim config
     'jquery.ui': ['jquery'],
     'jquery.autoellipsis': ['jquery'],
-    'wysiwym': ['jquery']
+    'bootstrap.tooltip': ['jquery'],
+    'wysiwym': ['jquery', 'bootstrap.tooltip']
+
   }
 });
 

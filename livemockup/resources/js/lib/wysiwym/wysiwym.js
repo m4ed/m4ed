@@ -1,4 +1,9 @@
 /*----------------------------------------------------------------------------------------------
+ * m4ed Wysiwym editor - optimized for Markdown
+ * 
+ * 
+ * Forked from: 
+ * http://pushingkarma.com/projects/jquery-wysiwym/
  * Simple Wysiwym Editor for jQuery
  * Version: 2.0 (2011-01-26)
  *--------------------------------------------------------------------------------------------- */
@@ -32,16 +37,12 @@ $.fn.wysiwym = function(markupSet, options) {
             this.options.containerButtons = $("<div></div>").insertBefore(this.textarea);
         this.options.containerButtons.addClass(this.BUTTONCLASS);
         for (var i=0; i<markup.buttons.length; i++) {
-            // Create the button and apply first / last classes
+            // Create the button and apply bootstrap class 'btn'
             var button = markup.buttons[i];
-            var jqbutton = button.create();
-            jqbutton.addClass('btn');
-            // if (i === 0) { jqbutton.addClass('first'); }
-            // if (i == markup.buttons.length-1) { jqbutton.addClass('last'); }
-            // Bind the button data and click event callback
+            button.create();
             var data = $.extend({markup:this.markup}, button.data);
-            jqbutton.bind('click', data, button.callback);
-            this.options.containerButtons.append(jqbutton);
+            button.$el.on('click', data, button.callback);
+            this.options.containerButtons.append(button.$el);
         }
     };
 
@@ -529,8 +530,15 @@ Wysiwym.Textarea = function(textarea) {
  * Represents a single button in the Wysiwym editor.
  *--------------------------------------------------------------------------------------------- */
 Wysiwym.Button = function(name, options, callback, data, cssclass) {
+    this.$el = null;                   // jQuery element for this button
     this.name = name;                  // Button Name
     this.icon = options.icon;          // Icon name
+    this.shortcutKey = options.key;    // Shortcut (CTRL + <key>)
+    this.tooltip = name
+    if (this.shortcutKey) {
+        this.tooltip += ' - ' + 'CTRL + '
+        + this.shortcutKey.toUpperCase();
+    }                                  // Tooltip (name | name + shortcut)
     this.callback = callback;          // Callback function for this button
     this.data = data ? data : {};      // Callback arguments
     this.cssclass = cssclass;          // CSS Class to apply to button
@@ -545,20 +553,26 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
 
     // Create and return a new Button jQuery element
     this.create = function() {
-        var text = $('<span class="text">'+ this.name +'</span>');
-        var i = $('<i class="icon-'+ this.icon +'"></i>');
-        var wrap = $('<span class="wrap"></span>').append(text);
-        if (this.hidetext) text.hide();
-        if (this.icon !== undefined) wrap.append(i);
-        var button = $('<div class="button"></div>').append(wrap);
+        var $text = $('<span class="text">'+ this.name +'</span>');
+        var $i = $('<i class="icon-'+ this.icon +'"></i>');
+        var $wrap = $('<span class="wrap"></span>').append($text);
+        if (this.hidetext) $text.hide();
+        if (this.icon !== undefined) $wrap.append($i);
+        var $button = $('<div class="button btn"></div>').append($wrap);
+        // Add bootstrap tooltip
+        $button.data('original-title', this.tooltip);
+        console.log($button);
+        console.log($button.data('original-title'));
+        $button.tooltip();
         // Apply the title, css, and click bind.
-        button.attr('title', this.name);
-        button.addClass(this.getCssClass());
+        $button.attr('title', this.name);
+        $button.addClass(this.getCssClass());
         // Make everything 'unselectable' so IE doesn't freak out
-        text.attr('unselectable', 'on');
-        wrap.attr('unselectable', 'on');
-        button.attr('unselectable', 'on');
-        return button;
+        $text.attr('unselectable', 'on');
+        $wrap.attr('unselectable', 'on');
+        $button.attr('unselectable', 'on');
+        // Attach jQuery element so we can access it later
+        this.$el = $button;
     };
 }
 
@@ -619,7 +633,6 @@ Wysiwym.block = function(event) {
     wysiwym.update();
 };
 
-
 /*----------------------------------------------------------------------------------------------
  * Wysiwym AutoIndent
  * Handles auto-indentation when enter is pressed
@@ -671,6 +684,31 @@ Wysiwym.autoIndent = function(event) {
     return true;
 };
 
+/*----------------------------------------------------------------------------------------------
+ * Wysiwym handleShortcut
+ * Handles keyboard shortcuts
+ *--------------------------------------------------------------------------------------------- */
+Wysiwym.handleShortcut = function(event) {
+    
+    // Check to see if we have a shortcut key and, if so click the according button.
+    if ((key.ctrlKey || key.metaKey) && !key.altKey && !key.shiftKey) {
+
+        var buttons = event.data.markup.buttons;
+
+        var keyCode = key.charCode || key.keyCode;
+        var keyCodeStr = String.fromCharCode(keyCode).toLowerCase();
+
+        buttons.forEach(function(button) {
+            if (keyCodeStr === button.shortcutKey) {
+                // If the shortcut key matches, click the button's jQuery element
+                button.$el.click();
+            }
+        });
+    }
+
+};
+
+
 
 /* ---------------------------------------------------------------------------
  * Wysiwym Markdown
@@ -682,17 +720,82 @@ Wysiwym.Markdown = function(textarea) {
 
     // Initialize the Markdown Buttons
     this.buttons = [
-        new Wysiwym.Button('Heading 1', {icon: 'h1', hidetext: true}, Wysiwym.span,  {prefix:'# ', suffix:'', text:'Heading 1'}),
-        new Wysiwym.Button('Heading 2', {icon: 'h2', hidetext: true}, Wysiwym.span,  {prefix:'## ', suffix:'', text:'Heading 2'}),
-        new Wysiwym.Button('Heading 3',   {icon: 'h3', hidetext: true}, Wysiwym.span,  {prefix:'### ', suffix:'', text:'Heading 3'}),
-        new Wysiwym.Button('Bold',   {icon: 'bold', hidetext: true}, Wysiwym.span,  {prefix:'**', suffix:'**', text:'strong text'}),
-        new Wysiwym.Button('Italic', {icon: 'italic', hidetext: true}, Wysiwym.span,  {prefix:'_',  suffix:'_',  text:'italic text'}),
-        new Wysiwym.Button('Link',   {icon: 'link', hidetext: true}, Wysiwym.span,  {prefix:'[',  suffix:'](http://example.com)', text:'link text'}),
-        new Wysiwym.Button('Bullet List', {icon: 'list', hidetext: true}, Wysiwym.list, {prefix:'* ', wrap:true}),
-        new Wysiwym.Button('Number List', {icon: 'numbered-list', hidetext: true}, Wysiwym.list, {prefix:'0. ', wrap:true, regex:/^\s*\d+\.\s/}),
-        new Wysiwym.Button('Quote', {icon: 'quote', hidetext: true}, Wysiwym.list,  {prefix:'> ',   wrap:true}),
-        new Wysiwym.Button('Code',   {icon: 'code', hidetext: true}, Wysiwym.block, {prefix:'    ', wrap:true})
-    ];
+    new Wysiwym.Button('Heading 1', {
+        icon: 'h1',
+        hidetext: true,
+        key: 'h'
+    }, Wysiwym.span, {
+        prefix: '# ',
+        suffix: '',
+        text: 'Heading 1'
+    }), new Wysiwym.Button('Heading 2', {
+        icon: 'h2',
+        hidetext: true
+    }, Wysiwym.span, {
+        prefix: '## ',
+        suffix: '',
+        text: 'Heading 2'
+    }), new Wysiwym.Button('Heading 3', {
+        icon: 'h3',
+        hidetext: true
+    }, Wysiwym.span, {
+        prefix: '### ',
+        suffix: '',
+        text: 'Heading 3'
+    }), new Wysiwym.Button('Bold', {
+        icon: 'bold',
+        hidetext: true,
+        key: 'b'
+    }, Wysiwym.span, {
+        prefix: '**',
+        suffix: '**',
+        text: 'strong text'
+    }), new Wysiwym.Button('Italic', {
+        icon: 'italic',
+        hidetext: true,
+        key: 'i'
+    }, Wysiwym.span, {
+        prefix: '_',
+        suffix: '_',
+        text: 'italic text'
+    }), new Wysiwym.Button('Link', {
+        icon: 'link',
+        hidetext: true,
+        key: 'l'
+    }, Wysiwym.span, {
+        prefix: '[',
+        suffix: '](http://example.com)',
+        text: 'link text'
+    }), new Wysiwym.Button('Bullet List', {
+        icon: 'list',
+        hidetext: true,
+        key: 'u'
+    }, Wysiwym.list, {
+        prefix: '* ',
+        wrap: true
+    }), new Wysiwym.Button('Number List', {
+        icon: 'numbered-list',
+        hidetext: true,
+        key: 'o'
+    }, Wysiwym.list, {
+        prefix: '0. ',
+        wrap: true,
+        regex: /^\s*\d+\.\s/
+    }), new Wysiwym.Button('Quote', {
+        icon: 'quote',
+        hidetext: true,
+        key: 'q'
+    }, Wysiwym.list, {
+        prefix: '> ',
+        wrap: true
+    }), new Wysiwym.Button('Code', {
+        icon: 'code',
+        hidetext: true,
+        key: 'k'
+    }, Wysiwym.block, {
+        prefix: '    ',
+        wrap: true
+    })];
 
     // Configure auto-indenting
     this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
