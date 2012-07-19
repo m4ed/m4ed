@@ -6,22 +6,19 @@ define([
   'views/items/editor'
 ],
 function(_, Backbone, Item, EditorView) {
-  var ItemView = Backbone.View.extend({
+  var itemView = Backbone.View.extend({
 
     initialize: function(options) {
       //console.log('ItemView initialized.');
       //this.parent = options.parent;
-      this.model.bind('change', this.onModelChange, this);
+      this.model.bind('change', this.onChange, this);
       this.editing = false;
       this.editor = null;
     },
 
     events: {
-      // dblclick
       "click .editable.title": "onTitleClick",
       "click .item-content": "onContentClick"
-      
-      //"mousedown": "noselect"
     },
 
     onTitleClick: function(e) {
@@ -34,10 +31,8 @@ function(_, Backbone, Item, EditorView) {
       this.editor.setEditorText(text);
     },
 
-    onModelChange: function(model) {
-      if (model.hasChanged('text')) {
-        this.setEditorText(model.get('text'))
-      }
+    onChange: function(model) {
+
       if (model.hasChanged('images')) {
         this.editor.updateImages();
       }
@@ -51,21 +46,11 @@ function(_, Backbone, Item, EditorView) {
 
       // Check if we need a new editor view created
       if (this.editor === null) {
-        this.editor = new EditorView();
+        //console.log(this.model);
+        this.editor = new EditorView({model: this.model});
         this.editor.parent = this;
-        this.model.fetch({
-          success: function(model, response) {
-            self.editor.render(model);
-            self.editor.toggle();
-          },
-          error: function(model, response) {
-            alert(['Alerts suck! But we have to tell you that the AJAX request',
-                   'just failed!'].join(' '));
-            //self.setEditorText(response.html);
-          }
-        });
       } else {
-        self.editor.toggle();
+        this.editor.toggle();
       }
 
       return false;
@@ -81,5 +66,5 @@ function(_, Backbone, Item, EditorView) {
     }
 
   });
-  return ItemView;
+  return itemView;
 });

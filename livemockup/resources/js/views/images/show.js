@@ -1,28 +1,25 @@
 // Filename: views/images/show.js
 define([
   'underscore',
-  'backbone',
-  'models/asset'
+  'backbone'
 ],
-function(_, Backbone, ImageModel) {
-  var imageView = Backbone.View.extend({
+function(_, Backbone) {
+  var assetView = Backbone.View.extend({
 
     tagName: 'img',
 
     className: 'picture',
 
     attributes: function() {
-      //console.log(this.model);
       return { 
-        src: this.model.get('src')
+        src: this.model.get('src'),
+        alt: this.model.get('alt'),
+        title: this.model.get('title')
       }
     },
 
     initialize: function(options) {
-      //console.log('ItemView initialized.');
-      //this.parent = options.parent;
       this.model.bind('change', this.onModelChange, this);
-      //this.template = hogan.compile($('#image-template').html())
     },
 
     render: function() {
@@ -30,11 +27,18 @@ function(_, Backbone, ImageModel) {
     },
 
     events: {
-     'click': 'onClick'
+     'click': 'onClick',
+     'dragstart': 'onDragstart'
     },
 
     onClick: function(e) {
       alert('Derp');
+    },
+
+    onDragstart: function(e) {
+      e.originalEvent.dataTransfer.setData('Text', this.model.get('markdown'));
+      //console.log('markdown copied');
+      //return this.model.markdown;
     },
 
     onModelChange: function(model) {
@@ -42,5 +46,5 @@ function(_, Backbone, ImageModel) {
     }
   });
     
-  return imageView;
+  return assetView;
 });

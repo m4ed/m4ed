@@ -10,7 +10,7 @@ define([
 ],
 function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
 
-  var ItemListView = Backbone.View.extend({
+  var itemListView = Backbone.View.extend({
 
     events: {
 
@@ -36,12 +36,8 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
         self.collection.add({id: $(this).data('id')}, {$el: $(this)});
       });
 
-    },
-
-    setEditorText: function(text) {
-      this.editor.setText(text);
     }
 
   });
-  return ItemListView;
+  return itemListView;
 });

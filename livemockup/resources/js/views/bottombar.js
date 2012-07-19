@@ -14,40 +14,22 @@ function($, _, Backbone, AssetCollection, ImageView) {
             var self = this;
             this.assets = new AssetCollection();
 
+            // Fetch will trigger the 'reset' event
             this.assets.bind('reset', this.onReset, this);
-            this.assets.bind('change', this.render, this);
 
-            this.assets.fetch({
-                error: function(jqXHR, textStatus, errorThrown) {
-                    alert('WE FAILED!');
-                },
-                success: function(data, textStatus, jqXHR) {
-                    self.assets.reset(data.images);
-                }
-            });
+            this.assets.fetch();
         },
 
-        addOne: function() {
+        addImage: function(model) {
             var view = new ImageView({model: model})
-              , el = view.render().el;
-            $(el).draggable({
-                revert: "invalid", // when not dropped, the item will revert back to its initial position
-                containment: this.parent ? this.parent.el : "document", // stick to editor (el) if present
-                helper: "clone",
-                cursor: "move"
-            });
-            self.$el.append(el);
+              , el = view.render().el
+              , self = this;
+            this.$el.append(el);
         },
 
         onReset: function() {
-            //console.log(this.$el);
-            //var self = this;
-            this.assets.each(this.addOne)
-            // _.map(this.assets.models, function(model) {
-            //     //
-                
-            //     // Make the Textarea prettier with jQueryUI
-            // });
+            // The second parameter is the context of 'this'
+            this.assets.each(this.addImage, this)
         }
     });
 

@@ -28,14 +28,27 @@ define(['jquery'], function($) {
         obj.value += myValue;
         obj.focus();
        }
-     }
-    });
+     },
 
     // Get css value as an integer
-    $.fn.extend({
-      cssValueAsInteger: function(property){
-        var v = parseInt(this.css(property), 10);
-        return isNaN(v) ? 0 : v;
-      }
-    });
+    cssValueAsInteger: function(property){
+      var v = parseInt(this.css(property),10);
+      return isNaN(v) ? 0 : v;
+    },
+
+    selectRange: function(start, end) {
+      return this.each(function() {
+        if (this.setSelectionRange) {
+          this.focus();
+          this.setSelectionRange(start, end);
+        } else if (this.createTextRange) {
+          var range = this.createTextRange();
+          range.collapse(true);
+          range.moveEnd('character', end);
+          range.moveStart('character', start);
+          range.select();
+        }
+      });
+    }
+  });
 });
