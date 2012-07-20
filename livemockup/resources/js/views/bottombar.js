@@ -13,7 +13,8 @@ function($, _, Backbone, AssetCollection, ImageView) {
         initialize: function(options) {
             var self = this;
 
-            this.eventDispatcher = options.eventDispatcher;
+            // Extend this object with all the custom options passed
+            _.extend(this, options.custom);
 
             this.eventDispatcher.bind('assetChange', this.onAssetChange, this);
 

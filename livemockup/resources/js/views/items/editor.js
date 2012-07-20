@@ -27,8 +27,16 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       this.activeXhr = null;
       this.lastContent = null;
       this.model.bind('change', this.onChange, this);
-      this.model.fetch();
-      this.eventDispatcher = options.eventDispatcher;
+
+      // Extend this object with all the custom options passed
+      _.extend(this, options.custom);
+
+      if (this.model.has('markdown')) {
+        console.log('Battle cruiser operational');
+        this.render();
+      } else {
+        this.model.fetch();
+      }
     },
 
     onChange: function() {
@@ -52,9 +60,11 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       // Initiate a new bottom bar view
       this.bottomBar = new BottomBarView({
         el: $el.find('.picture-container'),
-        eventDispatcher: this.eventDispatcher
+        custom: {
+          eventDispatcher: this.eventDispatcher,
+          parent: this
+        }
       });
-      this.bottomBar.parent = this;
 
       // init wysiwym.js
       $el.find('.editor-textarea').wysiwym(Wysiwym.Markdown, {
@@ -62,7 +72,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       });
 
       // Stupid work around 
-      this.$el.insertAfter(this.parent.$el);
+      $el.insertAfter(this.parent.$el);
       this.generatePreview();
       this.toggle();
 
@@ -99,7 +109,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
 
     update: function() {
       this.model.set('text', this.getEditorText());
-      this.model.change();
+      //this.model.change();
     },
 
     setEditorText: function(text) {

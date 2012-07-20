@@ -16,19 +16,25 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
 
     },
     
-    initialize: function() {
+    initialize: function(options) {
       var self = this
         , parentView = this;
 
       this.collection = new ItemCollection();
 
+      // Extend this object with all the custom options passed
+      _.extend(this, options.custom);
+
       this.collection.on('add', function(item, collection, options) {
         var itemView = new ItemView({
           model: item,
           el: options.$el,
+          custom: {
+            eventDispatcher: parentView,
+            parent: parentView
+          }
         });
-        itemView.parent = parentView;
-        itemView.eventDispatcher = parentView;
+        
         //itemView.on('toggleEditor', self.onToggleEditor, self);
       });
 

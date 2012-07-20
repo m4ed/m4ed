@@ -32,7 +32,9 @@ def GET_api_items(request):
     print _id
     return dict(
         _id=_id,
-        text='This is text for item ID: {}'.format(_id)
+        text='This is text for item ID: {}'.format(_id),
+        title='Item {}'.format(_id),
+        markdown='# Heading 1\n\n## Heading 2'
         )
 
 
