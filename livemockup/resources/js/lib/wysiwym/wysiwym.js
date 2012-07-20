@@ -567,19 +567,6 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
         if (this.icon !== undefined) $wrap.append($i);
         var $button = $('<div class="button btn"></div>').append($wrap);
         // Add bootstrap tooltip
-<<<<<<< HEAD
-        // console.log($button);
-        // console.log($button.data('original-title'));
-        // $button.tooltip({'title': this.tooltip});
-        // Apply the title, css, and click bind.
-        // $button.attr('title', this.name);
-        $button.addClass(this.getCssClass());
-        // Make everything 'unselectable' so IE doesn't freak out
-        // $text.attr('unselectable', 'on');
-        // $wrap.attr('unselectable', 'on');
-        // $button.attr('unselectable', 'on');
-        // Attach jQuery element so we can access it later
-=======
         $button.tooltip({
             title: this.tooltip,
             delay: {
@@ -593,7 +580,6 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
         $wrap.attr('unselectable', 'on');
         $button.attr('unselectable', 'on');
         // Attach jQuery element so we can access it easily
->>>>>>> Added tooltips and keyboard shortcuts to Wysiwym.
         this.$el = $button;
     };
 }

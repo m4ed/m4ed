@@ -6,7 +6,9 @@
 *.txt.py
 *~
 *.sublime-*
+*.min.css
 
+server_config.ini
 .coverage
 .tox/
 nosetests.xml
