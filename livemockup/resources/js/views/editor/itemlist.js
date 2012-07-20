@@ -4,11 +4,10 @@ define([
   'underscore',
   'backbone',
   'collections/items',
-  'views/items/show',
-  'views/items/editor',
-  'hogan'
+  'views/editor/item',
+  'views/editor/editor'
 ],
-function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
+function($, _, Backbone, ItemCollection, ItemView, EditorView) {
 
   var itemListView = Backbone.View.extend({
 

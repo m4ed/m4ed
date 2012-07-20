@@ -4,7 +4,7 @@ define([
   'underscore',
   'backbone',
   'collections/assets',
-  'views/images/show'
+  'views/editor/image'
 ],
 function($, _, Backbone, AssetCollection, ImageView) {
 

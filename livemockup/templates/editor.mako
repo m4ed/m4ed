@@ -34,10 +34,12 @@
       <div class="item-content">
         <h4 class="title">
           <span class="view">${lesson.get('title')}</span>
-          
-          <input type="text" class="edit" value="${lesson.get('title')}"/>
+          <input type="text" class="edit" value="${lesson.get('title')}" data-attr="title"/>
         </h4>
-        <p class="desc">Description of this lesson...</p>
+        <p class="desc">
+          <span class="view">${lesson.get('description')}</span>
+          <input type="text" class="edit" value="${lesson.get('description')}" data-attr="description"/>
+        </p>
       </div>
     </div>
     % for exercise in lesson.get('exercises'):

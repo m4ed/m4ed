@@ -2,10 +2,9 @@
 define([
   'underscore',
   'backbone',
-  'models/items',
-  'views/items/editor'
+  'views/editor/editor'
 ],
-function(_, Backbone, Item, EditorView) {
+function(_, Backbone, EditorView) {
   var keyCodes = {
     27: 'esc',
     13: 'enter'
@@ -21,14 +20,19 @@ function(_, Backbone, Item, EditorView) {
       this.editor = null;
 
       var $el = $(options.el);
-      this.$titleSpan = $el.find('.title >.view');
+      this.$titleSpan = $el.find('.title > .view');
       this.$titleInput = $el.find('.title > input.edit');
       this.$title = $el.find('.title');
+
+      this.$descriptionSpan = $el.find('.desc > .view');
+      this.$descriptionInput = $el.find('.desc > input.edit')
+      this.$description = $el.find('.desc');
     },
 
     events: {
-      "click .view": "onTitleClick",
+      "click .title > .view": "onTitleClick",
       "click .edit": "onEditClick",
+      "click .desc > .view": "onDescriptionClick",
       "click .item-content": "onContentClick",
       "blur .edit": "onEditBlur",
       "keyup .edit": "onEditKeyup"
@@ -37,13 +41,22 @@ function(_, Backbone, Item, EditorView) {
     onTitleClick: function(e) {
       e.stopPropagation();
       if (!this.model.has('title')) {
+        // Sync the model just in case...
         this.model.fetch();
       }
-      // Check if the input element has been saved previously.
-      // If not, assume that other variables need to be saved too.
       this.$title.addClass('editing');
       this.$titleInput.focus();
       //console.log('Editing!');
+    },
+
+    onDescriptionClick: function(e) {
+      e.stopPropagation();
+      if (!this.model.has('description')) {
+        // Sync the model just in case...
+        this.model.fetch();
+      }
+      this.$description.addClass('editing');
+      this.$descriptionInput.focus();
     },
 
     onEditClick: function(e) {
@@ -75,7 +88,7 @@ function(_, Backbone, Item, EditorView) {
     },
 
     onEditBlur: function(e) {
-      this.closeEdit(false);
+      this.closeEdit(false, e.currentTarget);
     },
 
     onEditKeyup: function(e) {
@@ -87,24 +100,55 @@ function(_, Backbone, Item, EditorView) {
       case 'enter':
         saveResult = true;
       case 'esc':
-        this.closeEdit(saveResult);
+        console.log(saveResult);
+        this.closeEdit(saveResult, $(e.currentTarget).data('attr'));
         break;
       }
     },
 
     onTitleChange: function(model) {
-      this.$titleSpan.html(this.model.get('title'));
+      var title = this.model.get('title');
+      this.$titleSpan.html(title);
+      this.$titleInput.val(title);
     },
 
-    closeEdit: function(save) {
+    closeTitleEdit: function(save, target) {
+      $target = $(target);
       if (save) {
-        var title = this.$titleInput.val();
-        this.model.set('title', title);
-        this.$titleSpan.html(title);
+        var val = $target.val();
+        // console.log(val);
+        console.log($target.data('attr'))
+        // console.log(this.model.attributes);
+        this.model.set($target.data('attr'), val);
+        $target.prev().html(val);
       } else {
-        this.$titleInput.val(this.model.get('title'));
+        $target.val(this.model.get(target));
       }
-      this.$title.removeClass('editing');
+      $target.parent().removeClass('editing');
+    },
+
+    closeEdit: function(save, target) {
+      switch (target) {
+      case 'description':
+        if (save) {
+          var val = this.$descriptionInput.val();
+          this.model.set('description', val);
+          this.$descriptionSpan.text(val);
+        } else {
+          this.$descriptionInput.val(this.model.get('description'));
+        }
+        this.$description.removeClass('editing');
+
+      case 'title':
+        if (save) {
+          var val = this.$titleInput.val();
+          this.model.set('title', val);
+          this.$titleSpan.text(val);
+        } else {
+          this.$titleInput.val(this.model.get('title'));
+        }
+        this.$title.removeClass('editing');
+      } 
     },
 
     clearSelection: function() {

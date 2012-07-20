@@ -3,7 +3,7 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/items/list'
+  'views/editor/itemlist'
 ], function($, _, Backbone, ItemListView) {
   var initialize = function() {
 

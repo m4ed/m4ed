@@ -3,13 +3,13 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/bottombar',
+  'views/editor/assetlist',
   'wysiwym',
   'hogan',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, BottomBarView, wysiwym, hogan) {
+function($, _, Backbone, AssetListView, wysiwym, hogan) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -40,7 +40,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
     },
 
     onChange: function() {
-      console.log('The model has changed!');
+      //console.log('The model has changed!');
       if (this.$el.html() === '') {
         console.log('First time change!');
         this.render();
@@ -58,7 +58,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       $el.html(this.template.render(this.model.toJSON()));
 
       // Initiate a new bottom bar view
-      this.bottomBar = new BottomBarView({
+      this.assetList = new AssetListView({
         el: $el.find('.picture-container'),
         custom: {
           eventDispatcher: this.eventDispatcher,
@@ -152,7 +152,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
     },
 
     updateImages: function() {
-      this.bottomBar.render();
+      this.assetList.render();
     }
 
 

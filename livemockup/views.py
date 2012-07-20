@@ -15,9 +15,9 @@ def editor(request):
     editor_less.need()
     # Dummy items
     lessons = [
-        dict(title='Lesson 1', exercises=['Exercise 1', 'Exercise 2']),
-        dict(title='Lesson 2', exercises=['Exercise 1', 'Exercise 2', 'Exercise 3']),
-        dict(title='Lesson 3', exercises=['Exercise 1'])
+        dict(title='Lesson 1', description='This is a description', exercises=['Exercise 1', 'Exercise 2']),
+        dict(title='Lesson 2', description='This is a description', exercises=['Exercise 1', 'Exercise 2', 'Exercise 3']),
+        dict(title='Lesson 3', description='This is a description', exercises=['Exercise 1'])
     ]
 
     return {
@@ -34,7 +34,7 @@ def GET_api_items(request):
         _id=_id,
         text='This is text for item ID: {}'.format(_id),
         title='Item {}'.format(_id),
-        markdown='# Heading 1\n\n## Heading 2'
+        description='This is a description'
         )
 
 
