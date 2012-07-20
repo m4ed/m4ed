@@ -68,7 +68,7 @@
       <textarea class="span6 editor-textarea">{{text}}</textarea>
     </div>
     <div class="span6">
-      <div id="preview-buttons" class="btn-group">
+      <div class="btn-group editor-buttons preview-buttons">
         <button class="btn">Desktop</button>
         <button class="btn">Tablet</button>
         <button class="btn">Smartphone</button>
@@ -90,59 +90,4 @@
   </div>
 </%def>
 
-<%def name="editor()">
 
-  <div id="editor">
-
-    <div class="row">
-      <div class="span6">
-        <div class="btn-group editor-buttons">
-        </div>
-        <textarea class="span6 editor-textarea"></textarea>
-      </div>
-      <div class="span6">
-        <div id="preview-buttons" class="btn-group">
-          <button class="btn">Desktop</button>
-          <button class="btn">Tablet</button>
-          <button class="btn">Smartphone</button>
-          <button class="btn">Feature phone</button>
-        </div>
-        <div class="preview"></div>
-      </div>
-    </div>
-    
-    <div id="editor-controls">
-      <button class="btn btn-primary editor-btn">Save</button>
-      <button class="btn editor-btn cancel">Cancel</button>
-      <button class="btn editor-btn pictures">Pictures</button>
-    </div>
-
-        <div id="editor-pictures">
-<!--       <div id="pointing-arrow">
-        <img src="${request.static_url('livemockup:static/graphics/white_arrow.png')}" />
-      </div> -->
-      <div class="picture-container">
-        % for i in range(0,6):
-          <img class="picture" src="http://placehold.it/150x100" />
-        % endfor
-        <img class="picture" id="add-picture" />
-      </div>
-    </div>
-  </div>
-
-</%def>
-
-<%def name="controls()">
-  
-  <div class="item-controls">
-    <a href="#" class="control-button edit">
-      <img src="${request.static_url('livemockup:static/icons/32x32/file-edit.png')}" />
-    </a>
-    <a href="#" class="control-button preview">
-      <img src="${request.static_url('livemockup:static/icons/32x32/view.png')}" />
-    </a>
-    <a href="#" class="control-button delete">
-      <img src="${request.static_url('livemockup:static/icons/32x32/delete.png')}" />
-    </a>
-  </div>
-</%def>

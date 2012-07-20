@@ -54,6 +54,12 @@ $.fn.wysiwym = function(markupSet, options) {
         }
     };
 
+    // Initialize the shortcut handler
+    this.initializeShortcutHandler = function() {
+        var data = {markup:this.markup};
+        this.textarea.bind('keydown', data, Wysiwym.handleShortcut);
+    };
+
     // Initialize the help syntax dropdown
     this.initializeHelp = function() {
         if (this.options.helpEnabled) {
@@ -97,6 +103,7 @@ $.fn.wysiwym = function(markupSet, options) {
     this.textarea.wrap(this.editor);
     this.initializeButtons();
     this.initializeAutoIndent();
+    this.initializeShortcutHandler();
     this.initializeHelp();
     this.initializeHelpToggle();
 };
@@ -560,6 +567,7 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
         if (this.icon !== undefined) $wrap.append($i);
         var $button = $('<div class="button btn"></div>').append($wrap);
         // Add bootstrap tooltip
+<<<<<<< HEAD
         // console.log($button);
         // console.log($button.data('original-title'));
         // $button.tooltip({'title': this.tooltip});
@@ -571,6 +579,21 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
         // $wrap.attr('unselectable', 'on');
         // $button.attr('unselectable', 'on');
         // Attach jQuery element so we can access it later
+=======
+        $button.tooltip({
+            title: this.tooltip,
+            delay: {
+                show: 1500,
+                hide: 200
+            }
+        });
+        $button.addClass(this.getCssClass());
+        // Make everything 'unselectable' so IE doesn't freak out
+        $text.attr('unselectable', 'on');
+        $wrap.attr('unselectable', 'on');
+        $button.attr('unselectable', 'on');
+        // Attach jQuery element so we can access it easily
+>>>>>>> Added tooltips and keyboard shortcuts to Wysiwym.
         this.$el = $button;
     };
 }
@@ -690,16 +713,18 @@ Wysiwym.autoIndent = function(event) {
 Wysiwym.handleShortcut = function(event) {
     
     // Check to see if we have a shortcut key and, if so click the according button.
-    if ((key.ctrlKey || key.metaKey) && !key.altKey && !key.shiftKey) {
+    if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
 
         var buttons = event.data.markup.buttons;
 
-        var keyCode = key.charCode || key.keyCode;
+        var keyCode = event.charCode || event.keyCode;
         var keyCodeStr = String.fromCharCode(keyCode).toLowerCase();
 
         buttons.forEach(function(button) {
             if (keyCodeStr === button.shortcutKey) {
-                // If the shortcut key matches, click the button's jQuery element
+                // If the shortcut key matches, prevent the default action
+                // and click the button's jQuery element
+                event.preventDefault();
                 button.$el.click();
             }
         });
