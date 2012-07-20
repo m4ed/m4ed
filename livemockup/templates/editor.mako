@@ -32,7 +32,11 @@
         <img src="http://placehold.it/48x48" />
       </div>
       <div class="item-content">
-        <h4 class="title"><span class="title editable">${lesson.get('title')}</span></h4>
+        <h4 class="title">
+          <span class="view">${lesson.get('title')}</span>
+          
+          <input type="text" class="edit" value="${lesson.get('title')}"/>
+        </h4>
         <p class="desc">Description of this lesson...</p>
       </div>
     </div>

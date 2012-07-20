@@ -11,30 +11,44 @@ function(_, Backbone, Item, EditorView) {
     initialize: function(options) {
       //console.log('ItemView initialized.');
       //this.parent = options.parent;
-      this.model.bind('change', this.onChange, this);
+      this.model.bind('change:title', this.onTitleChange, this);
       this.editing = false;
       this.editor = null;
     },
 
     events: {
-      "click .editable.title": "onTitleClick",
-      "click .item-content": "onContentClick"
+      "click .view": "onTitleClick",
+      "click .item-content": "onContentClick",
+      "blur .edit": "onBlur"
     },
 
     onTitleClick: function(e) {
       e.stopPropagation();
       //e.currentTarget()
-      console.log('Editing!');
+      var $target = $(e.currentTarget);
+      if (!this.$input) {
+        this.$view = $target;
+        this.$input = $target.siblings('input');
+        this.$title = $target.parent('h4');
+      }
+      this.$title.addClass('editing');
+      this.$input.focus();
+      //console.log('Editing!');
+    },
+
+    onBlur: function(e) {
+      var title = this.$input.val();
+      this.model.set('title', title);
+      this.$view.html(title);
+      this.$title.removeClass('editing');
     },
 
     setEditorText: function(text) {
       this.editor.setEditorText(text);
     },
 
-    onChange: function(model) {
-      if (model.hasChanged('images')) {
-        this.editor.updateImages();
-      }
+    onTitleChange: function(model) {
+      this.$view.html(this.$input.val());
     },
 
     onContentClick: function(e) {

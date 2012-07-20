@@ -38,7 +38,8 @@ function(_, Backbone) {
     onDragstart: function(e) {
       // Dig up the original event and set the dataTransfer data to contain
       // a bit more meaningful data
-      e.originalEvent.dataTransfer.setData('Text', this.model.get('markdown'));
+      e.originalEvent.dataTransfer.setData('Text', 
+        ['![alt_text](', this.model.get('src'), ')'].join(''));
       //  this.model.get('_id')].join(':'));
     },
 
