@@ -12,7 +12,8 @@ requirejs.config({
     'hogan': 'lib/hogan/hogan',
     'domReady': 'lib/requirejs/domReady',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
-    'wysiwym': 'lib/wysiwym/wysiwym',
+    'bootstrap.popover': '../bootstrap/js/bootstrap-popover',
+    'wysiwym': 'lib/wysiwym/wysiwym'
   },
   shim: {
     'backbone': {
@@ -24,7 +25,8 @@ requirejs.config({
     'jquery.ui': ['jquery'],
     'jquery.autoellipsis': ['jquery'],
     'bootstrap.tooltip': ['jquery'],
-    'wysiwym': ['jquery', 'bootstrap.tooltip']
+    'bootstrap.popover': ['jquery', 'bootstrap.tooltip'],
+    'wysiwym': ['jquery', 'bootstrap.tooltip', 'bootstrap.popover']
 
   }
 });

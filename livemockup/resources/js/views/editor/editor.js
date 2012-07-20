@@ -68,7 +68,8 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
 
       // init wysiwym.js
       $el.find('.editor-textarea').wysiwym(Wysiwym.Markdown, {
-        containerButtons:  $el.find('.editor-buttons:first')
+        $buttonContainer:  $el.find('.editor-buttons:first'),
+        helpEnabled: true
       });
 
       // Stupid work around 

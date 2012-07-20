@@ -65,16 +65,18 @@
 <%def name="hogan_editor()">
   <div class="row">
     <div class="span6">
-      <div class="btn-group editor-buttons">
+      <div class="btn-toolbar editor-buttons">
       </div>
       <textarea class="span6 editor-textarea">{{text}}</textarea>
     </div>
     <div class="span6">
-      <div class="btn-group editor-buttons preview-buttons">
-        <button class="btn">Desktop</button>
-        <button class="btn">Tablet</button>
-        <button class="btn">Smartphone</button>
-        <button class="btn">Feature phone</button>
+      <div class="btn-toolbar preview-buttons">
+        <div class="btn-group">
+          <button class="btn">Desktop</button>
+          <button class="btn">Tablet</button>
+          <button class="btn">Smartphone</button>
+          <button class="btn">Feature phone</button>
+        </div>
       </div>
       <div class="preview"></div>
     </div>

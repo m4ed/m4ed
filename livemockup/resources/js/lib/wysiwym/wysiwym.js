@@ -14,93 +14,119 @@ $.fn.wysiwym = function(markupSet, options) {
     this.EDITORCLASS = 'wysiwym-editor';           // Class to use for the wysiwym editor
     this.BUTTONCLASS = 'wysiwym-buttons';          // Class to use for the wysiwym button container
     this.HELPCLASS = 'wysiwym-help';               // Class to use for the wysiwym help
-    this.HELPTOGGLECLASS = 'wysiwym-help-toggle';  // Class to use for the wysiwym help
+    this.HELPTOGGLECLASS = 'btn';                  // Class to use for the wysiwym help
     this.textelem = this;                          // Javascript textarea element
-    this.textarea = $(this);                       // jQuery textarea object
-    this.editor = undefined;
-    this.markup = new markupSet(this); // Wysiwym Markup set to use (markdown as default)
+    this.$textarea = $(this);                      // jQuery textarea object
+    this.$editor = undefined;
+    this.markup = new markupSet(this);             // Wysiwym Markup set to use (markdown as default)
     this.defaults = {                              // Default option values
-        containerButtons: undefined,               // jQuery elem to place buttons (makes one by default)
-        containerHelp: undefined,                  // jQuery elem to place help (makes one by default)
+        $buttonContainer: undefined,               // jQuery elem to place buttons (makes one by default)
+        $help: undefined,                          // jQuery elem to place help (makes one by default)
         helpEnabled: false,                        // Set true to display the help dropdown
-        helpToggle: false,                         // Set true to use a toggle link for help
-        helpToggleElem: undefined,                 // jQuery elem to toggle help (makes <a> by default)
-        helpTextShow: 'show markup syntax',        // Toggle text to display when help is not visible
-        helpTextHide: 'hide markup syntax'         // Toggle text to display when help is visible
+        $helpButton: undefined,                    // jQuery elem to toggle help (makes <a> by default)
+        helpTextShow: 'Markup syntax',             // Toggle text to display when help is not visible
+        helpTextHide: 'Hide markup syntax',        // Toggle text to display when help is visible
+        helpIcon: 'question-sign',                 // Icon for the help button
+        hideHelpButtonText: true                   // Boolean to hide text button
     };
     this.options = $.extend(this.defaults, options ? options : {});
 
     // Add the button container and all buttons
     this.initializeButtons = function() {
         var markup = this.markup;
-        if (this.options.containerButtons === undefined)
-            this.options.containerButtons = $("<div></div>").insertBefore(this.textarea);
-        this.options.containerButtons.addClass(this.BUTTONCLASS);
-        for (var i=0; i<markup.buttons.length; i++) {
-            // Create the button and apply bootstrap class 'btn'
-            var button = markup.buttons[i];
-            button.create();
-            var data = $.extend({markup:this.markup}, button.data);
-            button.$el.on('click', data, button.callback);
-            this.options.containerButtons.append(button.$el);
-        }
+        if (this.options.$buttonContainer === undefined)
+            this.options.$buttonContainer = $("<div></div>").insertBefore(this.$textarea);
+
+        $buttonContainer = this.options.$buttonContainer;
+        $buttonContainer.addClass(this.BUTTONCLASS);
+
+        var $buttonGroup = $('<div class="btn-group"></div>');
+
+        markup.buttons.forEach(function(buttonGroup) {
+            var $newGroup = $buttonGroup.clone();
+            $newGroup.appendTo($buttonContainer);
+            buttonGroup.forEach(function(button) {
+                button.create();
+                var data = $.extend({markup:this.markup}, button.data);
+                button.$el.on('click', data, button.callback);
+                $newGroup.append(button.$el);
+            });
+        });
     };
 
     // Initialize the AutoIndent trigger
     this.initializeAutoIndent = function() {
         if (this.markup.autoindents) {
             var data = {markup:this.markup};
-            this.textarea.bind('keydown', data, Wysiwym.autoIndent);
+            this.$textarea.bind('keydown', data, Wysiwym.autoIndent);
         }
     };
 
     // Initialize the shortcut handler
     this.initializeShortcutHandler = function() {
         var data = {markup:this.markup};
-        this.textarea.bind('keydown', data, Wysiwym.handleShortcut);
+        this.$textarea.bind('keydown', data, Wysiwym.handleShortcut);
     };
 
-    // Initialize the help syntax dropdown
+    // Initialize the help syntax popover
     this.initializeHelp = function() {
         if (this.options.helpEnabled) {
-            if (this.options.containerHelp == undefined)
-                this.options.containerHelp = $("<div></div>").insertAfter(this.textarea);
-            this.options.containerHelp.addClass(this.HELPCLASS);
+
             // Add the help table and items
-            var helpBody = $('<tbody></tbody>');
-            var helpTable = $('<table cellpadding="0" cellspacing="0" border="0"></table>').append(helpBody);
+            var $helpBody = $('<tbody></tbody>');
+            var $helpTable = $('<table class="table table-condensed table-striped"></table>').append($helpBody);
             for (var i=0; i<this.markup.help.length; i++) {
                 var item = this.markup.help[i];
-                helpBody.append('<tr><th>'+ item.label +'</th><td>'+ item.syntax +'</td></tr>');
-            };
-            this.options.containerHelp.append(helpTable);
+                $helpBody.append('<tr><th>'+ item.label +'</th><td>'+ item.syntax +'</td></tr>');
+            }
+
+            this.options.$help = $helpTable;
+
         }
+
     };
 
-    // Initialize the Help Toggle Button
+    // Initialize the Help Button
     this.initializeHelpToggle = function() {
-        if (this.options.helpToggle && this.options.helpEnabled) {
-            var self = this;  // Required for use inside click callback
-            if (this.options.helpToggleElem == undefined)
-                this.options.helpToggleElem = $("<a href='#'>"+ this.options.helpTextShow +"</a>");
-            this.options.helpToggleElem.addClass(this.HELPTOGGLECLASS);
-            this.options.helpToggleElem.bind('click', function() {
-                if (self.options.containerHelp.is(':visible')) {
-                    self.options.containerHelp.slideUp('fast');
-                    $(this).text(self.options.helpTextShow);
-                } else {
-                    self.options.containerHelp.slideDown('fast');
-                    $(this).text(self.options.helpTextHide);
+        if (this.options.helpEnabled) {
+
+            var $helpButton = this.options.$helpButton;
+            if ($helpButton === undefined) {
+                $helpButton = $("<a href='#' class='btn help-button pull-right'></a>");
+                var $text = $("<span>"+ this.options.helpTextShow + "</span>");
+                if (this.options.hideHelpButtonText) $text.hide();
+                var $i = $('<i class="icon-'+ this.options.helpIcon +'"></i>');
+                $helpButton.prepend($i);
+
+                this.options.$helpButton = $helpButton;
+            }
+
+            $helpButton.addClass(this.HELPTOGGLECLASS);
+
+            $helpButton.popover({
+                title: 'Markdown help',
+                content: this.options.$help,
+                trigger: 'manual',
+                delay: {
+                    show: 200,
+                    hide: 200
                 }
-                return false;
             });
-            this.options.containerHelp.before(this.options.helpToggleElem).hide();
+
+            $helpButton.on('click', function(e) {
+                e.preventDefault();
+                $(this).toggleClass('active');
+                $(this).popover('toggle');
+            });
+
+            this.options.$buttonContainer.prepend($helpButton);
+
         }
     };
 
     // Initialize the Wysiwym Editor
-    this.editor = $('<div class="'+ this.EDITORCLASS +'"></div>');
-    this.textarea.wrap(this.editor);
+    this.$editor = $('<div class="'+ this.EDITORCLASS +'"></div>');
+    this.$textarea.wrap(this.$editor);
     this.initializeButtons();
     this.initializeAutoIndent();
     this.initializeShortcutHandler();
@@ -338,7 +364,7 @@ Wysiwym.Selection = function(wysiwym) {
             if (!this.lines[i].startswith(prefix)) {
                 // Check if prefix is incrementing
                 if (increment) {
-                    var num = parseInt(prefix.match(/\d+/)[0]);
+                    var num = Integer.parseInt(prefix.match(/\d+/)[0]);
                     prefix = prefix.replace(num, num+1);
                 }
                 // Add the prefix to the line
@@ -378,7 +404,7 @@ Wysiwym.Selection = function(wysiwym) {
             } else if ((i > this.start.line) && (i < this.end.line)) {
                 value += line +'\n';
             } else if (i == this.end.line) {
-                value += line.substring(0, this.end.position)
+                value += line.substring(0, this.end.position);
             }
         }
         return value;
@@ -399,7 +425,7 @@ Wysiwym.Selection = function(wysiwym) {
             wysiwym.selection.insertNextLine(BLANKLINE, false);
     };
 
-}
+};
 
 
 /*----------------------------------------------------------------------------------------------
@@ -409,15 +435,15 @@ Wysiwym.Selection = function(wysiwym) {
  * textarea in terms of Line objects.  A line object contains a lineType and supporting text.
  *--------------------------------------------------------------------------------------------- */
 Wysiwym.Textarea = function(textarea) {
-    this.textelem = textarea.get(0)                 // Javascript textarea element
-    this.textarea = textarea;                       // jQuery textarea object
+    this.textelem = textarea.get(0);                 // Javascript textarea element
+    this.$textarea = textarea;                       // jQuery textarea object
     this.lines = [];                                // Current textarea lines
     this.selection = new Wysiwym.Selection(this);   // Selection properties & manipulation
     this.scroll = this.textelem.scrollTop;          // Current cursor scroll position
 
     // Return a string representation of this object.
     this.toString = function() {
-        var str = 'TEXTAREA: #'+ this.textarea.attr('id') +'\n';
+        var str = 'TEXTAREA: #'+ this.$textarea.attr('id') +'\n';
         str += this.selection.toString();
         str += 'SCROLL: '+ this.scroll +'px\n';
         str += '---\n';
@@ -447,9 +473,11 @@ Wysiwym.Textarea = function(textarea) {
     // StackOverflow #1: http://goo.gl/2vSnF
     // StackOverflow #2: http://goo.gl/KHm0d
     this.getSelectionStartEnd = function() {
+
+        var startpos, endpos;
         if (typeof(this.textelem.selectionStart) == 'number') {
-            var startpos = this.textelem.selectionStart;
-            var endpos = this.textelem.selectionEnd;
+            startpos = this.textelem.selectionStart;
+            endpos = this.textelem.selectionEnd;
         } else {
             this.textelem.focus();
             var text = this.textelem.value.replace(/\r\n/g, '\n');
@@ -460,15 +488,15 @@ Wysiwym.Textarea = function(textarea) {
             var endrange = this.textelem.createTextRange();
             endrange.collapse(false);
             if (textrange.compareEndPoints('StartToEnd', endrange) > -1) {
-                var startpos = textlen;
-                var endpos = textlen;
+                startpos = textlen;
+                endpos = textlen;
             } else {
-                var startpos = -textrange.moveStart('character', -textlen);
+                startpos = -textrange.moveStart('character', -textlen);
                 //startpos += text.slice(0, startpos).split('\n').length - 1;
                 if (textrange.compareEndPoints('EndToEnd', endrange) > -1) {
-                    var endpos = textlen;
+                    endpos = textlen;
                 } else {
-                    var endpos = -textrange.moveEnd('character', -textlen);
+                    endpos = -textrange.moveEnd('character', -textlen);
                     //endpos += text.slice(0, endpos).split('\n').length - 1;
                 }
             }
@@ -482,7 +510,7 @@ Wysiwym.Textarea = function(textarea) {
         var newtext = properties[0];
         var selectionStart = properties[1];
         var selectionEnd = properties[2];
-        this.textarea.val(newtext);
+        this.$textarea.val(newtext);
         if (this.textelem.setSelectionRange) {
             this.textelem.setSelectionRange(selectionStart, selectionEnd);
         } else if (this.textelem.createTextRange) {
@@ -492,9 +520,8 @@ Wysiwym.Textarea = function(textarea) {
             range.moveEnd('character', selectionEnd - selectionStart);
             range.select();
         }
-        console.log('Set scroll: '+ this.scroll)
         this.textelem.scrollTop = this.scroll;
-        this.textarea.focus();
+        this.$textarea.focus();
     };
 
     // Initialize the Wysiwym.Textarea
@@ -505,7 +532,7 @@ Wysiwym.Textarea = function(textarea) {
         var selectionEnd = selectionInfo[1];
         var endline = 0;
         while (endline >= 0) {
-            var endline = text.indexOf('\n');
+            endline = text.indexOf('\n');
             var line = text.substring(0, endline >= 0 ? endline : text.length);
             if ((selectionStart <= line.length) && (selectionEnd >= 0)) {
                 if (selectionStart >= 0) {
@@ -523,7 +550,7 @@ Wysiwym.Textarea = function(textarea) {
             selectionEnd -= endline + 1;
         }
         // Tweak the selection end position if its on the edge
-        if ((this.selection.end.position == 0) && (this.selection.end.line != this.selection.start.line)) {
+        if ((this.selection.end.position === 0) && (this.selection.end.line != this.selection.start.line)) {
             this.selection.end.line -= 1;
             this.selection.end.position = this.lines[this.selection.end.line].length;
         }
@@ -541,10 +568,9 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
     this.name = name;                  // Button Name
     this.icon = options.icon;          // Icon name
     this.shortcutKey = options.key;    // Shortcut (CTRL + <key>)
-    this.tooltip = name
+    this.tooltip = name;
     if (this.shortcutKey) {
-        this.tooltip += ' - ' + 'CTRL + '
-        + this.shortcutKey.toUpperCase();
+        this.tooltip += ' - ' + 'CTRL + ' + this.shortcutKey.toUpperCase();
     }                                  // Tooltip (name | name + shortcut)
     this.callback = callback;          // Callback function for this button
     this.data = data ? data : {};      // Callback arguments
@@ -582,7 +608,7 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
         // Attach jQuery element so we can access it easily
         this.$el = $button;
     };
-}
+};
 
 
 /*----------------------------------------------------------------------------------------------
@@ -595,7 +621,7 @@ Wysiwym.span = function(event) {
     var prefix = event.data.prefix;    // (required) Text wrap prefix
     var suffix = event.data.suffix;    // (required) Text wrap suffix
     var text = event.data.text;        // (required) Default wrap text (if nothing selected)
-    var wysiwym = new Wysiwym.Textarea(markup.textarea);
+    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
     if (wysiwym.selection.isWrapped(prefix, suffix)) {
         wysiwym.selection.unwrap(prefix, suffix);
     } else if (wysiwym.selection.length() === 0) {
@@ -613,7 +639,7 @@ Wysiwym.list = function(event) {
     var prefix = event.data.prefix;    // (required) Line prefix text
     var wrap = event.data.wrap;        // (optional) If true, wrap list with blank lines
     var regex = event.data.regex;      // (optional) Set to regex matching prefix to increment num
-    var wysiwym = new Wysiwym.Textarea(markup.textarea);
+    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
     if (wysiwym.selection.linesHavePrefix(regex?regex:prefix)) {
         wysiwym.selection.removeLinePrefixes(regex?regex:prefix);
         if (wrap) { wysiwym.selection.unwrapBlankLines(); }
@@ -629,7 +655,7 @@ Wysiwym.block = function(event) {
     var markup = event.data.markup;    // (required) Markup Language
     var prefix = event.data.prefix;    // (required) Line prefix text
     var wrap = event.data.wrap;        // (optional) If true, wrap list with blank lines
-    var wysiwym = new Wysiwym.Textarea(markup.textarea);
+    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
     var firstline = wysiwym.selection.getLines()[0];
     if (firstline.startswith(prefix)) {
         wysiwym.selection.removeLinePrefixes(prefix);
@@ -651,7 +677,7 @@ Wysiwym.autoIndent = function(event) {
         return true;
     // ReturnKey pressed, lets indent!
     var markup = event.data.markup;    // Markup Language
-    var wysiwym = new Wysiwym.Textarea(markup.textarea);
+    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
     var linenum = wysiwym.selection.start.line;
     var line = wysiwym.lines[linenum];
     var postcursor = line.substring(wysiwym.selection.start.position, line.length);
@@ -726,86 +752,107 @@ Wysiwym.handleShortcut = function(event) {
  * Reference: http://daringfireball.net/projects/markdown/syntax
  *---------------------------------------------------------------------------- */
 Wysiwym.Markdown = function(textarea) {
-    this.textarea = textarea;    // jQuery textarea object
+    this.$textarea = textarea;    // jQuery textarea object
 
     // Initialize the Markdown Buttons
     this.buttons = [
-    new Wysiwym.Button('Heading 1', {
-        icon: 'h1',
-        hidetext: true,
-        key: 'h'
-    }, Wysiwym.span, {
-        prefix: '# ',
-        suffix: '',
-        text: 'Heading 1'
-    }), new Wysiwym.Button('Heading 2', {
-        icon: 'h2',
-        hidetext: true
-    }, Wysiwym.span, {
-        prefix: '## ',
-        suffix: '',
-        text: 'Heading 2'
-    }), new Wysiwym.Button('Heading 3', {
-        icon: 'h3',
-        hidetext: true
-    }, Wysiwym.span, {
-        prefix: '### ',
-        suffix: '',
-        text: 'Heading 3'
-    }), new Wysiwym.Button('Bold', {
-        icon: 'bold',
-        hidetext: true,
-        key: 'b'
-    }, Wysiwym.span, {
-        prefix: '**',
-        suffix: '**',
-        text: 'strong text'
-    }), new Wysiwym.Button('Italic', {
-        icon: 'italic',
-        hidetext: true,
-        key: 'i'
-    }, Wysiwym.span, {
-        prefix: '_',
-        suffix: '_',
-        text: 'italic text'
-    }), new Wysiwym.Button('Link', {
-        icon: 'link',
-        hidetext: true,
-        key: 'l'
-    }, Wysiwym.span, {
-        prefix: '[',
-        suffix: '](http://example.com)',
-        text: 'link text'
-    }), new Wysiwym.Button('Bullet List', {
-        icon: 'list',
-        hidetext: true,
-        key: 'u'
-    }, Wysiwym.list, {
-        prefix: '* ',
-        wrap: true
-    }), new Wysiwym.Button('Number List', {
-        icon: 'numbered-list',
-        hidetext: true,
-        key: 'o'
-    }, Wysiwym.list, {
-        prefix: '0. ',
-        wrap: true,
-        regex: /^\s*\d+\.\s/
-    }), new Wysiwym.Button('Quote', {
-        icon: 'quote',
-        hidetext: true,
-        key: 'q'
-    }, Wysiwym.list, {
-        prefix: '> ',
-        wrap: true
-    }), new Wysiwym.Button('Code', {
-        icon: 'code',
-        hidetext: true,
-        key: 'k'
-    }, Wysiwym.block, {
-        prefix: '    ',
-        wrap: true
-    })];
+        [
+
+        new Wysiwym.Button('Heading 1', {
+            icon: 'h1',
+            hidetext: true,
+            key: 'h'
+        }, Wysiwym.span, {
+            prefix: '# ',
+            suffix: '',
+            text: 'Heading 1'
+        }), new Wysiwym.Button('Heading 2', {
+            icon: 'h2',
+            hidetext: true
+        }, Wysiwym.span, {
+            prefix: '## ',
+            suffix: '',
+            text: 'Heading 2'
+        }), new Wysiwym.Button('Heading 3', {
+            icon: 'h3',
+            hidetext: true
+        }, Wysiwym.span, {
+            prefix: '### ',
+            suffix: '',
+            text: 'Heading 3'
+        })
+
+        ],
+        [
+
+        new Wysiwym.Button('Bold', {
+            icon: 'bold',
+            hidetext: true,
+            key: 'b'
+        }, Wysiwym.span, {
+            prefix: '**',
+            suffix: '**',
+            text: 'strong text'
+        }), new Wysiwym.Button('Italic', {
+            icon: 'italic',
+            hidetext: true,
+            key: 'i'
+        }, Wysiwym.span, {
+            prefix: '_',
+            suffix: '_',
+            text: 'italic text'
+        }), new Wysiwym.Button('Link', {
+            icon: 'link',
+            hidetext: true,
+            key: 'l'
+        }, Wysiwym.span, {
+            prefix: '[',
+            suffix: '](http://example.com)',
+            text: 'link text'
+        })
+
+        ],
+        [
+
+        new Wysiwym.Button('Bullet List', {
+            icon: 'list',
+            hidetext: true,
+            key: 'u'
+        }, Wysiwym.list, {
+            prefix: '* ',
+            wrap: true
+        }), new Wysiwym.Button('Number List', {
+            icon: 'numbered-list',
+            hidetext: true,
+            key: 'o'
+        }, Wysiwym.list, {
+            prefix: '0. ',
+            wrap: true,
+            regex: /^\s*\d+\.\s/
+        })
+
+        ],
+        [
+
+        new Wysiwym.Button('Quote', {
+            icon: 'quote',
+            hidetext: true,
+            key: 'q'
+        }, Wysiwym.list, {
+            prefix: '> ',
+            wrap: true
+        }), new Wysiwym.Button('Code', {
+            icon: 'code',
+            hidetext: true,
+            key: 'k'
+        }, Wysiwym.block, {
+            prefix: '    ',
+            wrap: true
+        })
+
+        ]
+
+    ];
 
     // Configure auto-indenting
     this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
@@ -837,7 +884,7 @@ Wysiwym.Markdown = function(textarea) {
  * Reference: http://www.mediawiki.org/wiki/Help:Formatting
  *---------------------------------------------------------------------------- */
 // Wysiwym.Mediawiki = function(textarea) {
-//     this.textarea = textarea;    // jQuery textarea object
+//     this.$textarea = textarea;    // jQuery textarea object
 
 //     // Initialize the Markdown Buttons
 //     this.buttons = [
@@ -877,7 +924,7 @@ Wysiwym.Markdown = function(textarea) {
  * Reference: http://labs.spaceshipnofuture.org/icky/help/formatting/
  *---------------------------------------------------------------------------- */
 // Wysiwym.BBCode = function(textarea) {
-//     this.textarea = textarea;    // jQuery textarea object
+//     this.$textarea = textarea;    // jQuery textarea object
 
 //     // Initialize the Markdown Buttons
 //     this.buttons = [
