@@ -32,13 +32,14 @@ function(_, Backbone) {
     },
 
     onClick: function(e) {
-      alert('Derp');
+     this.model.destroy();
     },
 
     onDragstart: function(e) {
+      // Dig up the original event and set the dataTransfer data to contain
+      // a bit more meaningful data
       e.originalEvent.dataTransfer.setData('Text', this.model.get('markdown'));
-      //console.log('markdown copied');
-      //return this.model.markdown;
+      //  this.model.get('_id')].join(':'));
     },
 
     onModelChange: function(model) {

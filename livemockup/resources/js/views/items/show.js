@@ -32,7 +32,6 @@ function(_, Backbone, Item, EditorView) {
     },
 
     onChange: function(model) {
-
       if (model.hasChanged('images')) {
         this.editor.updateImages();
       }
@@ -47,8 +46,9 @@ function(_, Backbone, Item, EditorView) {
       // Check if we need a new editor view created
       if (this.editor === null) {
         //console.log(this.model);
-        this.editor = new EditorView({model: this.model});
+        this.editor = new EditorView({model: this.model, eventDispatcher: this.eventDispatcher});
         this.editor.parent = this;
+        //this.editor.eventDispatcher = this.eventDispatcher;
       } else {
         this.editor.toggle();
       }

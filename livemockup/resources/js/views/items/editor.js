@@ -28,6 +28,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       this.lastContent = null;
       this.model.bind('change', this.onChange, this);
       this.model.fetch();
+      this.eventDispatcher = options.eventDispatcher;
     },
 
     onChange: function() {
@@ -49,11 +50,14 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
       $el.html(this.template.render(this.model.toJSON()));
 
       // Initiate a new bottom bar view
-      this.bottomBar = new BottomBarView({el: $el.find('.picture-container')});
+      this.bottomBar = new BottomBarView({
+        el: $el.find('.picture-container'),
+        eventDispatcher: this.eventDispatcher
+      });
       this.bottomBar.parent = this;
 
       // init wysiwym.js
-      $('.editor-textarea').wysiwym(Wysiwym.Markdown, {
+      $el.find('.editor-textarea').wysiwym(Wysiwym.Markdown, {
         containerButtons:  $el.find('.editor-buttons:first')
       });
 
@@ -78,8 +82,8 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
 
     onTextareaDrop: function(e) {
       var self = this;
-      // Wait for the testarea to update itself with the dropped
-      // text before trying to read the value.
+      // Wait for the textarea to update itself with the dropped
+      // text before trying to update any data
       setTimeout(function() {
         self.update();
       }, 10);
@@ -131,7 +135,7 @@ function($, _, Backbone, BottomBarView, wysiwym, hogan) {
         success: function(data, textStatus, jqXHR) {
           self.setPreviewHTML(data.html);
         },
-        complete: function(jqHXR, textStatus) {
+        complete: function(jqXHR, textStatus) {
           self.activeXhr = null;
         }
       });

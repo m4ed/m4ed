@@ -60,8 +60,8 @@ def GET_api_media(request):
 @view_config(route_name='api_all_media', renderer='json')
 def GET_api_all_media(request):
     return [
-            {'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
-            {'title': 'Test 2', 'src': 'http://placehold.it/150x100'}
+            {'_id': '1', 'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
+            {'_id': '2', 'title': 'Test 2', 'src': 'http://placehold.it/150x100'}
     ]
 
 

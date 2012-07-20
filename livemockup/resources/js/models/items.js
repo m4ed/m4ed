@@ -7,6 +7,8 @@ function(_, Backbone) {
 
     var item = Backbone.Model.extend({
 
+        idAttribute: '_id',
+
         initialize: function() {
             //console.log('Item initialized.');
         }

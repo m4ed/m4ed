@@ -28,12 +28,13 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView, hogan) {
           el: options.$el,
         });
         itemView.parent = parentView;
+        itemView.eventDispatcher = parentView;
         //itemView.on('toggleEditor', self.onToggleEditor, self);
       });
 
       $('.item').each(function(index) {
         // Temporary ID so we can test the dummy api
-        self.collection.add({id: $(this).data('id')}, {$el: $(this)});
+        self.collection.add({_id: $(this).data('id')}, {$el: $(this)});
       });
 
     }

@@ -7,6 +7,8 @@ function(_, Backbone) {
 
     var imageModel = Backbone.Model.extend({
 
+        idAttribute: '_id',
+
         defaults: {
             title: 'Herpderp',
             alt: 'asset',
