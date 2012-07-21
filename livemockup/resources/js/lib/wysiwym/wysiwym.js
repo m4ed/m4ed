@@ -47,7 +47,7 @@ $.fn.wysiwym = function(markupSet, options) {
             $newGroup.appendTo($buttonContainer);
             buttonGroup.forEach(function(button) {
                 button.create();
-                var data = $.extend({markup:this.markup}, button.data);
+                var data = $.extend({markup: markup}, button.data);
                 button.$el.on('click', data, button.callback);
                 $newGroup.append(button.$el);
             });
