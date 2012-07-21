@@ -11,39 +11,54 @@ function(_, Backbone) {
     className: 'picture',
 
     attributes: function() {
+      var m = this.model;
       return { 
-        src: this.model.get('src'),
-        alt: this.model.get('alt'),
-        title: this.model.get('title')
-      }
+        src: m.get('src'),
+        alt: m.get('alt'),
+        title: m.get('title')
+      };
     },
 
     initialize: function(options) {
+
+      // Extend this object with all the custom options passed
+      _.extend(this, options.custom);
+
       this.model.bind('change', this.onModelChange, this);
+      this.markdown = options.imgTemplate.render({
+        alt: 'Alt text goes here',
+        src: this.model.get('src')
+      });
     },
 
     render: function() {
+      // We have nothing to render since the element is just an
+      // img tag with attributes...
       return this;
     },
 
     events: {
-     'click': 'onClick',
-     'dragstart': 'onDragstart'
+      'click': 'onClick',
+      'dragstart': 'onDragstart'
     },
 
     onClick: function(e) {
-     this.model.destroy();
+      e.stopPropagation();
+      // This is stupid and should not be done.
+      // Too lazy to think a better solution so we trigger the insertImage
+      // event through our parent view, which the editor view is listening to.
+      this.parent.trigger('insertImage', this.markdown);
+     //this.model.destroy();
     },
 
     onDragstart: function(e) {
+      e.stopPropagation();
       // Dig up the original event and set the dataTransfer data to contain
-      // a bit more meaningful data
-      e.originalEvent.dataTransfer.setData('Text', 
-        ['![alt_text](', this.model.get('src'), ')'].join(''));
-      //  this.model.get('_id')].join(':'));
+      // a bit more meaningful data that the drop event can read
+      e.originalEvent.dataTransfer.setData('Text', this.markdown);
     },
 
-    onModelChange: function(model) {
+    onModelChange: function(model, options) {
       alert('I have changed!');
     }
   });

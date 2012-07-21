@@ -5,28 +5,37 @@ define([
   'views/editor/editor'
 ],
 function(_, Backbone, EditorView) {
+
+  // key codes for keyup event
   var keyCodes = {
     27: 'esc',
     13: 'enter'
-  }
+  };
 
   var itemView = Backbone.View.extend({
 
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
+
+      // Listen to changes in title and description
       this.model.bind('change:title', this.onTitleChange, this);
-      this.editing = false;
+      this.model.bind('change:description', this.onDescriptionChange, this);
+
       this.editor = null;
+      this.editorInitialized = false;
 
-      var $el = $(options.el);
-      this.$titleSpan = $el.find('.title > .view');
-      this.$titleInput = $el.find('.title > input.edit');
-      this.$title = $el.find('.title');
+      var $el = $(options.el)
+        , $title = $el.find('.title')
+        , $description = $el.find('.desc');
 
-      this.$descriptionSpan = $el.find('.desc > .view');
-      this.$descriptionInput = $el.find('.desc > input.edit')
-      this.$description = $el.find('.desc');
+      this.$title = $title;
+      this.$titleSpan = $title.children('.view');
+      this.$titleInput = $title.children('input.edit');
+
+      this.$description = $description;
+      this.$descriptionSpan = $description.children('.view');
+      this.$descriptionInput = $description.children('.edit');
     },
 
     events: {
@@ -41,42 +50,40 @@ function(_, Backbone, EditorView) {
     onTitleClick: function(e) {
       e.stopPropagation();
       if (!this.model.has('title')) {
-        // Sync the model just in case...
+        // Sync the model if it doesn't seem to have a title
         this.model.fetch();
       }
       this.$title.addClass('editing');
-      this.$titleInput.focus();
-      //console.log('Editing!');
+      this.$titleInput.select();
     },
 
     onDescriptionClick: function(e) {
       e.stopPropagation();
       if (!this.model.has('description')) {
-        // Sync the model just in case...
+        // Sync the model if it doesn't seem to have a description
         this.model.fetch();
       }
       this.$description.addClass('editing');
-      this.$descriptionInput.focus();
+      this.$descriptionInput.select();
     },
 
     onEditClick: function(e) {
+      // This prevents clicks going through the edit input area
       e.stopPropagation();
       return false;
     },
 
     onContentClick: function(e) {
-      var self = this;
-
       e.stopPropagation();
-      //this.clearSelection();
 
       // Check if we need a new editor view created
-      if (this.editor === null) {
+      if (this.editorInitialized === false) {
+        this.editorInitialized = true;
         console.log('Editor on line');
         this.editor = new EditorView({
           model: this.model,
           custom: {
-            eventDispatcher: this.eventDispatcher,
+            dispatcher: this.dispatcher,
             parent: this
           }
         });
@@ -88,67 +95,48 @@ function(_, Backbone, EditorView) {
     },
 
     onEditBlur: function(e) {
+      // Don't save if the input loses focus
       this.closeEdit(false, e.currentTarget);
     },
 
     onEditKeyup: function(e) {
-      // If the key is enter
-      //console.log(e.which);
-      var key = keyCodes[e.which]
-        , saveResult = false;
-      switch(key) {
+      var saveResult = false;
+      switch(keyCodes[e.which]) {
+      case undefined:
+        // The key wasn't found in keyCodes. Abort...
+        return;
       case 'enter':
         saveResult = true;
+        break;
       case 'esc':
-        console.log(saveResult);
-        this.closeEdit(saveResult, $(e.currentTarget).data('attr'));
+        // Just break since saveResult is already false
         break;
       }
+      this.closeEdit(saveResult, e.currentTarget);
     },
 
-    onTitleChange: function(model) {
-      var title = this.model.get('title');
-      this.$titleSpan.html(title);
-      this.$titleInput.val(title);
+    onTitleChange: function(model, newTitle, options) {
+      this.$titleSpan.text(newTitle);
+      this.$titleInput.val(newTitle);
     },
 
-    closeTitleEdit: function(save, target) {
-      $target = $(target);
-      if (save) {
-        var val = $target.val();
-        // console.log(val);
-        console.log($target.data('attr'))
-        // console.log(this.model.attributes);
-        this.model.set($target.data('attr'), val);
-        $target.prev().html(val);
-      } else {
-        $target.val(this.model.get(target));
-      }
-      $target.parent().removeClass('editing');
+    onDescriptionChange: function(model, newDescription, options) {
+      this.$descriptionSpan.text(newDescription);
+      this.$descriptionInput.val(newDescription);
     },
 
     closeEdit: function(save, target) {
-      switch (target) {
-      case 'description':
-        if (save) {
-          var val = this.$descriptionInput.val();
-          this.model.set('description', val);
-          this.$descriptionSpan.text(val);
-        } else {
-          this.$descriptionInput.val(this.model.get('description'));
-        }
-        this.$description.removeClass('editing');
-
-      case 'title':
-        if (save) {
-          var val = this.$titleInput.val();
-          this.model.set('title', val);
-          this.$titleSpan.text(val);
-        } else {
-          this.$titleInput.val(this.model.get('title'));
-        }
-        this.$title.removeClass('editing');
-      } 
+      // target variable will always be an input element
+      var $target = $(target)
+        , attr = $target.data('attr');
+      if (save) {
+        this.model.set(attr, $target.val());
+      } else {
+        // Reset the input value if it wasn't saved
+        $target.val(this.model.get(attr));
+      }
+      // Remove the editing class from the parent element to hide the input
+      $target.parent().removeClass('editing');
     },
 
     clearSelection: function() {

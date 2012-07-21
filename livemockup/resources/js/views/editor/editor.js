@@ -26,29 +26,33 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
       this.template = hogan.compile($('#editor-template').html());
       this.activeXhr = null;
       this.lastContent = null;
-      this.model.bind('change', this.onChange, this);
+      this.editorInitialized = false;
+
+      //this.model.bind('change', this.onChange, this);
+      this.model.bind('change:text', this.onTextChange, this);
 
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      if (this.model.has('markdown')) {
+      // If the model already has text, assume it has been initialized
+      // somewhere else and render it
+      if (this.model.has('text')) {
+        this.editorInitialized = true;
         console.log('Battle cruiser operational');
-        this.render();
+        this.render().toggle();
       } else {
         this.model.fetch();
       }
     },
 
-    onChange: function() {
+    onTextChange: function(model, text, options) {
       //console.log('The model has changed!');
-      if (this.$el.html() === '') {
+      if (!this.editorInitialized) {
+        this.editorInitialized = true;
         console.log('First time change!');
-        this.render();
-      } else {
-        if (this.model.hasChanged('text')) {
-          this.generatePreview();
-        }
-      }
+        this.render().toggle();
+      } 
+      this.generatePreview();
     },
 
     render: function() {
@@ -61,10 +65,12 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
       this.assetList = new AssetListView({
         el: $el.find('.picture-container'),
         custom: {
-          eventDispatcher: this.eventDispatcher,
+          dispatcher: this.dispatcher,
           parent: this
         }
       });
+
+      this.assetList.on('insertImage', this.onInsertImage, this);
 
       // init wysiwym.js
       $el.find('.editor-textarea').wysiwym(Wysiwym.Markdown, {
@@ -74,8 +80,8 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
 
       // Stupid work around 
       $el.insertAfter(this.parent.$el);
-      this.generatePreview();
-      this.toggle();
+      //this.generatePreview();
+      //this.toggle();
 
       return this;
     },
@@ -83,7 +89,7 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
     events: {
       'keyup .editor-textarea': 'onTextareaKeyup',
       'drop .editor-textarea': 'onTextareaDrop',
-      'click .editor-btn.pictures': 'onPictureButtonClick',
+      'click .editor-btn.pictures': 'onPictureButtonClick'
     },
 
     onTextareaKeyup: _.throttle(function(e) {
@@ -102,10 +108,15 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
 
     onPictureButtonClick: function(e) {
       e.stopPropagation();
-      $arrow = this.$('#pointing-arrow');
+      var $arrow = this.$('#pointing-arrow');
       
       $arrow.slideToggle();
       this.$('.picture-container').slideToggle();
+    },
+
+    onInsertImage: function(markdown) {
+      this.$el.find('.editor-textarea').insertAtCaret(markdown);
+      this.update();
     },
 
     update: function() {
@@ -126,7 +137,7 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
     },
 
     toggle: function() {
-      this.$el.toggle('slidetoggle')
+      this.$el.toggle('slidetoggle');
     },
 
     generatePreview: function() {

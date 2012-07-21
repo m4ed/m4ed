@@ -12,13 +12,9 @@ function(_, Backbone, Item) {
 
     model: Item,
 
-    initialize: function() {
-      
-      //console.log('ItemCollection initialized.');
-    }
+    initialize: function(models, options) {}
 
   });
 
   return itemCollection;
-
 });

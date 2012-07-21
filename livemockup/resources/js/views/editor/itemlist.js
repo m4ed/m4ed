@@ -21,6 +21,9 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView) {
 
       this.collection = new ItemCollection();
 
+      // Make a clone of BackBone.Events and use it as an event dispatcher
+      this.dispatcher = _.clone(Backbone.Events);
+
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
@@ -29,7 +32,7 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView) {
           model: item,
           el: options.$el,
           custom: {
-            eventDispatcher: parentView,
+            dispatcher: self.dispatcher,
             parent: parentView
           }
         });

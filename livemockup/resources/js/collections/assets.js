@@ -6,15 +6,15 @@ define([
 ],
 function(_, Backbone, Asset) {
 
-    var imageCollection = Backbone.Collection.extend({
+  var imageCollection = Backbone.Collection.extend({
 
-        url: 'api/media',
+    url: 'api/media',
 
-        model: Asset,
+    model: Asset,
 
-        initialize: function() {}
+    initialize: function(models, options) {}
 
-    });
+  });
 
-    return imageCollection;
+  return imageCollection;
 });
