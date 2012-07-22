@@ -82,6 +82,7 @@ function(_, Backbone, EditorView) {
         console.log('Editor on line');
         this.editor = new EditorView({
           model: this.model,
+          template: this.editorTemplate,
           custom: {
             dispatcher: this.dispatcher,
             parent: this

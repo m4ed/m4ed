@@ -5,11 +5,10 @@ define([
   'backbone',
   'views/editor/assetlist',
   'wysiwym',
-  'hogan',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, AssetListView, wysiwym, hogan) {
+function($, _, Backbone, AssetListView, wysiwym) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -23,7 +22,7 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
     },
 
     initialize: function(options) {
-      this.template = hogan.compile($('#editor-template').html());
+      this.template = options.template;
       this.activeXhr = null;
       this.lastContent = null;
       this.editorInitialized = false;
@@ -73,7 +72,7 @@ function($, _, Backbone, AssetListView, wysiwym, hogan) {
       this.assetList.on('insertImage', this.onInsertImage, this);
 
       // init wysiwym.js
-      $el.find('.editor-textarea').wysiwym(Wysiwym.Markdown, {
+      $el.find('.editor-textarea').wysiwym({
         $buttonContainer:  $el.find('.editor-buttons:first'),
         helpEnabled: true
       });

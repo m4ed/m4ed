@@ -3,11 +3,12 @@ define([
   'jquery',
   'underscore',
   'backbone',
+  'hogan',
   'collections/items',
   'views/editor/item',
   'views/editor/editor'
 ],
-function($, _, Backbone, ItemCollection, ItemView, EditorView) {
+function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
 
   var itemListView = Backbone.View.extend({
 
@@ -19,13 +20,17 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView) {
       var self = this
         , parentView = this;
 
+      // Extend this object with all the custom options passed
+      _.extend(this, options.custom);
+
       this.collection = new ItemCollection();
 
       // Make a clone of BackBone.Events and use it as an event dispatcher
+      // in all the child views
       this.dispatcher = _.clone(Backbone.Events);
 
-      // Extend this object with all the custom options passed
-      _.extend(this, options.custom);
+      // Prepare the editor template for individual ItemViews
+      this.editorTemplate = hogan.compile($('#editor-template').html());
 
       this.collection.on('add', function(item, collection, options) {
         var itemView = new ItemView({
@@ -33,7 +38,8 @@ function($, _, Backbone, ItemCollection, ItemView, EditorView) {
           el: options.$el,
           custom: {
             dispatcher: self.dispatcher,
-            parent: parentView
+            parent: parentView,
+            editorTemplate: self.editorTemplate
           }
         });
         

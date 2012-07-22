@@ -1,3 +1,8 @@
+define([
+    'jquery'
+],
+function($) {
+
 /*----------------------------------------------------------------------------------------------
  * m4ed Wysiwym editor - optimized for Markdown
  * 
@@ -8,9 +13,10 @@
  * Version: 2.0 (2011-01-26)
  *--------------------------------------------------------------------------------------------- */
 var BLANKLINE = '';
-var Wysiwym = {};
+//var Wysiwym = {};
 
-$.fn.wysiwym = function(markupSet, options) {
+
+$.fn.wysiwym = function(options) {
     this.EDITORCLASS = 'wysiwym-editor';           // Class to use for the wysiwym editor
     this.BUTTONCLASS = 'wysiwym-buttons';          // Class to use for the wysiwym button container
     this.HELPCLASS = 'wysiwym-help';               // Class to use for the wysiwym help
@@ -18,7 +24,8 @@ $.fn.wysiwym = function(markupSet, options) {
     this.textelem = this;                          // Javascript textarea element
     this.$textarea = $(this);                      // jQuery textarea object
     this.$editor = undefined;
-    this.markup = new markupSet(this);             // Wysiwym Markup set to use (markdown as default)
+    this.markup = new Markdown();                  // Wysiwym Markup set to use (markdown as default)
+    this.textarea = new Textarea(this.textelem);   // The actual textarea element where we make changes
     this.defaults = {                              // Default option values
         $buttonContainer: undefined,               // jQuery elem to place buttons (makes one by default)
         $help: undefined,                          // jQuery elem to place help (makes one by default)
@@ -33,7 +40,8 @@ $.fn.wysiwym = function(markupSet, options) {
 
     // Add the button container and all buttons
     this.initializeButtons = function() {
-        var markup = this.markup;
+        var markup = this.markup
+          , textarea = this.textarea;
         if (this.options.$buttonContainer === undefined)
             this.options.$buttonContainer = $("<div></div>").insertBefore(this.$textarea);
 
@@ -47,7 +55,7 @@ $.fn.wysiwym = function(markupSet, options) {
             $newGroup.appendTo($buttonContainer);
             buttonGroup.forEach(function(button) {
                 button.create();
-                var data = $.extend({markup: markup}, button.data);
+                var data = $.extend({textarea: textarea}, button.data);
                 button.$el.on('click', data, button.callback);
                 $newGroup.append(button.$el);
             });
@@ -57,15 +65,15 @@ $.fn.wysiwym = function(markupSet, options) {
     // Initialize the AutoIndent trigger
     this.initializeAutoIndent = function() {
         if (this.markup.autoindents) {
-            var data = {markup:this.markup};
-            this.$textarea.bind('keydown', data, Wysiwym.autoIndent);
+            var data = {textarea: this.textarea};
+            this.$textarea.bind('keydown', data, callbacks.autoIndent);
         }
     };
 
     // Initialize the shortcut handler
     this.initializeShortcutHandler = function() {
-        var data = {markup:this.markup};
-        this.$textarea.bind('keydown', data, Wysiwym.handleShortcut);
+        var data = {textarea: this.textarea};
+        this.$textarea.bind('keydown', data, callbacks.handleShortcut);
     };
 
     // Initialize the help syntax popover
@@ -139,294 +147,299 @@ $.fn.wysiwym = function(markupSet, options) {
  * Wysiwym Selection
  * Manipulate the textarea selection
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.Selection = function(wysiwym) {
-    this.lines = wysiwym.lines;                 // Reference to wysiwym.lines
-    this.start = { line:0, position:0 },        // Current cursor start positon
-    this.end = { line:0, position:0 },          // Current cursor end position
+function Selection(textarea) {
+    this.textarea = textarea;
+    this.lines = textarea.lines;                 // Reference to textarea.lines
+    this.start = { line:0, position:0 };        // Current cursor start positon
+    this.end = { line:0, position:0 };          // Current cursor end position
+}
 
-    // Return a string representation of this object.
-    this.toString = function() {
-        var str = 'SELECTION: '+ this.length() +' chars\n';
-        str += 'START LINE: '+ this.start.line +'; POSITION: '+ this.start.position +'\n';
-        str += 'END LINE: '+ this.end.line +'; POSITION: '+ this.end.position +'\n';
-        return str;
-    };
+var sel = Selection.prototype;
 
-    // Add a line prefix, reguardless if it's already set or not.
-    this.addLinePrefixes = function(prefix) {
-        for (var i=this.start.line; i <= this.end.line; i++) {
-            this.lines[i] = prefix + this.lines[i];
-        }
-        this.start.position += prefix.length;
+sel.reset = function() {
+    this.lines = this.textarea.lines;
+};
+
+// Return a string representation of this object.
+sel.toString = function() {
+    var str = 'SELECTION: '+ this.length() +' chars\n';
+    str += 'START LINE: '+ this.start.line +'; POSITION: '+ this.start.position +'\n';
+    str += 'END LINE: '+ this.end.line +'; POSITION: '+ this.end.position +'\n';
+    return str;
+};
+
+// Add a line prefix, reguardless if it's already set or not.
+sel.addLinePrefixes = function(prefix) {
+    for (var i=this.start.line; i <= this.end.line; i++) {
+        this.lines[i] = prefix + this.lines[i];
+    }
+    this.start.position += prefix.length;
+    this.end.position += prefix.length;
+};
+
+// Add the specified prefix to the selection
+sel.addPrefix = function(prefix) {
+    var numlines = this.lines.length;
+    var line = this.lines[this.start.line];
+    var newline = line.substring(0, this.start.position) +
+        prefix + line.substring(this.start.position, line.length);
+    this.lines[this.start.line] = newline;
+    this.start.position += prefix.length;
+    if (this.start.line == this.end.line)
         this.end.position += prefix.length;
-    };
-
-    // Add the specified prefix to the selection
-    this.addPrefix = function(prefix) {
-        var numlines = this.lines.length;
-        var line = this.lines[this.start.line];
-        var newline = line.substring(0, this.start.position) +
-            prefix + line.substring(this.start.position, line.length);
-        this.lines[this.start.line] = newline;
-        this.start.position += prefix.length;
-        if (this.start.line == this.end.line)
-            this.end.position += prefix.length;
-        // Check we need to update the scroll height;  This is very slightly
-        // off because height != scrollHeight. A fix would be nice.
-        if (prefix.indexOf('\n') != -1) {
-            var scrollHeight = wysiwym.textelem.scrollHeight;
-            var lineheight = parseInt(scrollHeight / numlines, 10);
-            wysiwym.scroll += lineheight;
-        }
-
-    };
-
-    // Add the specified suffix to the selection
-    this.addSuffix = function(suffix) {
-        var line = this.lines[this.end.line];
-        var newline = line.substring(0, this.end.position) +
-            suffix + line.substring(this.end.position, line.length);
-        this.lines[this.end.line] = newline;
-    };
-
-    // Append the specified text to the selection
-    this.append = function(text) {
-        var line = this.lines[this.end.line];
-        var newline = line.substring(0, this.end.position) +
-            text + line.substring(this.end.position, line.length);
-        this.lines[this.end.line] = newline;
-        this.end.position += text.length;
-    };
-
-    // Return an array of lines in the selection
-    this.getLines = function() {
-        var selectedlines = [];
-        for (var i=this.start.line; i <= this.end.line; i++)
-            selectedlines[selectedlines.length] = this.lines[i];
-        return selectedlines;
-    };
-
-    // Return true if selected text contains has the specified prefix
-    this.hasPrefix = function(prefix) {
-        var line = this.lines[this.start.line];
-        var start = this.start.position - prefix.length;
-        if ((start < 0) || (line.substring(start, this.start.position) != prefix))
-            return false;
-        return true;
-    };
-
-    // Return true if selected text contains has the specified suffix
-    this.hasSuffix = function(suffix) {
-        var line = this.lines[this.end.line];
-        var end = this.end.position + suffix.length;
-        if ((end > line.length) || (line.substring(this.end.position, end) != suffix))
-            return false;
-        return true;
-    };
-
-    // Insert the line before the selection to the specified text. If force is
-    // set to false and the line is already set, it will be left alone.
-    this.insertPreviousLine = function(newline, force) {
-        force = force !== undefined ? force : true;
-        var prevnum = this.start.line - 1;
-        if ((force) || ((prevnum >= 0) && (this.lines[prevnum] != newline))) {
-            this.lines.splice(this.start.line, 0, newline);
-            this.start.line += 1;
-            this.end.line += 1;
-        }
-    };
-
-    // Insert the line after the selection to the specified text. If force is
-    // set to false and the line is already set, it will be left alone.
-    this.insertNextLine = function(newline, force) {
-        force = force !== undefined ? force : true;
-        var nextnum = this.end.line + 1;
-        if ((force) || ((nextnum < this.lines.length) && (this.lines[nextnum] != newline)))
-            this.lines.splice(nextnum, 0, newline);
-    };
-
-    // Return true if selected text is wrapped with prefix & suffix
-    this.isWrapped = function(prefix, suffix) {
-        return ((this.hasPrefix(prefix)) && (this.hasSuffix(suffix)));
-    };
-
-    // Return the selection length
-    this.length = function() {
-        return this.val().length;
-    };
-
-    // Return true if all lines have the specified prefix. Optionally
-    // specify prefix as a regular expression.
-    this.linesHavePrefix = function(prefix) {
-        for (var i=this.start.line; i <= this.end.line; i++) {
-            var line = this.lines[i];
-            if ((typeof(prefix) == 'string') && (!line.startswith(prefix))) {
-                return false;
-            } else if ((typeof(prefix) != 'string') && (!line.match(prefix))) {
-                return false;
-            }
-        }
-        return true;
-    };
-
-    // Prepend the specified text to the selection
-    this.prepend = function(text) {
-        var line = this.lines[this.start.line];
-        var newline = line.substring(0, this.start.position) +
-            text + line.substring(this.start.position, line.length);
-        this.lines[this.start.line] = newline;
-        // Update Class Variables
-        if (this.start.line == this.end.line)
-            this.end.position += text.length;
-    };
-
-    // Remove the prefix from each line in the selection. If the line
-    // does not contain the specified prefix, it will be left alone.
-    // Optionally specify prefix as a regular expression.
-    this.removeLinePrefixes = function(prefix) {
-        for (var i=this.start.line; i <= this.end.line; i++) {
-            var line = this.lines[i];
-            var match = prefix;
-            // Check prefix is a regex
-            if (typeof(prefix) != 'string')
-                match = line.match(prefix)[0];
-            // Do the replace
-            if (line.startswith(match)) {
-                this.lines[i] = line.substring(match.length, line.length);
-                if (i == this.start.line)
-                    this.start.position -= match.length;
-                if (i == this.end.line)
-                    this.end.position -= match.length;
-            }
-
-        }
-    };
-
-    // Remove the previous line. If regex is specified, it will
-    // only be removed if there is a match.
-    this.removeNextLine = function(regex) {
-        var nextnum = this.end.line + 1;
-        var removeit = false;
-        if ((nextnum < this.lines.length) && (regex) && (this.lines[nextnum].match(regex)))
-            removeit = true;
-        if ((nextnum < this.lines.length) && (!regex))
-            removeit = true;
-        if (removeit)
-            this.lines.splice(nextnum, 1);
-    };
-
-    // Remove the specified prefix from the selection
-    this.removePrefix = function(prefix) {
-        if (this.hasPrefix(prefix)) {
-            var line = this.lines[this.start.line];
-            var start = this.start.position - prefix.length;
-            var newline = line.substring(0, start) +
-                line.substring(this.start.position, line.length);
-            this.lines[this.start.line] = newline;
-            this.start.position -= prefix.length;
-            if (this.start.line == this.end.line)
-                this.end.position -= prefix.length;
-        }
-    };
-
-    // Remove the previous line. If regex is specified, it will
-    // only be removed if there is a match.
-    this.removePreviousLine = function(regex) {
-        var prevnum = this.start.line - 1;
-        var removeit = false;
-        if ((prevnum >= 0) && (regex) && (this.lines[prevnum].match(regex)))
-            removeit = true;
-        if ((prevnum >= 0) && (!regex))
-            removeit = true;
-        if (removeit) {
-            this.lines.splice(prevnum, 1);
-            this.start.line -= 1;
-            this.end.line -= 1;
-        }
-    };
-
-    // Remove the specified suffix from the selection
-    this.removeSuffix = function(suffix) {
-        if (this.hasSuffix(suffix)) {
-            var line = this.lines[this.end.line];
-            var end = this.end.position + suffix.length;
-            var newline = line.substring(0, this.end.position) +
-                line.substring(end, line.length);
-            this.lines[this.end.line] = newline;
-        }
-    };
-
-    // Set the prefix of each selected line. If the prefix is already and
-    // set, the line willl be left alone.
-    this.setLinePrefixes = function(prefix, increment) {
-        increment = increment ? increment : false;
-        for (var i=this.start.line; i <= this.end.line; i++) {
-            if (!this.lines[i].startswith(prefix)) {
-                // Check if prefix is incrementing
-                if (increment) {
-                    var num = Integer.parseInt(prefix.match(/\d+/)[0]);
-                    prefix = prefix.replace(num, num+1);
-                }
-                // Add the prefix to the line
-                var numspaces = this.lines[i].match(/^\s*/)[0].length;
-                this.lines[i] = this.lines[i].lstrip();
-                this.lines[i] = prefix + this.lines[i];
-                if (i == this.start.line)
-                    this.start.position += prefix.length - numspaces;
-                if (i == this.end.line)
-                    this.end.position += prefix.length - numspaces;
-            }
-        }
-    };
-
-    // Unwrap the selection prefix & suffix
-    this.unwrap = function(prefix, suffix) {
-        this.removePrefix(prefix);
-        this.removeSuffix(suffix);
-    };
-
-    // Remove blank lines from before and after the selection.  If the
-    // previous or next line is not blank, it will be left alone.
-    this.unwrapBlankLines = function() {
-        wysiwym.selection.removePreviousLine(/^\s*$/);
-        wysiwym.selection.removeNextLine(/^\s*$/);
-    };
-
-    // Return the selection value
-    this.val = function() {
-        var value = '';
-        for (var i=0; i < this.lines.length; i++) {
-            var line = this.lines[i];
-            if ((i == this.start.line) && (i == this.end.line)) {
-                return line.substring(this.start.position, this.end.position);
-            } else if (i == this.start.line) {
-                value += line.substring(this.start.position, line.length) +'\n';
-            } else if ((i > this.start.line) && (i < this.end.line)) {
-                value += line +'\n';
-            } else if (i == this.end.line) {
-                value += line.substring(0, this.end.position);
-            }
-        }
-        return value;
-    };
-
-    // Wrap the selection with the specified prefix & suffix
-    this.wrap = function(prefix, suffix) {
-        this.addPrefix(prefix);
-        this.addSuffix(suffix);
-    };
-
-    // Wrap the selected lines with blank lines.  If there is already
-    // a blank line in place, another one will not be added.
-    this.wrapBlankLines = function() {
-        if (wysiwym.selection.start.line > 0)
-            wysiwym.selection.insertPreviousLine(BLANKLINE, false);
-        if (wysiwym.selection.end.line < wysiwym.lines.length - 1)
-            wysiwym.selection.insertNextLine(BLANKLINE, false);
-    };
+    // Check we need to update the scroll height;  This is very slightly
+    // off because height != scrollHeight. A fix would be nice.
+    if (prefix.indexOf('\n') != -1) {
+        var scrollHeight = this.textarea.textelem.scrollHeight;
+        var lineheight = parseInt(scrollHeight / numlines, 10);
+        this.textarea.scroll += lineheight;
+    }
 
 };
 
+// Add the specified suffix to the selection
+sel.addSuffix = function(suffix) {
+    var line = this.lines[this.end.line];
+    var newline = line.substring(0, this.end.position) +
+        suffix + line.substring(this.end.position, line.length);
+    this.lines[this.end.line] = newline;
+};
+
+// Append the specified text to the selection
+sel.append = function(text) {
+    var line = this.lines[this.end.line];
+    var newline = line.substring(0, this.end.position) +
+        text + line.substring(this.end.position, line.length);
+    this.lines[this.end.line] = newline;
+    this.end.position += text.length;
+};
+
+// Return an array of lines in the selection
+sel.getLines = function() {
+    var selectedlines = [];
+    for (var i=this.start.line; i <= this.end.line; i++)
+        selectedlines[selectedlines.length] = this.lines[i];
+    return selectedlines;
+};
+
+// Return true if selected text contains has the specified prefix
+sel.hasPrefix = function(prefix) {
+    var line = this.lines[this.start.line];
+    var start = this.start.position - prefix.length;
+    if ((start < 0) || (line.substring(start, this.start.position) != prefix))
+        return false;
+    return true;
+};
+
+// Return true if selected text contains has the specified suffix
+sel.hasSuffix = function(suffix) {
+    var line = this.lines[this.end.line];
+    var end = this.end.position + suffix.length;
+    if ((end > line.length) || (line.substring(this.end.position, end) != suffix))
+        return false;
+    return true;
+};
+
+// Insert the line before the selection to the specified text. If force is
+// set to false and the line is already set, it will be left alone.
+sel.insertPreviousLine = function(newline, force) {
+    force = force !== undefined ? force : true;
+    var prevnum = this.start.line - 1;
+    if ((force) || ((prevnum >= 0) && (this.lines[prevnum] != newline))) {
+        this.lines.splice(this.start.line, 0, newline);
+        this.start.line += 1;
+        this.end.line += 1;
+    }
+};
+
+// Insert the line after the selection to the specified text. If force is
+// set to false and the line is already set, it will be left alone.
+sel.insertNextLine = function(newline, force) {
+    force = force !== undefined ? force : true;
+    var nextnum = this.end.line + 1;
+    if ((force) || ((nextnum < this.lines.length) && (this.lines[nextnum] != newline)))
+        this.lines.splice(nextnum, 0, newline);
+};
+
+// Return true if selected text is wrapped with prefix & suffix
+sel.isWrapped = function(prefix, suffix) {
+    return ((this.hasPrefix(prefix)) && (this.hasSuffix(suffix)));
+};
+
+// Return the selection length
+sel.length = function() {
+    return this.val().length;
+};
+
+// Return true if all lines have the specified prefix. Optionally
+// specify prefix as a regular expression.
+sel.linesHavePrefix = function(prefix) {
+    for (var i=this.start.line; i <= this.end.line; i++) {
+        var line = this.lines[i];
+        if ((typeof(prefix) == 'string') && (!line.startswith(prefix))) {
+            return false;
+        } else if ((typeof(prefix) != 'string') && (!line.match(prefix))) {
+            return false;
+        }
+    }
+    return true;
+};
+
+// Prepend the specified text to the selection
+sel.prepend = function(text) {
+    var line = this.lines[this.start.line];
+    var newline = line.substring(0, this.start.position) +
+        text + line.substring(this.start.position, line.length);
+    this.lines[this.start.line] = newline;
+    // Update Class Variables
+    if (this.start.line == this.end.line)
+        this.end.position += text.length;
+};
+
+// Remove the prefix from each line in the selection. If the line
+// does not contain the specified prefix, it will be left alone.
+// Optionally specify prefix as a regular expression.
+sel.removeLinePrefixes = function(prefix) {
+    for (var i=this.start.line; i <= this.end.line; i++) {
+        var line = this.lines[i];
+        var match = prefix;
+        // Check prefix is a regex
+        if (typeof(prefix) != 'string')
+            match = line.match(prefix)[0];
+        // Do the replace
+        if (line.startswith(match)) {
+            this.lines[i] = line.substring(match.length, line.length);
+            if (i == this.start.line)
+                this.start.position -= match.length;
+            if (i == this.end.line)
+                this.end.position -= match.length;
+        }
+
+    }
+};
+
+// Remove the previous line. If regex is specified, it will
+// only be removed if there is a match.
+sel.removeNextLine = function(regex) {
+    var nextnum = this.end.line + 1;
+    var removeit = false;
+    if ((nextnum < this.lines.length) && (regex) && (this.lines[nextnum].match(regex)))
+        removeit = true;
+    if ((nextnum < this.lines.length) && (!regex))
+        removeit = true;
+    if (removeit)
+        this.lines.splice(nextnum, 1);
+};
+
+// Remove the specified prefix from the selection
+sel.removePrefix = function(prefix) {
+    if (this.hasPrefix(prefix)) {
+        var line = this.lines[this.start.line];
+        var start = this.start.position - prefix.length;
+        var newline = line.substring(0, start) +
+            line.substring(this.start.position, line.length);
+        this.lines[this.start.line] = newline;
+        this.start.position -= prefix.length;
+        if (this.start.line == this.end.line)
+            this.end.position -= prefix.length;
+    }
+};
+
+// Remove the previous line. If regex is specified, it will
+// only be removed if there is a match.
+sel.removePreviousLine = function(regex) {
+    var prevnum = this.start.line - 1;
+    var removeit = false;
+    if ((prevnum >= 0) && (regex) && (this.lines[prevnum].match(regex)))
+        removeit = true;
+    if ((prevnum >= 0) && (!regex))
+        removeit = true;
+    if (removeit) {
+        this.lines.splice(prevnum, 1);
+        this.start.line -= 1;
+        this.end.line -= 1;
+    }
+};
+
+// Remove the specified suffix from the selection
+sel.removeSuffix = function(suffix) {
+    if (this.hasSuffix(suffix)) {
+        var line = this.lines[this.end.line];
+        var end = this.end.position + suffix.length;
+        var newline = line.substring(0, this.end.position) +
+            line.substring(end, line.length);
+        this.lines[this.end.line] = newline;
+    }
+};
+
+// Set the prefix of each selected line. If the prefix is already and
+// set, the line willl be left alone.
+sel.setLinePrefixes = function(prefix, increment) {
+    increment = increment ? increment : false;
+    for (var i=this.start.line; i <= this.end.line; i++) {
+        if (!this.lines[i].startswith(prefix)) {
+            // Check if prefix is incrementing
+            if (increment) {
+                var num = Integer.parseInt(prefix.match(/\d+/)[0]);
+                prefix = prefix.replace(num, num+1);
+            }
+            // Add the prefix to the line
+            var numspaces = this.lines[i].match(/^\s*/)[0].length;
+            this.lines[i] = this.lines[i].lstrip();
+            this.lines[i] = prefix + this.lines[i];
+            if (i == this.start.line)
+                this.start.position += prefix.length - numspaces;
+            if (i == this.end.line)
+                this.end.position += prefix.length - numspaces;
+        }
+    }
+};
+
+// Unwrap the selection prefix & suffix
+sel.unwrap = function(prefix, suffix) {
+    this.removePrefix(prefix);
+    this.removeSuffix(suffix);
+};
+
+// Remove blank lines from before and after the selection.  If the
+// previous or next line is not blank, it will be left alone.
+sel.unwrapBlankLines = function() {
+    this.textarea.selection.removePreviousLine(/^\s*$/);
+    this.textarea.selection.removeNextLine(/^\s*$/);
+};
+
+// Return the selection value
+sel.val = function() {
+    var value = '';
+    for (var i=0; i < this.lines.length; i++) {
+        var line = this.lines[i];
+        if ((i == this.start.line) && (i == this.end.line)) {
+            return line.substring(this.start.position, this.end.position);
+        } else if (i == this.start.line) {
+            value += line.substring(this.start.position, line.length) +'\n';
+        } else if ((i > this.start.line) && (i < this.end.line)) {
+            value += line +'\n';
+        } else if (i == this.end.line) {
+            value += line.substring(0, this.end.position);
+        }
+    }
+    return value;
+};
+
+// Wrap the selection with the specified prefix & suffix
+sel.wrap = function(prefix, suffix) {
+    this.addPrefix(prefix);
+    this.addSuffix(suffix);
+};
+
+// Wrap the selected lines with blank lines.  If there is already
+// a blank line in place, another one will not be added.
+sel.wrapBlankLines = function() {
+    if (this.textarea.selection.start.line > 0)
+        this.textarea.selection.insertPreviousLine(BLANKLINE, false);
+    if (this.textarea.selection.end.line < this.textarea.lines.length - 1)
+        this.textarea.selection.insertNextLine(BLANKLINE, false);
+};
 
 /*----------------------------------------------------------------------------------------------
  * Wysiwym Textarea
@@ -434,136 +447,157 @@ Wysiwym.Selection = function(wysiwym) {
  * the the current text and selection positions. The general idea is to keep track of the
  * textarea in terms of Line objects.  A line object contains a lineType and supporting text.
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.Textarea = function(textarea) {
-    this.textelem = textarea.get(0);                 // Javascript textarea element
-    this.$textarea = textarea;                       // jQuery textarea object
+function Textarea(el) {
+    this.textelem = el.get(0);                      // Javascript textarea element
+    this.$textarea = $(el);                         // jQuery textarea object
     this.lines = [];                                // Current textarea lines
-    this.selection = new Wysiwym.Selection(this);   // Selection properties & manipulation
+    this.selection = new Selection(this);           // Selection properties & manipulation
     this.scroll = this.textelem.scrollTop;          // Current cursor scroll position
+}
 
-    // Return a string representation of this object.
-    this.toString = function() {
-        var str = 'TEXTAREA: #'+ this.$textarea.attr('id') +'\n';
-        str += this.selection.toString();
-        str += 'SCROLL: '+ this.scroll +'px\n';
-        str += '---\n';
-        for (var i=0; i<this.lines.length; i++)
-            str += 'LINE '+ i +': '+ this.lines[i] +'\n';
-        return str;
-    };
+var ta = Textarea.prototype;
 
-    // Return the current text value of this textarea object
-    this.getProperties = function() {
-        var newtext = '';           // New textarea value
-        var selectionStart = 0;     // Absolute cursor start position
-        var selectionEnd = 0;       // Absolute cursor end position
-        for (var i=0; i < this.lines.length; i++) {
-            if (i == this.selection.start.line)
-                selectionStart = newtext.length + this.selection.start.position;
-            if (i == this.selection.end.line)
-                selectionEnd = newtext.length + this.selection.end.position;
-            newtext += this.lines[i];
-            if (i != this.lines.length - 1)
-                newtext += '\n';
+ta.init = function() {
+    // Initialize the Textarea
+    this.lines = [];
+    this.selection.reset();
+    var text = this.textelem.value.replace(/\r\n/g, '\n');
+    var selectionInfo = this.getSelectionStartEnd(this.textelem);
+    var selectionStart = selectionInfo[0];
+    var selectionEnd = selectionInfo[1];
+    console.log(selectionStart);
+    console.log(selectionEnd);
+    var endline = 0;
+    while (endline >= 0) {
+        endline = text.indexOf('\n');
+        var line = text.substring(0, endline >= 0 ? endline : text.length);
+        if ((selectionStart <= line.length) && (selectionEnd >= 0)) {
+            if (selectionStart >= 0) {
+                this.selection.start.line = this.lines.length;
+                this.selection.start.position = selectionStart;
+            }
+            if (selectionEnd <= line.length) {
+                this.selection.end.line = this.lines.length;
+                this.selection.end.position = selectionEnd;
+            }
         }
-        return [newtext, selectionStart, selectionEnd];
-    };
+        this.lines[this.lines.length] = line;
+        text = endline >= 0 ? text.substring(endline + 1, text.length) : '';
+        selectionStart -= endline + 1;
+        selectionEnd -= endline + 1;
+    }
+    // Tweak the selection end position if its on the edge
+    if ((this.selection.end.position === 0) && (this.selection.end.line != this.selection.start.line)) {
+        this.selection.end.line -= 1;
+        this.selection.end.position = this.lines[this.selection.end.line].length;
+    }
 
-    // Return the absolute start and end selection postions
-    // StackOverflow #1: http://goo.gl/2vSnF
-    // StackOverflow #2: http://goo.gl/KHm0d
-    this.getSelectionStartEnd = function() {
+    //console.log(this.selection.toString());
+    //console.log('We have reached the end');
+    return this;
+};
 
-        var startpos, endpos;
-        if (typeof(this.textelem.selectionStart) == 'number') {
-            startpos = this.textelem.selectionStart;
-            endpos = this.textelem.selectionEnd;
+// Return a string representation of this object.
+ta.toString = function() {
+    var str = 'TEXTAREA: #'+ this.$textarea.attr('id') +'\n';
+    str += this.selection.toString();
+    str += 'SCROLL: '+ this.scroll +'px\n';
+    str += '---\n';
+    for (var i=0; i<this.lines.length; i++)
+        str += 'LINE '+ i +': '+ this.lines[i] +'\n';
+    return str;
+};
+
+// Return the current text value of this textarea object
+ta.getProperties = function() {
+    var newtext = []            // New textarea value
+      , textLength = 0
+      , selectionStart = 0      // Absolute cursor start position
+      , selectionEnd = 0;       // Absolute cursor end position
+    //console.log('There are ' + this.lines.length + ' lines');
+    for (var i = 0, j = this.lines.length; i < j; i++) {
+        if (i == this.selection.start.line)
+            selectionStart = textLength + this.selection.start.position;
+        if (i == this.selection.end.line)
+            selectionEnd = textLength + this.selection.end.position;
+        newtext.push(this.lines[i]);
+        textLength += this.lines[i].length;
+        if (i != this.lines.length - 1) {
+            newtext.push('\n');
+            textLength += 1;
+        }
+    }
+    return [newtext.join(''), selectionStart, selectionEnd];
+};
+
+// Return the absolute start and end selection postions
+// StackOverflow #1: http://goo.gl/2vSnF
+// StackOverflow #2: http://goo.gl/KHm0d
+ta.getSelectionStartEnd = function() {
+
+    var startpos, endpos;
+    if (typeof(this.textelem.selectionStart) == 'number') {
+        startpos = this.textelem.selectionStart;
+        endpos = this.textelem.selectionEnd;
+    } else {
+        this.textelem.focus();
+        var text = this.textelem.value.replace(/\r\n/g, '\n');
+        var textlen = text.length;
+        var range = document.selection.createRange();
+        var textrange = this.textelem.createTextRange();
+        textrange.moveToBookmark(range.getBookmark());
+        var endrange = this.textelem.createTextRange();
+        endrange.collapse(false);
+        if (textrange.compareEndPoints('StartToEnd', endrange) > -1) {
+            startpos = textlen;
+            endpos = textlen;
         } else {
-            this.textelem.focus();
-            var text = this.textelem.value.replace(/\r\n/g, '\n');
-            var textlen = text.length;
-            var range = document.selection.createRange();
-            var textrange = this.textelem.createTextRange();
-            textrange.moveToBookmark(range.getBookmark());
-            var endrange = this.textelem.createTextRange();
-            endrange.collapse(false);
-            if (textrange.compareEndPoints('StartToEnd', endrange) > -1) {
-                startpos = textlen;
+            startpos = -textrange.moveStart('character', -textlen);
+            //startpos += text.slice(0, startpos).split('\n').length - 1;
+            if (textrange.compareEndPoints('EndToEnd', endrange) > -1) {
                 endpos = textlen;
             } else {
-                startpos = -textrange.moveStart('character', -textlen);
-                //startpos += text.slice(0, startpos).split('\n').length - 1;
-                if (textrange.compareEndPoints('EndToEnd', endrange) > -1) {
-                    endpos = textlen;
-                } else {
-                    endpos = -textrange.moveEnd('character', -textlen);
-                    //endpos += text.slice(0, endpos).split('\n').length - 1;
-                }
+                endpos = -textrange.moveEnd('character', -textlen);
+                //endpos += text.slice(0, endpos).split('\n').length - 1;
             }
         }
-        return [startpos, endpos];
-    };
-
-    // Update the textarea with the current lines and cursor settings
-    this.update = function() {
-        var properties = this.getProperties();
-        var newtext = properties[0];
-        var selectionStart = properties[1];
-        var selectionEnd = properties[2];
-        this.$textarea.val(newtext);
-        if (this.textelem.setSelectionRange) {
-            this.textelem.setSelectionRange(selectionStart, selectionEnd);
-        } else if (this.textelem.createTextRange) {
-            var range = this.textelem.createTextRange();
-            range.collapse(true);
-            range.moveStart('character', selectionStart);
-            range.moveEnd('character', selectionEnd - selectionStart);
-            range.select();
-        }
-        this.textelem.scrollTop = this.scroll;
-        this.$textarea.focus();
-    };
-
-    // Initialize the Wysiwym.Textarea
-    this.init = function() {
-        var text = textarea.val().replace(/\r\n/g, '\n');
-        var selectionInfo = this.getSelectionStartEnd(this.textelem);
-        var selectionStart = selectionInfo[0];
-        var selectionEnd = selectionInfo[1];
-        var endline = 0;
-        while (endline >= 0) {
-            endline = text.indexOf('\n');
-            var line = text.substring(0, endline >= 0 ? endline : text.length);
-            if ((selectionStart <= line.length) && (selectionEnd >= 0)) {
-                if (selectionStart >= 0) {
-                    this.selection.start.line = this.lines.length;
-                    this.selection.start.position = selectionStart;
-                }
-                if (selectionEnd <= line.length) {
-                    this.selection.end.line = this.lines.length;
-                    this.selection.end.position = selectionEnd;
-                }
-            }
-            this.lines[this.lines.length] = line;
-            text = endline >= 0 ? text.substring(endline + 1, text.length) : '';
-            selectionStart -= endline + 1;
-            selectionEnd -= endline + 1;
-        }
-        // Tweak the selection end position if its on the edge
-        if ((this.selection.end.position === 0) && (this.selection.end.line != this.selection.start.line)) {
-            this.selection.end.line -= 1;
-            this.selection.end.position = this.lines[this.selection.end.line].length;
-        }
-    };
-    this.init();
+    }
+    // console.log('START AND END');
+    // console.log(startpos);
+    // console.log(endpos);
+    return [startpos, endpos];
 };
+
+// Update the textarea with the current lines and cursor settings
+ta.update = function() {
+    var properties = this.getProperties();
+    console.log(properties);
+    var newtext = properties[0];
+    var selectionStart = properties[1];
+    var selectionEnd = properties[2];
+    this.$textarea.val(newtext);
+    if (this.textelem.setSelectionRange) {
+        this.textelem.setSelectionRange(selectionStart, selectionEnd);
+    } else if (this.textelem.createTextRange) {
+        var range = this.textelem.createTextRange();
+        range.collapse(true);
+        range.moveStart('character', selectionStart);
+        range.moveEnd('character', selectionEnd - selectionStart);
+        range.select();
+    }
+    this.textelem.scrollTop = this.scroll;
+    this.$textarea.focus();
+};
+
+
+
 
 
 /*----------------------------------------------------------------------------------------------
  * Wysiwym Button
  * Represents a single button in the Wysiwym editor.
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.Button = function(name, options, callback, data, cssclass) {
+function Button(name, options, callback, data, cssclass) {
     this.$el = null;                   // jQuery element for this button
     this.name = name;                  // Button Name
     this.icon = options.icon;          // Icon name
@@ -576,38 +610,38 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
     this.data = data ? data : {};      // Callback arguments
     this.cssclass = cssclass;          // CSS Class to apply to button
     this.hidetext = options.hidetext ? options.hidetext : false;  // Show icon only?
+}
 
-    // Return the CSS Class for this button
-    this.getCssClass = function() {
-        if (!this.cssclass)
-            return this.name.toLowerCase().replace(' ', '');
-        return this.cssclass;
-    };
+var btn = Button.prototype;
 
-    // Create and return a new Button jQuery element
-    this.create = function() {
-        var $text = $('<span class="text">'+ this.name +'</span>');
-        var $i = $('<i class="icon-'+ this.icon +'"></i>');
-        var $wrap = $('<span class="wrap"></span>').append($text);
-        if (this.hidetext) $text.hide();
-        if (this.icon !== undefined) $wrap.append($i);
-        var $button = $('<div class="button btn"></div>').append($wrap);
-        // Add bootstrap tooltip
-        $button.tooltip({
-            title: this.tooltip,
-            delay: {
-                show: 1500,
-                hide: 200
-            }
-        });
-        $button.addClass(this.getCssClass());
-        // Make everything 'unselectable' so IE doesn't freak out
-        $text.attr('unselectable', 'on');
-        $wrap.attr('unselectable', 'on');
-        $button.attr('unselectable', 'on');
-        // Attach jQuery element so we can access it easily
-        this.$el = $button;
-    };
+// Return the CSS Class for this button
+btn.getCssClass = function() {
+    return this.cssclass ? this.cssclass : this.name.toLowerCase().replace(' ', '');
+};
+
+// Create and return a new Button jQuery element
+btn.create = function() {
+    var $text = $('<span class="text">'+ this.name +'</span>');
+    var $i = $('<i class="icon-'+ this.icon +'"></i>');
+    var $wrap = $('<span class="wrap"></span>').append($text);
+    if (this.hidetext) $text.hide();
+    if (this.icon !== undefined) $wrap.append($i);
+    var $button = $('<div class="button btn"></div>').append($wrap);
+    // Add bootstrap tooltip
+    $button.tooltip({
+        title: this.tooltip,
+        delay: {
+            show: 1500,
+            hide: 200
+        }
+    });
+    $button.addClass(this.getCssClass());
+    // Make everything 'unselectable' so IE doesn't freak out
+    $text.attr('unselectable', 'on');
+    $wrap.attr('unselectable', 'on');
+    $button.attr('unselectable', 'on');
+    // Attach jQuery element so we can access it easily
+    this.$el = $button;
 };
 
 
@@ -615,74 +649,93 @@ Wysiwym.Button = function(name, options, callback, data, cssclass) {
  * Wysiwym Button Callbacks
  * Useful functions to help easily create Wysiwym buttons
  *--------------------------------------------------------------------------------------------- */
+
+//exports = module.exports = Wysiwym
+
+var callbacks = {}
+  , cb = callbacks;
+
+// function Callbacks() {
+//     console.log('I am actually getting initialized');
+// }
+
 // Wrap the selected text with a prefix and suffix string.
-Wysiwym.span = function(event) {
-    var markup = event.data.markup;    // (required) Markup Language
+cb.span = function(event) {
     var prefix = event.data.prefix;    // (required) Text wrap prefix
     var suffix = event.data.suffix;    // (required) Text wrap suffix
     var text = event.data.text;        // (required) Default wrap text (if nothing selected)
-    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
-    if (wysiwym.selection.isWrapped(prefix, suffix)) {
-        wysiwym.selection.unwrap(prefix, suffix);
-    } else if (wysiwym.selection.length() === 0) {
-        wysiwym.selection.append(text);
-        wysiwym.selection.wrap(prefix, suffix);
+    //console.log('Inserting span');
+    var textarea = event.data.textarea.init()
+      , selection = textarea.selection;
+    if (selection.isWrapped(prefix, suffix)) {
+        selection.unwrap(prefix, suffix);
+    } else if (selection.length() === 0) {
+        selection.append(text);
+        selection.wrap(prefix, suffix);
     } else {
-        wysiwym.selection.wrap(prefix, suffix);
+        selection.wrap(prefix, suffix);
     }
-    wysiwym.update();
+    textarea.update();
 };
 
 // Prefix each line in the selection with the specified text.
-Wysiwym.list = function(event) {
-    var markup = event.data.markup;    // (required) Markup Language
+cb.list = function(event) {
     var prefix = event.data.prefix;    // (required) Line prefix text
     var wrap = event.data.wrap;        // (optional) If true, wrap list with blank lines
     var regex = event.data.regex;      // (optional) Set to regex matching prefix to increment num
-    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
-    if (wysiwym.selection.linesHavePrefix(regex?regex:prefix)) {
-        wysiwym.selection.removeLinePrefixes(regex?regex:prefix);
-        if (wrap) { wysiwym.selection.unwrapBlankLines(); }
+    var textarea = event.data.textarea.init()
+      , selection = textarea.selection;
+    if (selection.linesHavePrefix(regex ? regex : prefix)) {
+        selection.removeLinePrefixes(regex ? regex : prefix);
+        if (wrap) { 
+            selection.unwrapBlankLines();
+        }
     } else {
-        wysiwym.selection.setLinePrefixes(prefix, regex);
-        if (wrap) { wysiwym.selection.wrapBlankLines(); }
+        selection.setLinePrefixes(prefix, regex);
+        if (wrap) {
+            selection.wrapBlankLines();
+        }
     }
-    wysiwym.update();
+    textarea.update();
 };
 
 // Prefix each line in the selection according based off the first selected line.
-Wysiwym.block = function(event) {
+cb.block = function(event) {
     var markup = event.data.markup;    // (required) Markup Language
     var prefix = event.data.prefix;    // (required) Line prefix text
     var wrap = event.data.wrap;        // (optional) If true, wrap list with blank lines
-    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
-    var firstline = wysiwym.selection.getLines()[0];
+    var textarea = event.data.textarea;
+    var firstline = textarea.selection.getLines()[0];
     if (firstline.startswith(prefix)) {
-        wysiwym.selection.removeLinePrefixes(prefix);
-        if (wrap) { wysiwym.selection.unwrapBlankLines(); }
+        textarea.selection.removeLinePrefixes(prefix);
+        if (wrap) {
+            textarea.selection.unwrapBlankLines();
+        }
     } else {
-        wysiwym.selection.addLinePrefixes(prefix);
-        if (wrap) { wysiwym.selection.wrapBlankLines(); }
+        textarea.selection.addLinePrefixes(prefix);
+        if (wrap) {
+            textarea.selection.wrapBlankLines();
+        }
     }
-    wysiwym.update();
+    textarea.update();
 };
 
 /*----------------------------------------------------------------------------------------------
  * Wysiwym AutoIndent
  * Handles auto-indentation when enter is pressed
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.autoIndent = function(event) {
+cb.autoIndent = function(event) {
     // Only continue if keyCode == 13
     if (event.keyCode != 13)
         return true;
     // ReturnKey pressed, lets indent!
-    var markup = event.data.markup;    // Markup Language
-    var wysiwym = new Wysiwym.Textarea(markup.$textarea);
-    var linenum = wysiwym.selection.start.line;
-    var line = wysiwym.lines[linenum];
-    var postcursor = line.substring(wysiwym.selection.start.position, line.length);
+    //var markup = event.data.markup;    // Markup Language
+    var textarea = event.data.textarea;
+    var linenum = textarea.selection.start.line;
+    var line = textarea.lines[linenum];
+    var postcursor = line.substring(textarea.selection.start.position, line.length);
     // Make sure nothing is selected & there is no text after the cursor
-    if ((wysiwym.selection.length() !== 0) || (postcursor))
+    if ((textarea.selection.length() !== 0) || (postcursor))
         return true;
     // So far so good; check for a matching indent regex
     for (var i=0; i < markup.autoindents.length; i++) {
@@ -699,18 +752,18 @@ Wysiwym.autoIndent = function(event) {
             }
             if (suffix) {
                 // Regular auto-indent; Repeat the prefix
-                wysiwym.selection.addPrefix('\n'+ prefix);
-                wysiwym.update();
+                textarea.selection.addPrefix('\n'+ prefix);
+                textarea.update();
                 return false;
             } else {
                 // Return on blank indented line (clear prefix)
-                wysiwym.lines[linenum] = BLANKLINE;
-                wysiwym.selection.start.position = 0;
-                wysiwym.selection.end.position = wysiwym.selection.start.position;
+                textarea.lines[linenum] = BLANKLINE;
+                textarea.selection.start.position = 0;
+                textarea.selection.end.position = textarea.selection.start.position;
                 if (markup.exitindentblankline) {
-                    wysiwym.selection.addPrefix('\n');
+                    textarea.selection.addPrefix('\n');
                 }
-                wysiwym.update();
+                textarea.update();
                 return false;
             }
         }
@@ -722,7 +775,7 @@ Wysiwym.autoIndent = function(event) {
  * Wysiwym handleShortcut
  * Handles keyboard shortcuts
  *--------------------------------------------------------------------------------------------- */
-Wysiwym.handleShortcut = function(event) {
+cb.handleShortcut = function(event) {
     
     // Check to see if we have a shortcut key and, if so click the according button.
     if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
@@ -751,32 +804,38 @@ Wysiwym.handleShortcut = function(event) {
  * Markdown markup language for the Wysiwym editor
  * Reference: http://daringfireball.net/projects/markdown/syntax
  *---------------------------------------------------------------------------- */
-Wysiwym.Markdown = function(textarea) {
-    this.$textarea = textarea;    // jQuery textarea object
+function Markdown() {
+    console.log('this is markdown init');
+    //this.$textarea = $(textelement);    // jQuery textarea object
+    //console.log(this.$textarea);
+    //console.log(textarea);
+    //this.wysiwym = new Wysiwym(textelement);
+
+    var cb = callbacks;
 
     // Initialize the Markdown Buttons
     this.buttons = [
         [
 
-        new Wysiwym.Button('Heading 1', {
+        new Button('Heading 1', {
             icon: 'h1',
             hidetext: true,
             key: 'h'
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '# ',
             suffix: '',
             text: 'Heading 1'
-        }), new Wysiwym.Button('Heading 2', {
+        }), new Button('Heading 2', {
             icon: 'h2',
             hidetext: true
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '## ',
             suffix: '',
             text: 'Heading 2'
-        }), new Wysiwym.Button('Heading 3', {
+        }), new Button('Heading 3', {
             icon: 'h3',
             hidetext: true
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '### ',
             suffix: '',
             text: 'Heading 3'
@@ -785,27 +844,27 @@ Wysiwym.Markdown = function(textarea) {
         ],
         [
 
-        new Wysiwym.Button('Bold', {
+        new Button('Bold', {
             icon: 'bold',
             hidetext: true,
             key: 'b'
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '**',
             suffix: '**',
             text: 'strong text'
-        }), new Wysiwym.Button('Italic', {
+        }), new Button('Italic', {
             icon: 'italic',
             hidetext: true,
             key: 'i'
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '_',
             suffix: '_',
             text: 'italic text'
-        }), new Wysiwym.Button('Link', {
+        }), new Button('Link', {
             icon: 'link',
             hidetext: true,
             key: 'l'
-        }, Wysiwym.span, {
+        }, cb.span, {
             prefix: '[',
             suffix: '](http://example.com)',
             text: 'link text'
@@ -814,18 +873,18 @@ Wysiwym.Markdown = function(textarea) {
         ],
         [
 
-        new Wysiwym.Button('Bullet List', {
+        new Button('Bullet List', {
             icon: 'list',
             hidetext: true,
             key: 'u'
-        }, Wysiwym.list, {
+        }, cb.list, {
             prefix: '* ',
             wrap: true
-        }), new Wysiwym.Button('Number List', {
+        }), new Button('Number List', {
             icon: 'numbered-list',
             hidetext: true,
             key: 'o'
-        }, Wysiwym.list, {
+        }, cb.list, {
             prefix: '0. ',
             wrap: true,
             regex: /^\s*\d+\.\s/
@@ -834,18 +893,18 @@ Wysiwym.Markdown = function(textarea) {
         ],
         [
 
-        new Wysiwym.Button('Quote', {
+        new Button('Quote', {
             icon: 'quote',
             hidetext: true,
             key: 'q'
-        }, Wysiwym.list, {
+        }, cb.list, {
             prefix: '> ',
             wrap: true
-        }), new Wysiwym.Button('Code', {
+        }), new Button('Code', {
             icon: 'code',
             hidetext: true,
             key: 'k'
-        }, Wysiwym.block, {
+        }, cb.block, {
             prefix: '    ',
             wrap: true
         })
@@ -875,7 +934,7 @@ Wysiwym.Markdown = function(textarea) {
         { label: 'Large Code Block', syntax: '(Begin lines with 4 spaces)' },
         { label: 'Inline Code Block', syntax: '&lt;code&gt;inline code&lt;/code&gt;' }
     ];
-};
+}
 
 
 /* ---------------------------------------------------------------------------
@@ -888,13 +947,13 @@ Wysiwym.Markdown = function(textarea) {
 
 //     // Initialize the Markdown Buttons
 //     this.buttons = [
-//         new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"'''", suffix:"'''", text:'strong text'}),
-//         new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"''",  suffix:"''",  text:'italic text'}),
-//         new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[http://example.com ',  suffix:']', text:'link text'}),
-//         new Wysiwym.Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
-//         new Wysiwym.Button('Number List', Wysiwym.list, {prefix:'# ', wrap:true}),
-//         new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'<blockquote>', suffix:'</blockquote>', text:'quote text'}),
-//         new Wysiwym.Button('Code', Wysiwym.span,  {prefix:'<pre>', suffix:'</pre>', text:'code text'})
+//         new Button('Bold',   Wysiwym.span,  {prefix:"'''", suffix:"'''", text:'strong text'}),
+//         new Button('Italic', Wysiwym.span,  {prefix:"''",  suffix:"''",  text:'italic text'}),
+//         new Button('Link',   Wysiwym.span,  {prefix:'[http://example.com ',  suffix:']', text:'link text'}),
+//         new Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
+//         new Button('Number List', Wysiwym.list, {prefix:'# ', wrap:true}),
+//         new Button('Quote',  Wysiwym.span,  {prefix:'<blockquote>', suffix:'</blockquote>', text:'quote text'}),
+//         new Button('Code', Wysiwym.span,  {prefix:'<pre>', suffix:'</pre>', text:'code text'})
 //     ];
 
 //     // Configure auto-indenting
@@ -928,11 +987,11 @@ Wysiwym.Markdown = function(textarea) {
 
 //     // Initialize the Markdown Buttons
 //     this.buttons = [
-//         new Wysiwym.Button('Bold',   Wysiwym.span,  {prefix:"[b]", suffix:"[/b]", text:'strong text'}),
-//         new Wysiwym.Button('Italic', Wysiwym.span,  {prefix:"[i]",  suffix:"[/i]",  text:'italic text'}),
-//         new Wysiwym.Button('Link',   Wysiwym.span,  {prefix:'[url="http://example.com"]',  suffix:'[/url]', text:'link text'}),
-//         new Wysiwym.Button('Quote',  Wysiwym.span,  {prefix:'[quote]',  suffix:'[/quote]', text:'quote text'}),
-//         new Wysiwym.Button('Code',   Wysiwym.span,  {prefix:'[code]',  suffix:'[/code]', text:'code text'})
+//         new Button('Bold',   Wysiwym.span,  {prefix:"[b]", suffix:"[/b]", text:'strong text'}),
+//         new Button('Italic', Wysiwym.span,  {prefix:"[i]",  suffix:"[/i]",  text:'italic text'}),
+//         new Button('Link',   Wysiwym.span,  {prefix:'[url="http://example.com"]',  suffix:'[/url]', text:'link text'}),
+//         new Button('Quote',  Wysiwym.span,  {prefix:'[quote]',  suffix:'[/quote]', text:'quote text'}),
+//         new Button('Code',   Wysiwym.span,  {prefix:'[code]',  suffix:'[/code]', text:'code text'})
 //     ];
 
 //     // Syntax items to display in the help box
@@ -954,3 +1013,7 @@ String.prototype.lstrip = function() { return this.replace(/^\s+/, ''); };
 String.prototype.rstrip = function() { return this.replace(/\s+$/, ''); };
 String.prototype.startswith = function(str) { return this.substring(0, str.length) == str; };
 String.prototype.endswith = function(str) { return this.substring(str.length, this.length) == str; };
+
+//return Wysiwym;
+
+});
