@@ -24,7 +24,7 @@ $.fn.wysiwym = function(options) {
     this.textelem = this;                          // Javascript textarea element
     this.$textarea = $(this);                      // jQuery textarea object
     this.$editor = undefined;
-    this.markup = new Markdown();                  // Wysiwym Markup set to use (markdown as default)
+    this.markup = markdown;                        // Wysiwym Markup set to use (markdown as default)
     this.textarea = new Textarea(this.textelem);   // The actual textarea element where we make changes
     this.defaults = {                              // Default option values
         $buttonContainer: undefined,               // jQuery elem to place buttons (makes one by default)
@@ -65,7 +65,7 @@ $.fn.wysiwym = function(options) {
     // Initialize the AutoIndent trigger
     this.initializeAutoIndent = function() {
         if (this.markup.autoindents) {
-            var data = {textarea: this.textarea};
+            var data = {textarea: this.textarea, autoindents: this.markup.autoindents};
             this.$textarea.bind('keydown', data, callbacks.autoIndent);
         }
     };
@@ -181,15 +181,18 @@ sel.addLinePrefixes = function(prefix) {
 sel.addPrefix = function(prefix) {
     var numlines = this.lines.length;
     var line = this.lines[this.start.line];
-    var newline = line.substring(0, this.start.position) +
-        prefix + line.substring(this.start.position, line.length);
+    var newline = [
+            line.slice(0, this.start.position),
+            prefix,
+            line.slice(this.start.position, line.length)
+        ].join('');
     this.lines[this.start.line] = newline;
     this.start.position += prefix.length;
-    if (this.start.line == this.end.line)
+    if (this.start.line === this.end.line)
         this.end.position += prefix.length;
     // Check we need to update the scroll height;  This is very slightly
-    // off because height != scrollHeight. A fix would be nice.
-    if (prefix.indexOf('\n') != -1) {
+    // off because height !== scrollHeight. A fix would be nice.
+    if (prefix.indexOf('\n') !== -1) {
         var scrollHeight = this.textarea.textelem.scrollHeight;
         var lineheight = parseInt(scrollHeight / numlines, 10);
         this.textarea.scroll += lineheight;
@@ -200,16 +203,22 @@ sel.addPrefix = function(prefix) {
 // Add the specified suffix to the selection
 sel.addSuffix = function(suffix) {
     var line = this.lines[this.end.line];
-    var newline = line.substring(0, this.end.position) +
-        suffix + line.substring(this.end.position, line.length);
+    var newline = [
+            line.slice(0, this.end.position),
+            suffix,
+            line.slice(this.end.position, line.length)
+        ].join('');
     this.lines[this.end.line] = newline;
 };
 
 // Append the specified text to the selection
 sel.append = function(text) {
     var line = this.lines[this.end.line];
-    var newline = line.substring(0, this.end.position) +
-        text + line.substring(this.end.position, line.length);
+    var newline = [
+            line.slice(0, this.end.position),
+            text,
+            line.slice(this.end.position, line.length)
+        ].join('');
     this.lines[this.end.line] = newline;
     this.end.position += text.length;
 };
@@ -217,7 +226,7 @@ sel.append = function(text) {
 // Return an array of lines in the selection
 sel.getLines = function() {
     var selectedlines = [];
-    for (var i=this.start.line; i <= this.end.line; i++)
+    for (var i = this.start.line, j = this.end.line; i <= j; i++)
         selectedlines[selectedlines.length] = this.lines[i];
     return selectedlines;
 };
@@ -226,7 +235,7 @@ sel.getLines = function() {
 sel.hasPrefix = function(prefix) {
     var line = this.lines[this.start.line];
     var start = this.start.position - prefix.length;
-    if ((start < 0) || (line.substring(start, this.start.position) != prefix))
+    if ((start < 0) || (line.slice(start, this.start.position) !== prefix))
         return false;
     return true;
 };
@@ -235,7 +244,7 @@ sel.hasPrefix = function(prefix) {
 sel.hasSuffix = function(suffix) {
     var line = this.lines[this.end.line];
     var end = this.end.position + suffix.length;
-    if ((end > line.length) || (line.substring(this.end.position, end) != suffix))
+    if ((end > line.length) || (line.slice(this.end.position, end) !== suffix))
         return false;
     return true;
 };
@@ -245,7 +254,7 @@ sel.hasSuffix = function(suffix) {
 sel.insertPreviousLine = function(newline, force) {
     force = force !== undefined ? force : true;
     var prevnum = this.start.line - 1;
-    if ((force) || ((prevnum >= 0) && (this.lines[prevnum] != newline))) {
+    if ((force) || ((prevnum >= 0) && (this.lines[prevnum] !== newline))) {
         this.lines.splice(this.start.line, 0, newline);
         this.start.line += 1;
         this.end.line += 1;
@@ -257,7 +266,7 @@ sel.insertPreviousLine = function(newline, force) {
 sel.insertNextLine = function(newline, force) {
     force = force !== undefined ? force : true;
     var nextnum = this.end.line + 1;
-    if ((force) || ((nextnum < this.lines.length) && (this.lines[nextnum] != newline)))
+    if ((force) || ((nextnum < this.lines.length) && (this.lines[nextnum] !== newline)))
         this.lines.splice(nextnum, 0, newline);
 };
 
@@ -276,9 +285,9 @@ sel.length = function() {
 sel.linesHavePrefix = function(prefix) {
     for (var i=this.start.line; i <= this.end.line; i++) {
         var line = this.lines[i];
-        if ((typeof(prefix) == 'string') && (!line.startswith(prefix))) {
+        if ((typeof(prefix) === 'string') && (!line.startswith(prefix))) {
             return false;
-        } else if ((typeof(prefix) != 'string') && (!line.match(prefix))) {
+        } else if ((typeof(prefix) !== 'string') && (!line.match(prefix))) {
             return false;
         }
     }
@@ -288,11 +297,14 @@ sel.linesHavePrefix = function(prefix) {
 // Prepend the specified text to the selection
 sel.prepend = function(text) {
     var line = this.lines[this.start.line];
-    var newline = line.substring(0, this.start.position) +
-        text + line.substring(this.start.position, line.length);
+    var newline = [
+            line.slice(0, this.start.position),
+            text,
+            line.slice(this.start.position, line.length)
+        ].join('');
     this.lines[this.start.line] = newline;
     // Update Class Variables
-    if (this.start.line == this.end.line)
+    if (this.start.line === this.end.line)
         this.end.position += text.length;
 };
 
@@ -304,14 +316,14 @@ sel.removeLinePrefixes = function(prefix) {
         var line = this.lines[i];
         var match = prefix;
         // Check prefix is a regex
-        if (typeof(prefix) != 'string')
+        if (typeof(prefix) !== 'string')
             match = line.match(prefix)[0];
         // Do the replace
         if (line.startswith(match)) {
-            this.lines[i] = line.substring(match.length, line.length);
-            if (i == this.start.line)
+            this.lines[i] = line.slice(match.length, line.length);
+            if (i === this.start.line)
                 this.start.position -= match.length;
-            if (i == this.end.line)
+            if (i === this.end.line)
                 this.end.position -= match.length;
         }
 
@@ -336,11 +348,13 @@ sel.removePrefix = function(prefix) {
     if (this.hasPrefix(prefix)) {
         var line = this.lines[this.start.line];
         var start = this.start.position - prefix.length;
-        var newline = line.substring(0, start) +
-            line.substring(this.start.position, line.length);
+        var newline = [
+                line.slice(0, start),
+                line.slice(this.start.position, line.length)
+            ].join('');
         this.lines[this.start.line] = newline;
         this.start.position -= prefix.length;
-        if (this.start.line == this.end.line)
+        if (this.start.line === this.end.line)
             this.end.position -= prefix.length;
     }
 };
@@ -366,8 +380,8 @@ sel.removeSuffix = function(suffix) {
     if (this.hasSuffix(suffix)) {
         var line = this.lines[this.end.line];
         var end = this.end.position + suffix.length;
-        var newline = line.substring(0, this.end.position) +
-            line.substring(end, line.length);
+        var newline = line.slice(0, this.end.position) +
+            line.slice(end, line.length);
         this.lines[this.end.line] = newline;
     }
 };
@@ -380,16 +394,16 @@ sel.setLinePrefixes = function(prefix, increment) {
         if (!this.lines[i].startswith(prefix)) {
             // Check if prefix is incrementing
             if (increment) {
-                var num = Integer.parseInt(prefix.match(/\d+/)[0]);
+                var num = parseInt(prefix.match(/\d+/)[0], 10);
                 prefix = prefix.replace(num, num+1);
             }
             // Add the prefix to the line
             var numspaces = this.lines[i].match(/^\s*/)[0].length;
             this.lines[i] = this.lines[i].lstrip();
             this.lines[i] = prefix + this.lines[i];
-            if (i == this.start.line)
+            if (i === this.start.line)
                 this.start.position += prefix.length - numspaces;
-            if (i == this.end.line)
+            if (i === this.end.line)
                 this.end.position += prefix.length - numspaces;
         }
     }
@@ -413,14 +427,14 @@ sel.val = function() {
     var value = '';
     for (var i=0; i < this.lines.length; i++) {
         var line = this.lines[i];
-        if ((i == this.start.line) && (i == this.end.line)) {
-            return line.substring(this.start.position, this.end.position);
-        } else if (i == this.start.line) {
-            value += line.substring(this.start.position, line.length) +'\n';
+        if ((i === this.start.line) && (i === this.end.line)) {
+            return line.slice(this.start.position, this.end.position);
+        } else if (i === this.start.line) {
+            value += line.slice(this.start.position, line.length) +'\n';
         } else if ((i > this.start.line) && (i < this.end.line)) {
             value += line +'\n';
-        } else if (i == this.end.line) {
-            value += line.substring(0, this.end.position);
+        } else if (i === this.end.line) {
+            value += line.slice(0, this.end.position);
         }
     }
     return value;
@@ -470,7 +484,7 @@ ta.init = function() {
     var endline = 0;
     while (endline >= 0) {
         endline = text.indexOf('\n');
-        var line = text.substring(0, endline >= 0 ? endline : text.length);
+        var line = text.slice(0, endline >= 0 ? endline : text.length);
         if ((selectionStart <= line.length) && (selectionEnd >= 0)) {
             if (selectionStart >= 0) {
                 this.selection.start.line = this.lines.length;
@@ -482,12 +496,12 @@ ta.init = function() {
             }
         }
         this.lines[this.lines.length] = line;
-        text = endline >= 0 ? text.substring(endline + 1, text.length) : '';
+        text = endline >= 0 ? text.slice(endline + 1, text.length) : '';
         selectionStart -= endline + 1;
         selectionEnd -= endline + 1;
     }
     // Tweak the selection end position if its on the edge
-    if ((this.selection.end.position === 0) && (this.selection.end.line != this.selection.start.line)) {
+    if ((this.selection.end.position === 0) && (this.selection.end.line !== this.selection.start.line)) {
         this.selection.end.line -= 1;
         this.selection.end.position = this.lines[this.selection.end.line].length;
     }
@@ -516,13 +530,13 @@ ta.getProperties = function() {
       , selectionEnd = 0;       // Absolute cursor end position
     //console.log('There are ' + this.lines.length + ' lines');
     for (var i = 0, j = this.lines.length; i < j; i++) {
-        if (i == this.selection.start.line)
+        if (i === this.selection.start.line)
             selectionStart = textLength + this.selection.start.position;
-        if (i == this.selection.end.line)
+        if (i === this.selection.end.line)
             selectionEnd = textLength + this.selection.end.position;
         newtext.push(this.lines[i]);
         textLength += this.lines[i].length;
-        if (i != this.lines.length - 1) {
+        if (i !== this.lines.length - 1) {
             newtext.push('\n');
             textLength += 1;
         }
@@ -536,7 +550,7 @@ ta.getProperties = function() {
 ta.getSelectionStartEnd = function() {
 
     var startpos, endpos;
-    if (typeof(this.textelem.selectionStart) == 'number') {
+    if (typeof(this.textelem.selectionStart) === 'number') {
         startpos = this.textelem.selectionStart;
         endpos = this.textelem.selectionEnd;
     } else {
@@ -655,10 +669,6 @@ btn.create = function() {
 var callbacks = {}
   , cb = callbacks;
 
-// function Callbacks() {
-//     console.log('I am actually getting initialized');
-// }
-
 // Wrap the selected text with a prefix and suffix string.
 cb.span = function(event) {
     var prefix = event.data.prefix;    // (required) Text wrap prefix
@@ -704,7 +714,7 @@ cb.block = function(event) {
     var markup = event.data.markup;    // (required) Markup Language
     var prefix = event.data.prefix;    // (required) Line prefix text
     var wrap = event.data.wrap;        // (optional) If true, wrap list with blank lines
-    var textarea = event.data.textarea;
+    var textarea = event.data.textarea.init();
     var firstline = textarea.selection.getLines()[0];
     if (firstline.startswith(prefix)) {
         textarea.selection.removeLinePrefixes(prefix);
@@ -725,28 +735,29 @@ cb.block = function(event) {
  * Handles auto-indentation when enter is pressed
  *--------------------------------------------------------------------------------------------- */
 cb.autoIndent = function(event) {
-    // Only continue if keyCode == 13
-    if (event.keyCode != 13)
+    // Only continue if keyCode === 13
+    if (event.keyCode !== 13)
         return true;
     // ReturnKey pressed, lets indent!
     //var markup = event.data.markup;    // Markup Language
-    var textarea = event.data.textarea;
+    var textarea = event.data.textarea.init();
     var linenum = textarea.selection.start.line;
     var line = textarea.lines[linenum];
-    var postcursor = line.substring(textarea.selection.start.position, line.length);
+    var postcursor = line.slice(textarea.selection.start.position, line.length);
     // Make sure nothing is selected & there is no text after the cursor
     if ((textarea.selection.length() !== 0) || (postcursor))
         return true;
     // So far so good; check for a matching indent regex
-    for (var i=0; i < markup.autoindents.length; i++) {
-        var regex = markup.autoindents[i];
+    var autoindents = event.data.autoindents;
+    for (var i in autoindents) {
+        var regex = autoindents[i];
         var matches = line.match(regex);
         if (matches) {
             var prefix = matches[0];
-            var suffix = line.substring(prefix.length, line.length);
+            var suffix = line.slice(prefix.length, line.length);
             // NOTE: If a selection is made in the regex, it's assumed that the
             // matching text is a number should be auto-incremented (ie: #. lists).
-            if (matches.length == 2) {
+            if (matches.length === 2) {
                 var num = parseInt(matches[1], 10);
                 prefix = prefix.replace(matches[1], num+1);
             }
@@ -775,21 +786,26 @@ cb.autoIndent = function(event) {
  * Wysiwym handleShortcut
  * Handles keyboard shortcuts
  *--------------------------------------------------------------------------------------------- */
-cb.handleShortcut = function(event) {
-    
+cb.handleShortcut = function(e) {
+    //this.preventDefault();
+    e.stopPropagation();
+    var key = e.which;
+    if (key === 0) {
+        return false;
+    }
+    console.log(e);
     // Check to see if we have a shortcut key and, if so click the according button.
-    if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey) {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
 
-        var buttons = event.data.markup.buttons;
-
-        var keyCode = event.charCode || event.keyCode;
-        var keyCodeStr = String.fromCharCode(keyCode).toLowerCase();
+        var buttons = markup.buttons;
+        //var keyCodeStr = String.fromCharCode(keyCode).toLowerCase();
+        keyStr = String.fromCharCode(key);
 
         buttons.forEach(function(button) {
-            if (keyCodeStr === button.shortcutKey) {
+            if (keyStr === button.key) {
                 // If the shortcut key matches, prevent the default action
                 // and click the button's jQuery element
-                event.preventDefault();
+                e.preventDefault();
                 button.$el.click();
             }
         });
@@ -804,137 +820,138 @@ cb.handleShortcut = function(event) {
  * Markdown markup language for the Wysiwym editor
  * Reference: http://daringfireball.net/projects/markdown/syntax
  *---------------------------------------------------------------------------- */
-function Markdown() {
-    console.log('this is markdown init');
+var markdown = {}
+  , markup = markdown;
+    //console.log('this is markdown init');
     //this.$textarea = $(textelement);    // jQuery textarea object
     //console.log(this.$textarea);
     //console.log(textarea);
     //this.wysiwym = new Wysiwym(textelement);
 
-    var cb = callbacks;
+    //var cb = callbacks;
 
     // Initialize the Markdown Buttons
-    this.buttons = [
-        [
+markdown.buttons = [
+    [
 
-        new Button('Heading 1', {
-            icon: 'h1',
-            hidetext: true,
-            key: 'h'
-        }, cb.span, {
-            prefix: '# ',
-            suffix: '',
-            text: 'Heading 1'
-        }), new Button('Heading 2', {
-            icon: 'h2',
-            hidetext: true
-        }, cb.span, {
-            prefix: '## ',
-            suffix: '',
-            text: 'Heading 2'
-        }), new Button('Heading 3', {
-            icon: 'h3',
-            hidetext: true
-        }, cb.span, {
-            prefix: '### ',
-            suffix: '',
-            text: 'Heading 3'
-        })
+    new Button('Heading 1', {
+        icon: 'h1',
+        hidetext: true,
+        key: 'h'
+    }, cb.span, {
+        prefix: '# ',
+        suffix: '',
+        text: 'Heading 1'
+    }), new Button('Heading 2', {
+        icon: 'h2',
+        hidetext: true
+    }, cb.span, {
+        prefix: '## ',
+        suffix: '',
+        text: 'Heading 2'
+    }), new Button('Heading 3', {
+        icon: 'h3',
+        hidetext: true
+    }, cb.span, {
+        prefix: '### ',
+        suffix: '',
+        text: 'Heading 3'
+    })
 
-        ],
-        [
+    ],
+    [
 
-        new Button('Bold', {
-            icon: 'bold',
-            hidetext: true,
-            key: 'b'
-        }, cb.span, {
-            prefix: '**',
-            suffix: '**',
-            text: 'strong text'
-        }), new Button('Italic', {
-            icon: 'italic',
-            hidetext: true,
-            key: 'i'
-        }, cb.span, {
-            prefix: '_',
-            suffix: '_',
-            text: 'italic text'
-        }), new Button('Link', {
-            icon: 'link',
-            hidetext: true,
-            key: 'l'
-        }, cb.span, {
-            prefix: '[',
-            suffix: '](http://example.com)',
-            text: 'link text'
-        })
+    new Button('Bold', {
+        icon: 'bold',
+        hidetext: true,
+        key: 'b'
+    }, cb.span, {
+        prefix: '**',
+        suffix: '**',
+        text: 'strong text'
+    }), new Button('Italic', {
+        icon: 'italic',
+        hidetext: true,
+        key: 'i'
+    }, cb.span, {
+        prefix: '_',
+        suffix: '_',
+        text: 'italic text'
+    }), new Button('Link', {
+        icon: 'link',
+        hidetext: true,
+        key: 'l'
+    }, cb.span, {
+        prefix: '[',
+        suffix: '](http://example.com)',
+        text: 'link text'
+    })
 
-        ],
-        [
+    ],
+    [
 
-        new Button('Bullet List', {
-            icon: 'list',
-            hidetext: true,
-            key: 'u'
-        }, cb.list, {
-            prefix: '* ',
-            wrap: true
-        }), new Button('Number List', {
-            icon: 'numbered-list',
-            hidetext: true,
-            key: 'o'
-        }, cb.list, {
-            prefix: '0. ',
-            wrap: true,
-            regex: /^\s*\d+\.\s/
-        })
+    new Button('Bullet List', {
+        icon: 'list',
+        hidetext: true,
+        key: 'u'
+    }, cb.list, {
+        prefix: '* ',
+        wrap: true
+    }), new Button('Number List', {
+        icon: 'numbered-list',
+        hidetext: true,
+        key: 'o'
+    }, cb.list, {
+        prefix: '0. ',
+        wrap: true,
+        regex: /^\s*\d+\.\s/
+    })
 
-        ],
-        [
+    ],
+    [
 
-        new Button('Quote', {
-            icon: 'quote',
-            hidetext: true,
-            key: 'q'
-        }, cb.list, {
-            prefix: '> ',
-            wrap: true
-        }), new Button('Code', {
-            icon: 'code',
-            hidetext: true,
-            key: 'k'
-        }, cb.block, {
-            prefix: '    ',
-            wrap: true
-        })
+    new Button('Quote', {
+        icon: 'quote',
+        hidetext: true,
+        key: 'q'
+    }, cb.list, {
+        prefix: '> ',
+        wrap: true
+    }), new Button('Code', {
+        icon: 'code',
+        hidetext: true,
+        key: 'k'
+    }, cb.block, {
+        prefix: '    ',
+        wrap: true
+    })
 
-        ]
+    ]
 
-    ];
+];
 
-    // Configure auto-indenting
-    this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
-    this.autoindents = [                // Regex lookups for auto-indent
-        /^\s*\*\s/,                     // Bullet list
-        /^\s*(\d+)\.\s/,                // Number list (number selected for auto-increment)
-        /^\s*\>\s/,                     // Quote list
-        /^\s{4}\s*/                     // Code block
-    ];
+// Configure auto-indenting
+markdown.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
+markdown.autoindents = [                // Regex lookups for auto-indent
+    /^\s*\*\s/,                     // Bullet list
+    /^\s*(\d+)\.\s/,                // Number list (number selected for auto-increment)
+    /^\s*\>\s/,                     // Quote list
+    /^\s{4}\s*/                     // Code block
+];
 
-    // Syntax items to display in the help box
-    this.help = [
-        { label: 'Header', syntax: '## Header ##' },
-        { label: 'Bold',   syntax: '**bold**' },
-        { label: 'Italic', syntax: '_italics_' },
-        { label: 'Link',   syntax: '[pk!](http://google.com)' },
-        { label: 'Bullet List', syntax: '* list item' },
-        { label: 'Number List', syntax: '1. list item' },
-        { label: 'Blockquote', syntax: '&gt; quoted text' },
-        { label: 'Large Code Block', syntax: '(Begin lines with 4 spaces)' },
-        { label: 'Inline Code Block', syntax: '&lt;code&gt;inline code&lt;/code&gt;' }
-    ];
-}
+// Syntax items to display in the help box
+markdown.help = [
+    { label: 'Header', syntax: '## Header ##' },
+    { label: 'Bold',   syntax: '**bold**' },
+    { label: 'Italic', syntax: '_italics_' },
+    { label: 'Link',   syntax: '[pk!](http://google.com)' },
+    { label: 'Bullet List', syntax: '* list item' },
+    { label: 'Number List', syntax: '1. list item' },
+    { label: 'Blockquote', syntax: '&gt; quoted text' },
+    { label: 'Large Code Block', syntax: '(Begin lines with 4 spaces)' },
+    { label: 'Inline Code Block', syntax: '&lt;code&gt;inline code&lt;/code&gt;' }
+];
+
 
 
 /* ---------------------------------------------------------------------------
@@ -965,7 +982,7 @@ function Markdown() {
 
 //     // Syntax items to display in the help box
 //     this.help = [
-//         { label: 'Header', syntax: '== Header ==' },
+//         { label: 'Header', syntax: '=== Header ===' },
 //         { label: 'Bold',   syntax: "'''bold'''" },
 //         { label: 'Italic', syntax: "''italics''" },
 //         { label: 'Link',   syntax: '[http://google.com pk!]' },
@@ -1011,8 +1028,8 @@ function Markdown() {
 String.prototype.strip = function() { return this.replace(/^\s+|\s+$/g, ''); };
 String.prototype.lstrip = function() { return this.replace(/^\s+/, ''); };
 String.prototype.rstrip = function() { return this.replace(/\s+$/, ''); };
-String.prototype.startswith = function(str) { return this.substring(0, str.length) == str; };
-String.prototype.endswith = function(str) { return this.substring(str.length, this.length) == str; };
+String.prototype.startswith = function(str) { return this.slice(0, str.length) === str; };
+String.prototype.endswith = function(str) { return this.slice(str.length, this.length) === str; };
 
 //return Wysiwym;
 
