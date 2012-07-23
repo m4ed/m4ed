@@ -10,7 +10,6 @@
  * Version: 2.0 (2011-01-26)
  * Version: 2.1 (2011-07-23)
  *--------------------------------------------------------------------------------------------- */
-var BLANKLINE = '';
 //var Wysiwym = {};
 
 $.fn.wysiwym = function(option) {
@@ -44,11 +43,11 @@ $.fn.wysiwym.defaults = {
     helpTextHide: 'Hide markup syntax',        // Toggle text to display when help is visible
     helpIcon: 'question-sign',                 // Icon for the help button
     hideHelpButtonText: true                   // Boolean to hide text button
-}
+};
 
 var Wysiwym = function(element, options) {
   this.init('wysiwym', element, options);
-}
+};
 
 
 
@@ -69,6 +68,8 @@ Wysiwym.prototype = {
     this.$editor = $('<div class="'+ this.options.editorclass +'"></div>');
     this.$el.wrap(this.$editor);
 
+    this.blankline = '';
+
     this.initializeButtons();
     this.initializeAutoIndent();
     this.initializeShortcutHandler();
@@ -77,8 +78,8 @@ Wysiwym.prototype = {
   },
 
   getOptions: function (options) {
-    options = $.extend({}, $.fn[this.type].defaults, options)
-    return options
+    options = $.extend({}, $.fn[this.type].defaults, options);
+    return options;
   },
 
   // Add the button container and all buttons
@@ -283,7 +284,7 @@ Wysiwym.prototype = {
           return false;
         } else {
           // Return on blank indented line (clear prefix)
-          textarea.lines[linenum] = BLANKLINE;
+          textarea.lines[linenum] = this.blankline;
           textarea.selection.start.position = 0;
           textarea.selection.end.position = textarea.selection.start.position;
           if (markup.exitindentblankline) {
@@ -326,7 +327,7 @@ Wysiwym.prototype = {
       });
     }
   }
-}
+};
 
 
 
@@ -681,11 +682,11 @@ Selection.prototype = {
   // a blank line in place, another one will not be added.
   wrapBlankLines: function() {
     if (this.textarea.selection.start.line > 0)
-      this.textarea.selection.insertPreviousLine(BLANKLINE, false);
+      this.textarea.selection.insertPreviousLine(this.blankline, false);
     if (this.textarea.selection.end.line < this.textarea.lines.length - 1)
-      this.textarea.selection.insertNextLine(BLANKLINE, false);
+      this.textarea.selection.insertNextLine(this.blankline, false);
   }
-}
+};
 
 /*----------------------------------------------------------------------------------------------
  * Wysiwym Textarea
@@ -803,7 +804,7 @@ Textarea.prototype = {
     this.el.scrollTop = this.scroll;
     this.$el.focus();
   }
-}
+};
 
 
 
@@ -859,7 +860,7 @@ Button.prototype = {
     // Attach jQuery element so we can access it easily
     this.$el = $button;
   }
-}
+};
 
 
 var markdown = {
@@ -990,77 +991,7 @@ var markdown = {
   ]
 };
 
-var markup = markdown;
 
-
-
-
-/* ---------------------------------------------------------------------------
- * Wysiwym Mediawiki
- * Media Wiki markup language for the Wysiwym editor
- * Reference: http://www.mediawiki.org/wiki/Help:Formatting
- *---------------------------------------------------------------------------- */
-// Wysiwym.Mediawiki = function(textarea) {
-//     this.$el = textarea;    // jQuery textarea object
-
-//     // Initialize the Markdown Buttons
-//     this.buttons = [
-//         new Button('Bold',   Wysiwym.span,  {prefix:"'''", suffix:"'''", text:'strong text'}),
-//         new Button('Italic', Wysiwym.span,  {prefix:"''",  suffix:"''",  text:'italic text'}),
-//         new Button('Link',   Wysiwym.span,  {prefix:'[http://example.com ',  suffix:']', text:'link text'}),
-//         new Button('Bullet List', Wysiwym.list, {prefix:'* ', wrap:true}),
-//         new Button('Number List', Wysiwym.list, {prefix:'# ', wrap:true}),
-//         new Button('Quote',  Wysiwym.span,  {prefix:'<blockquote>', suffix:'</blockquote>', text:'quote text'}),
-//         new Button('Code', Wysiwym.span,  {prefix:'<pre>', suffix:'</pre>', text:'code text'})
-//     ];
-
-//     // Configure auto-indenting
-//     this.exitindentblankline = true;    // True to insert blank line when exiting auto-indent ;)
-//     this.autoindents = [                // Regex lookups for auto-indent
-//         /^\s*\*\s/,                     // Bullet list
-//         /^\s*\#\s/                      // Number list
-//     ];
-
-//     // Syntax items to display in the help box
-//     this.help = [
-//         { label: 'Header', syntax: '=== Header ===' },
-//         { label: 'Bold',   syntax: "'''bold'''" },
-//         { label: 'Italic', syntax: "''italics''" },
-//         { label: 'Link',   syntax: '[http://google.com pk!]' },
-//         { label: 'Bullet List', syntax: '* list item' },
-//         { label: 'Number List', syntax: '# list item' },
-//         { label: 'Blockquote', syntax: '&lt;blockquote&gt;quote&lt;/blockquote&gt;' },
-//         { label: 'Large Code Block', syntax: '&lt;pre&gt;Code block&lt;/pre&gt;' }
-//     ];
-// };
-
-
-/* ---------------------------------------------------------------------------
- * Wysiwym BBCode
- * BBCode markup language for the Wysiwym editor
- * Reference: http://labs.spaceshipnofuture.org/icky/help/formatting/
- *---------------------------------------------------------------------------- */
-// Wysiwym.BBCode = function(textarea) {
-//     this.$el = textarea;    // jQuery textarea object
-
-//     // Initialize the Markdown Buttons
-//     this.buttons = [
-//         new Button('Bold',   Wysiwym.span,  {prefix:"[b]", suffix:"[/b]", text:'strong text'}),
-//         new Button('Italic', Wysiwym.span,  {prefix:"[i]",  suffix:"[/i]",  text:'italic text'}),
-//         new Button('Link',   Wysiwym.span,  {prefix:'[url="http://example.com"]',  suffix:'[/url]', text:'link text'}),
-//         new Button('Quote',  Wysiwym.span,  {prefix:'[quote]',  suffix:'[/quote]', text:'quote text'}),
-//         new Button('Code',   Wysiwym.span,  {prefix:'[code]',  suffix:'[/code]', text:'code text'})
-//     ];
-
-//     // Syntax items to display in the help box
-//     this.help = [
-//         { label: 'Bold',   syntax: "[b]bold[/b]" },
-//         { label: 'Italic', syntax: "[i]italics[/i]" },
-//         { label: 'Link',   syntax: '[url="http://example.com"]pk![/url]' },
-//         { label: 'Blockquote', syntax: '[quote]quote text[/quote]' },
-//         { label: 'Large Code Block', syntax: '[code]code text[/code]' }
-//     ];
-// };
 
 
 /*----------------------------------------------------------------------
