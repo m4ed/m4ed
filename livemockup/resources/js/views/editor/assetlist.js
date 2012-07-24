@@ -12,7 +12,6 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
   var assetView = Backbone.View.extend({
 
     initialize: function(options) {
-      var self = this;
 
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
@@ -56,8 +55,7 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
               parent: this
             }
           })
-        , el = view.render().el
-        , self = this;
+        , el = view.render().el;
       //view.bind('destroy', this.onDestroy, this);
 
       this.$el.append(el);

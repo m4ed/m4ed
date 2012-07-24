@@ -55,8 +55,7 @@ function($, _, Backbone, AssetListView, wysiwym) {
     },
 
     render: function() {
-      var self = this
-        , $el = this.$el;
+      var $el = this.$el;
       // Render the template with the model data
       $el.html(this.template.render(this.model.toJSON()));
 
@@ -97,12 +96,12 @@ function($, _, Backbone, AssetListView, wysiwym) {
     }, 1000),
 
     onTextareaDrop: function(e) {
-      var self = this;
       // Wait for the textarea to update itself with the dropped
       // text before trying to update any data
-      setTimeout(function() {
-        self.update();
-      }, 10);
+      var callback = _.bind(function() {
+        this.update();
+      }, {update: this.update});
+      setTimeout(callback, 10);
     },
 
     onPictureButtonClick: function(e) {
@@ -148,8 +147,7 @@ function($, _, Backbone, AssetListView, wysiwym) {
     },
 
     generatePreview: function() {
-      var self = this
-        , mdContent = this.model.get('text'); //this.getEditorText();
+      var mdContent = this.model.get('text'); //this.getEditorText();
       if (this.activeXhr || this.lastContent == mdContent) {
         return;
       }
@@ -158,16 +156,22 @@ function($, _, Backbone, AssetListView, wysiwym) {
         'url': '/misaka',
         'data': {'md': mdContent},
         'type': 'POST',
-        error: function(jqXHR, textStatus, errorThrown) {
-          self.setPreviewHTML(errorThrown);
-        },
-        success: function(data, textStatus, jqXHR) {
-          self.setPreviewHTML(data.html);
-        },
-        complete: function(jqXHR, textStatus) {
-          self.activeXhr = null;
-        }
+        error: _.bind(this.onAjaxError, this),
+        success: _.bind(this.onAjaxSuccess, this),
+        complete: _.bind(this.onAjaxComplete, this)
       });
+    },
+
+    onAjaxError: function(jqXHR, textStatus, errorThrown) {
+      this.setPreviewHTML(errorThrown);
+    },
+
+    onAjaxSuccess: function(data, textStatus, jqXHR) {
+      this.setPreviewHTML(data.html);
+    },
+
+    onAjaxComplete: function(jqXHR, textStatus) {
+      this.activeXhr = null;
     },
 
     updateImages: function() {
