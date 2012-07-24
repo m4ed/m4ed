@@ -37,13 +37,15 @@
   <script id="editor-template" type="text/hogan">
     ${hogan_editor()}
   </script>
+  ${hogan_wysiwym()}
+  ${hogan_wysiwym_button()}
   
 
 </%block>
 
 <%def name="hogan_editor()">
   <div class="row">
-    <div class="span6">
+    <div class="span6 editor-wrap">
       <div class="btn-toolbar editor-buttons">
       </div>
       <textarea class="span6 editor-textarea">{{text}}</textarea>
@@ -72,4 +74,37 @@
   </div>
 </%def>
 
+<%def name="hogan_wysiwym()">
+  <script id="wysiwym-editor-template" type="text/hogan">
+  <div class="{{editorclass}}">
+    <div class="{{containerclass}}">
+    {{#groups}}
+      <div class="btn-group">
+        {{#buttons}}
+        {{#buttonwrap}}
+          <div class="button btn {{buttonclass}}" unselectable="on">
+            <span class="wrap" unselectable="on">
+              <span class="text" style="display:{{display}}" unselectable="on">{{name}}</span>
+              <i class="icon-{{icon}}"></i>
+            </span>
+          </div>
+        {{/buttonwrap}}
+        {{/buttons}}
+      </div>
+    {{/groups}}
+    </div>
+    {{textarea}}
+  </div>
+  </script>
+</%def>
 
+<%def name="hogan_wysiwym_button()">
+  <script id="wysiwym-button-template" type="text/hogan">
+          <div class="button btn {{buttonclass}}" unselectable="on">
+            <span class="wrap" unselectable="on">
+              <span class="text" style="display:{{display}}" unselectable="on">{{name}}</span>
+              <i class="icon-{{icon}}"></i>
+            </span>
+          </div>
+  </script>
+</%def>

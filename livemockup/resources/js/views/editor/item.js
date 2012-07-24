@@ -95,8 +95,10 @@ function(_, Backbone, EditorView) {
     },
 
     onEditBlur: function(e) {
+      e.stopPropagation();
       // Don't save if the input loses focus
       this.closeEdit(false, e.currentTarget);
+      return false;
     },
 
     onEditKeyup: function(e) {

@@ -1,5 +1,10 @@
-!function($) {
-
+define([
+  'jquery',
+  'underscore',
+  'backbone',
+  'hogan'
+],
+function($, _, Backbone, hogan) {
 /*----------------------------------------------------------------------------------------------
  * m4ed Wysiwym editor - optimized for Markdown
  * 
@@ -12,38 +17,54 @@
  *--------------------------------------------------------------------------------------------- */
 //var Wysiwym = {};
 
-$.fn.wysiwym = function(option) {
-  return this.each(function() {
-    var $this = $(this)
-      , data = $this.data('wysiwym')
-      , options = typeof option == 'object' && option;
-    if (!data) {
-      $this.data('wysiwym', (data = new Wysiwym(this, options)));
+  var wysiwym = Backbone.View.extend({
+
+    initialize: function() {
+
+      _.extend(this, options.custom);
+
+      this.templates = 
+
+      var options = {
+        editorclass: 'wysiwym-editor',            // Class to use for the wysiwym editor
+        buttonclass: 'wysiwym-buttons btn-toolbar',           // Class to use for the wysiwym button container
+        helpclass: 'wysiwym-help',                // Class to use for the wysiwym help
+        helptoggleclass: 'btn',                    // Class to use for the wysiwym help
+
+        $buttonContainer: undefined,               // jQuery elem to place buttons (makes one by default)
+        $help: undefined,                          // jQuery elem to place help (makes one by default)
+        helpEnabled: false,                        // Set true to display the help dropdown
+        $helpButton: undefined,                    // jQuery elem to toggle help (makes <a> by default)
+        helpTextShow: 'Markup syntax',             // Toggle text to display when help is not visible
+        helpTextHide: 'Hide markup syntax',        // Toggle text to display when help is visible
+        helpIcon: 'question-sign',                 // Icon for the help button
+        hideHelpButtonText: true                   // Boolean to hide text button
+      }
     }
-    // We don't need this.
-    /*if (typeof option == 'string'){
-      data[option]();
-    }*/
-  });
-};
 
-$.fn.wysiwym.Constructor = Wysiwym;
 
-$.fn.wysiwym.defaults = {
-    editorclass: 'wysiwym-editor',            // Class to use for the wysiwym editor
-    buttonclass: 'wysiwym-buttons',           // Class to use for the wysiwym button container
-    helpclass: 'wysiwym-help',                // Class to use for the wysiwym help
-    helptoggleclass: 'btn',                    // Class to use for the wysiwym help
+  })
 
-    $buttonContainer: undefined,               // jQuery elem to place buttons (makes one by default)
-    $help: undefined,                          // jQuery elem to place help (makes one by default)
-    helpEnabled: false,                        // Set true to display the help dropdown
-    $helpButton: undefined,                    // jQuery elem to toggle help (makes <a> by default)
-    helpTextShow: 'Markup syntax',             // Toggle text to display when help is not visible
-    helpTextHide: 'Hide markup syntax',        // Toggle text to display when help is visible
-    helpIcon: 'question-sign',                 // Icon for the help button
-    hideHelpButtonText: true                   // Boolean to hide text button
-};
+// $.fn.wysiwym = function(option) {
+//   return this.each(function() {
+//     var $this = $(this)
+//       , data = $this.data('wysiwym')
+//       , options = typeof option == 'object' && option;
+//     if (!data) {
+//       $this.data('wysiwym', (data = new Wysiwym(this, options)));
+//     }
+//     // We don't need this.
+//     /*if (typeof option == 'string'){
+//       data[option]();
+//     }*/
+//   });
+// };
+
+// $.fn.wysiwym.Constructor = Wysiwym;
+
+// $.fn.wysiwym.defaults = {
+    
+//};
 
 var Wysiwym = function(element, options) {
   this.init('wysiwym', element, options);
@@ -65,6 +86,17 @@ Wysiwym.prototype = {
     this.markup = markdown;                     // Wysiwym Markup set to use (markdown as default)
     this.textarea = new Textarea(this.el);      // The actual textarea element where we make changes
 
+    this.templates = {
+      editor: hogan.compile($('#wysiwym-editor-template').html()),
+      button: hogan.compile($('#wysiwym-button-template').html())
+    }
+
+    this.editor = {
+      editorclass: this.options.editorclass,
+      containerclass: this.options.buttonclass,
+      groups: []
+    }
+
     this.$editor = $('<div class="'+ this.options.editorclass +'"></div>');
     this.$el.wrap(this.$editor);
 
@@ -75,6 +107,13 @@ Wysiwym.prototype = {
     this.initializeShortcutHandler();
     this.initializeHelp();
     this.initializeHelpToggle();
+
+    //this$
+
+    console.log(this.editor);
+    var hotomolo = this.templates.editor.render(this.editor);
+    console.log(this.$el.parent().parent().html(hotomolo));
+    //console.log(hotomolo);
   },
 
   getOptions: function (options) {
@@ -87,22 +126,35 @@ Wysiwym.prototype = {
     var self = this
       , markup = this.markup
       , textarea = this.textarea
-      , $buttonContainer = this.options.$buttonContainer ||
-                           $("<div></div>").insertBefore(this.$el);
+    //   , $buttonContainer = this.options.$buttonContainer ||
+    //                        $("<div></div>").insertBefore(this.$el);
 
-    $buttonContainer.addClass(this.options.buttonclass);
+    // $buttonContainer.addClass(this.options.buttonclass);
 
-    var $buttonGroup = $('<div class="btn-group"></div>');
+    // var $buttonGroup = $('<div class="btn-group"></div>');
+
+    // var button = this.templates.button;
+    // var a = this.templates.editor.render({
+
+    // });
+
+    //console.log(a);
+    var groups = this.editor.groups;
 
     markup.buttons.forEach(function(buttonGroup) {
-      var $newGroup = $buttonGroup.clone();
-      $newGroup.appendTo($buttonContainer);
-
+      //var $newGroup = $buttonGroup.clone();
+      //$newGroup.appendTo($buttonContainer);
+      var group = {
+        buttons: []
+      };
       buttonGroup.forEach(function(button) {
-        button.init(self.textarea);
-        button.$el.on('click', $.proxy(self[button.callback], button));
-        $newGroup.append(button.$el);
+        b = button.init(self.textarea);
+        group.buttons.push(b);
+        //button.$el.on('click', $.proxy(self[button.callback], button));
+        //$newGroup.append(button.$el);
       });
+      groups.push(group);
+      //console.log(group);
     });
   },
 
@@ -836,29 +888,60 @@ Button.prototype = {
   },
 
   // Create and return a new Button jQuery element
-  init: function(textarea) {
+  init: function(textarea, buttons) {
     this.textarea = textarea;
-    var $text = $('<span class="text">'+ this.name +'</span>');
-    var $i = $('<i class="icon-'+ this.icon +'"></i>');
-    var $wrap = $('<span class="wrap"></span>').append($text);
-    if (this.hidetext) $text.hide();
-    if (this.icon !== undefined) $wrap.append($i);
-    var $button = $('<div class="button btn"></div>').append($wrap);
+    // var $text = $('<span class="text">'+ this.name +'</span>');
+    // var $i = $('<i class="icon-'+ this.icon +'"></i>');
+    // var $wrap = $('<span class="wrap"></span>').append($text);
+    //if (this.hidetext) $text.hide();
+    //if (this.icon !== undefined) $wrap.append($i);
+    //var $button = $('<div class="button btn"></div>').append($wrap);
     // Add bootstrap tooltip
-    $button.tooltip({
-      title: this.tooltip,
-      delay: {
-        show: 1500,
-        hide: 200
-      }
-    });
-    $button.addClass(this.getCssClass());
-    // Make everything 'unselectable' so IE doesn't freak out
-    $text.attr('unselectable', 'on');
-    $wrap.attr('unselectable', 'on');
-    $button.attr('unselectable', 'on');
+    // $button.tooltip({
+    //   title: this.tooltip,
+    //   delay: {
+    //     show: 1500,
+    //     hide: 200
+    //   }
+    // });
+
+    var attrs = {
+      name: this.name,
+      icon: this.icon,
+      display: 'none',
+      tooltip: this.tooltip,
+      buttonclass: this.getCssClass()
+    }
+
+    // $button.addClass(this.getCssClass());
+    // // Make everything 'unselectable' so IE doesn't freak out
+    // $text.attr('unselectable', 'on');
+    // $wrap.attr('unselectable', 'on');
+    // $button.attr('unselectable', 'on');
     // Attach jQuery element so we can access it easily
-    this.$el = $button;
+    //this.$el = $button;
+
+    //var battoni = hogan.compile($('#wysiwym-button-template').html());
+    return {
+      buttonwrap: function() {
+        return function(text) {
+          //console.log(text);
+          var el = hogan.compile(text).render(attrs);
+          var $el = $(el);
+          var options = {
+            title: attrs.tooltip,//this.tooltip,
+            delay: {
+              show: 1500,
+              hide: 200
+            }
+          };
+          $el.data('tooltip', (data = $el.tooltip(options)));
+          $el.data('click', (data = $el.click(function(){alert('hi')})));
+
+          return el;
+        }
+      }
+    }
   }
 };
 
@@ -1005,4 +1088,4 @@ String.prototype.endswith = function(str) { return this.slice(str.length, this.l
 
 //return Wysiwym;
 
-}(window.jQuery);
+});
