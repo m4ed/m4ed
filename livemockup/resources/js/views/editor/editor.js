@@ -62,7 +62,7 @@ function($, _, Backbone, AssetListView, wysiwym) {
 
       // Initiate a new bottom bar view
       this.assetList = new AssetListView({
-        el: $el.find('.picture-container'),
+        el: $el.find('.asset-container'),
         custom: {
           dispatcher: this.dispatcher,
           parent: this
@@ -107,10 +107,8 @@ function($, _, Backbone, AssetListView, wysiwym) {
 
     onPictureButtonClick: function(e) {
       e.stopPropagation();
-      var $arrow = this.$('#pointing-arrow');
-      
-      $arrow.slideToggle();
-      this.$('.picture-container').slideToggle();
+
+      this.$('.asset-container').slideToggle();
     },
 
     onInsertImage: function(markdown) {
@@ -136,7 +134,17 @@ function($, _, Backbone, AssetListView, wysiwym) {
     },
 
     toggle: function() {
-      this.$el.toggle('slidetoggle');
+      if (this.$el.is(':hidden')) {
+        var parent = this.parent;
+        this.$el.slideDown(100, function() {
+          // Scroll selected selected item to top
+          $('html:not(:animated),body:not(:animated)').animate({
+            scrollTop: parent.$el.offset().top - 8
+          }, 200);
+        });
+      } else {
+        this.$el.slideUp();
+      }
     },
 
     generatePreview: function() {

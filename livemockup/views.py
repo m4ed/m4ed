@@ -63,7 +63,13 @@ def GET_api_media(request):
 def GET_api_all_media(request):
     return [
             {'_id': '1', 'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
-            {'_id': '2', 'title': 'Test 2', 'src': 'http://placehold.it/150x100'}
+            {'_id': '2', 'title': 'Test 2', 'src': 'http://placehold.it/150x100'},
+            {'_id': '3', 'title': 'Test 3', 'src': 'http://placehold.it/150x100'},
+            {'_id': '4', 'title': 'Test 4', 'src': 'http://placehold.it/150x100'},
+            {'_id': '5', 'title': 'Test 5', 'src': 'http://placehold.it/150x100'},
+            {'_id': '6', 'title': 'Test 6', 'src': 'http://placehold.it/150x100'},
+            {'_id': '7', 'title': 'Test 7', 'src': 'http://placehold.it/150x100'},
+            {'_id': '8', 'title': 'Test 8', 'src': 'http://placehold.it/150x100'}
     ]
 
 

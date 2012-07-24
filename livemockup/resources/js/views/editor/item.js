@@ -79,7 +79,6 @@ function(_, Backbone, EditorView) {
       // Check if we need a new editor view created
       if (this.editorInitialized === false) {
         this.editorInitialized = true;
-        console.log('Editor on line');
         this.editor = new EditorView({
           model: this.model,
           template: this.editorTemplate,

@@ -48,14 +48,15 @@
 }
 
 .editor-textarea {
-  height: 264px;
-  resize: vertical;
+  height: 294px;
+  overflow: auto;
+  resize: none;
 }
 
-.picture-container {
+.asset-container {
   margin-top: 8px;
   padding: 7px;
-  // height: 240px;
+  height: 110px;
   overflow: auto;
   background-color: #fff;
   box-shadow: 0 0 7px #aaa;
@@ -79,12 +80,9 @@ input.edit {
   padding: 0;
 }
 
-// .ui-resizable-se {
-//  bottom: 17px;
-// }
-
 .preview {
-  min-height: 256px;
+  height: 286px;
+  overflow: auto;
   padding: 8px;
   margin-bottom: 8px;
   background-color: @infoBackground;

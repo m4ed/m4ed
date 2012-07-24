@@ -1,28 +1,7 @@
 <%inherit file="base.mako"/>
 
-<%block name="head">
-  ${parent.head()}
+<%block name="title">Content editor mockup</%block>
 
-<!--     <link href="../assets/css/editor.css" rel="stylesheet"> -->
-
-<!--     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('livemockup:static/wysiwym/wysiwym.css')}" />
-  <link rel="stylesheet" href="${request.static_url('livemockup:static/style/editor.css')}" />
-
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
-
-
-  <script src="${request.static_url('livemockup:static/scripts/underscore-min.js')}"></script>
-  <script src="${request.static_url('livemockup:static/scripts/jquery.autoellipsis-1.0.4.min.js')}"></script>
-  <script src="${request.static_url('livemockup:static/wysiwym/wysiwym.js')}"></script>
-
-  <script src="${request.static_url('livemockup:static/scripts/editor.js')}"></script>
- -->
-  <%block name="title">Content editor mockup</%block>
-
-</%block>
 
 <%block name="content">
   <% temporary_exercise_counter = 100 %>
@@ -82,14 +61,13 @@
     </div>
   </div>
   
-  <div id="editor-controls">
+  <div class="editor-controls">
     <button class="btn btn-primary editor-btn">Save</button>
     <button class="btn editor-btn cancel">Cancel</button>
     <button class="btn editor-btn pictures">Pictures</button>
   </div>
-    <div id="editor-pictures">
-      <div class="picture-container">
-        <img class="picture" id="add-picture" />
+    <div class="editor-pictures">
+      <div class="asset-container">
       </div>
   </div>
 </%def>
