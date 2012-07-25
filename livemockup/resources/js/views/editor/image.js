@@ -44,10 +44,10 @@ function(_, Backbone) {
 
     onClick: function(e) {
       e.stopPropagation();
-      // This is stupid and should not be done.
-      // Too lazy to think a better solution so we trigger the insertImage
-      // event through our parent view, which the editor view is listening to.
-      this.parent.trigger('insertImage', this.markdown);
+      // Trigger the insertImage
+      // event through our dispatcher, 
+      // which the editor view is listening to.
+      this.dispatcher.trigger('insertImage', this.markdown);
      //this.model.destroy();
     },
 

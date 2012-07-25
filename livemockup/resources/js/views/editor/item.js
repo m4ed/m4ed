@@ -81,10 +81,11 @@ function(_, Backbone, EditorView) {
         this.editorInitialized = true;
         this.editor = new EditorView({
           model: this.model,
-          template: this.editorTemplate,
           custom: {
+            globalDispatcher: this.globalDispatcher,
             dispatcher: this.dispatcher,
-            parent: this
+            parent: this,
+            templates: this.templates
           }
         });
       } else {

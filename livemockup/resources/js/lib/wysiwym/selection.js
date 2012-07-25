@@ -3,28 +3,24 @@ define([], function() {
  * Wysiwym Selection
  * Manipulate the textarea selection
  *--------------------------------------------------------------------------------------------- */
-var selection = function(textarea) {
-  this.init(textarea);
+var Selection = function() {
+  this.init();
 };
 
 Selection.prototype = {
 
-  init: function(textarea) {
-    this.textarea = textarea;
-    this.lines = textarea.lines;                 // Reference to textarea.lines
+  init: function() {
+    this.lines = [];                 // Reference to textarea.lines
     this.start = { line:0, position:0 };        // Current cursor start positon
     this.end = { line:0, position:0 };          // Current cursor end position
+    this.blankline = '';
   },
 
-  refresh: function() {
-    this.lines = [];
-    var text = this.textarea.getText()
-      , selectionInfo = this.textarea.getSelectionStartEnd()
-      , selectionStart = selectionInfo[0]
+  refresh: function(text, selectionInfo) {
+    var selectionStart = selectionInfo[0]
       , selectionEnd = selectionInfo[1]
-      , lines = this.lines;
-
-    var endline = 0;
+      , lines = []
+      , endline = 0;
     while (endline >= 0) {
       endline = text.indexOf('\n');
       var line = text.slice(0, endline >= 0 ? endline : text.length);
@@ -50,8 +46,10 @@ Selection.prototype = {
     }
 
     //console.log(lines);
-    this.textarea.lines = lines;
-    return this;
+    //this.textarea.lines = lines;
+    //return this;
+    this.lines = lines;
+    return lines;
   },
 
   // Return a string representation of this object.
@@ -88,12 +86,12 @@ Selection.prototype = {
     }
     // Check we need to update the scroll height;  This is very slightly
     // off because height !== scrollHeight. A fix would be nice.
-    if (prefix.indexOf('\n') !== -1) {
-      var scrollHeight = this.textarea.el.scrollHeight;
-      var lineheight = parseInt(scrollHeight / numlines, 10);
-      this.textarea.scroll += lineheight;
-  }
-},
+    // if (prefix.indexOf('\n') !== -1) {
+    //   var scrollHeight = this.textarea.el.scrollHeight;
+    //   var lineheight = parseInt(scrollHeight / numlines, 10);
+    //   this.textarea.scroll += lineheight;
+    // }
+  },
 
   // Add the specified suffix to the selection
   addSuffix: function(suffix) {
@@ -122,7 +120,7 @@ Selection.prototype = {
   // Return an array of lines in the selection
   getLines: function() {
     var selectedlines = [];
-    for (var i = this.start.line, j = this.end.line; i <= j; i++)
+    for (var i = this.start.line, j = this.end.line; i <= j; ++i)
       selectedlines[selectedlines.length] = this.lines[i];
     return selectedlines;
   },
@@ -316,8 +314,8 @@ Selection.prototype = {
   // Remove blank lines from before and after the selection.  If the
   // previous or next line is not blank, it will be left alone.
   unwrapBlankLines: function() {
-    this.textarea.selection.removePreviousLine(/^\s*$/);
-    this.textarea.selection.removeNextLine(/^\s*$/);
+    this.removePreviousLine(/^\s*$/);
+    this.removeNextLine(/^\s*$/);
   },
 
   // Return the selection value
@@ -347,13 +345,13 @@ Selection.prototype = {
   // Wrap the selected lines with blank lines.  If there is already
   // a blank line in place, another one will not be added.
   wrapBlankLines: function() {
-    if (this.textarea.selection.start.line > 0)
-      this.textarea.selection.insertPreviousLine(this.blankline, false);
-    if (this.textarea.selection.end.line < this.textarea.lines.length - 1)
-      this.textarea.selection.insertNextLine(this.blankline, false);
+    if (this.start.line > 0)
+      this.insertPreviousLine(this.blankline, false);
+    if (this.end.line < this.lines.length - 1)
+      this.insertNextLine(this.blankline, false);
   }
 };
 
-return selection;
+return Selection;
 
 });

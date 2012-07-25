@@ -18,7 +18,7 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
 
       this.imgTemplate = hogan.compile('![{{alt}}]({{src}})');
 
-      this.dispatcher.bind('assetChange', this.onAssetChange, this);
+      this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
 
       this.assets = new AssetCollection();
       // Fetch will trigger the 'reset' event
@@ -63,7 +63,7 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
 
     onDestroy: function(model) {
       console.log('Destroy event triggered!');
-      this.dispatcher.trigger('assetChange', model.get('_id'));
+      this.globalDispatcher.trigger('assetChange', model.get('_id'));
     }
   });
 

@@ -34,8 +34,21 @@ def GET_api_items(request):
         _id=_id,
         text='This is text for item ID: {}'.format(_id),
         title='Item {}'.format(_id),
-        description='This is a description'
-        )
+        description='This is a description',
+        buttons=[{
+            'class': '',
+            'display': 'block',
+            'icon': 'bold',
+            'callback': {
+                'function': 'span',
+                'data':{
+                  'prefix': '# ',
+                   'suffix': '',
+                   'text': 'Heading 1'
+                }
+            }
+        }]
+    )
 
 
 @view_config(route_name='api_folders', renderer='json')

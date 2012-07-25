@@ -13,7 +13,7 @@ requirejs.config({
     'domReady': 'lib/requirejs/domReady',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
     'bootstrap.popover': '../bootstrap/js/bootstrap-popover',
-    'wysiwym': 'lib/wysiwym/wysiwym'
+    'wysiwym': 'views/editor/wysiwym'
   },
   shim: {
     'backbone': {

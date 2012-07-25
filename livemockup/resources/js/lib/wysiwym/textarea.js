@@ -17,12 +17,16 @@ textarea.prototype = {
     this.el = el;                                 // Javascript textarea element
     this.$el = $(el);                             // jQuery textarea object
     this.lines = [];                              // Current textarea lines
-    this.selection = new Selection(this);         // Selection properties & manipulation
+    this.selection = new Selection();             // Selection properties & manipulation
     this.scroll = this.el.scrollTop;              // Current cursor scroll position
   },
 
   refreshedSelection: function() {
-    return this.selection.refresh();
+    console.log(this.getText());
+    console.log(this.getSelectionStartEnd());
+    this.lines = this.selection.refresh(this.getText(), this.getSelectionStartEnd());
+    console.log(this.lines);
+    return this.selection;
   },
 
   getText: function() {
@@ -42,18 +46,26 @@ textarea.prototype = {
 
   // Return the current text value of this textarea object
   getProperties: function() {
-    var newtext = []            // New textarea value
+    var lines = this.lines
+      , newtext = []            // New textarea value
       , textLength = 0
-      , selectionStart = 0      // Absolute cursor start position
-      , selectionEnd = 0;       // Absolute cursor end position
+      , selectionStart = 0            // Absolute cursor start position
+      , selectionEnd = 0              // Absolute cursor end position
+      , start = this.selection.start  // Selection object's start attribute
+      , end = this.selection.end;     // Selection object's end attribute
     //console.log('There are ' + this.lines.length + ' lines');
-    for (var i = 0, j = this.lines.length; i < j; i++) {
-      if (i === this.selection.start.line)
-        selectionStart = textLength + this.selection.start.position;
-      if (i === this.selection.end.line)
-        selectionEnd = textLength + this.selection.end.position;
-      newtext.push(this.lines[i]);
-      textLength += this.lines[i].length;
+
+    for (var i in lines) {
+      if (i === start.line) {
+        selectionStart = textLength + start.position;
+      }
+      if (i === end.line) {
+        selectionEnd = textLength + end.position;
+      }
+
+      newtext.push(lines[i]);
+      textLength += lines[i].length;
+
       if (i !== this.lines.length - 1) {
         newtext.push('\n');
         textLength += 1;
@@ -73,10 +85,10 @@ textarea.prototype = {
       endpos = this.el.selectionEnd;
     } else {
       this.el.focus();
-      var text = this.getText();
-      var textlen = text.length;
-      var range = document.selection.createRange();
-      var textrange = this.el.createTextRange();
+      var text = this.getText()
+        , textlen = text.length
+        , range = document.selection.createRange()
+        , textrange = this.el.createTextRange();
       textrange.moveToBookmark(range.getBookmark());
       var endrange = this.el.createTextRange();
       endrange.collapse(false);
@@ -99,12 +111,15 @@ textarea.prototype = {
 
   // Update the textarea with the current lines and cursor settings
   update: function() {
-    var properties = this.getProperties();
-    //console.log(properties);
-    var newtext = properties[0];
-    var selectionStart = properties[1];
-    var selectionEnd = properties[2];
+    var properties = this.getProperties()
+      , newtext = properties[0]
+      , selectionStart = properties[1]
+      , selectionEnd = properties[2];
+
+    console.log(properties);
+
     this.$el.val(newtext);
+
     if (this.el.setSelectionRange) {
         this.el.setSelectionRange(selectionStart, selectionEnd);
     } else if (this.el.createTextRange) {

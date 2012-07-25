@@ -4,11 +4,12 @@ define([
   'underscore',
   'backbone',
   'views/editor/assetlist',
-  'wysiwym',
+  'views/editor/wysiwym',
+  'views/editor/buttonlist',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, AssetListView, wysiwym) {
+function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -22,7 +23,8 @@ function($, _, Backbone, AssetListView, wysiwym) {
     },
 
     initialize: function(options) {
-      this.template = options.template;
+      // Extend this object with all the custom options passed
+      _.extend(this, options.custom);
       this.activeXhr = null;
       this.lastContent = null;
       this.editorInitialized = false;
@@ -30,8 +32,6 @@ function($, _, Backbone, AssetListView, wysiwym) {
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
 
-      // Extend this object with all the custom options passed
-      _.extend(this, options.custom);
 
       // If the model already has text, assume it has been initialized
       // somewhere else and render it
@@ -57,24 +57,49 @@ function($, _, Backbone, AssetListView, wysiwym) {
     render: function() {
       var $el = this.$el;
       // Render the template with the model data
-      $el.html(this.template.render(this.model.toJSON()));
+      $el.html(this.templates.editor.render(this.model.toJSON()));
 
       // Initiate a new bottom bar view
       this.assetList = new AssetListView({
         el: $el.find('.asset-container'),
+        custom: {
+          globalDispatcher: this.globalDispatcher,
+          dispatcher: this.dispatcher,
+          parent: this
+        }
+      });
+
+      this.dispatcher.on('insertImage', this.onInsertImage, this);
+
+      // init buttons
+      this.buttons = new ButtonListView({
+        el: $el.find('.editor-buttons'),
+        buttons: this.model.get('buttons'),
+        custom: {
+          dispatcher: this.dispatcher,
+          parent: this,
+          template: this.templates.button
+        }
+      });
+
+      // init wysiwym.js
+      //console.log($el.find('.wysiwym-container'));
+
+      this.wysiwym = new WysiwymView({
+        el: $el.find('.editor-textarea'),
+        model: this.model,
         custom: {
           dispatcher: this.dispatcher,
           parent: this
         }
       });
 
-      this.assetList.on('insertImage', this.onInsertImage, this);
+      this.wysiwym.render();
 
-      // init wysiwym.js
-      $el.find('.editor-textarea').wysiwym({
-        $buttonContainer:  $el.find('.editor-buttons:first'),
-        helpEnabled: true
-      });
+      // $el.find('.editor-textarea').wysiwym({
+      //   $buttonContainer:  $el.find('.editor-buttons:first'),
+      //   helpEnabled: true
+      // });
 
       // Stupid work around 
       $el.insertAfter(this.parent.$el);
@@ -88,6 +113,7 @@ function($, _, Backbone, AssetListView, wysiwym) {
       'keyup .editor-textarea': 'onTextareaKeyup',
       'drop .editor-textarea': 'onTextareaDrop',
       'click .editor-btn.pictures': 'onPictureButtonClick'
+      //'click .btn': function() { alert('!!!')}
     },
 
     onTextareaKeyup: _.throttle(function(e) {
