@@ -2,9 +2,11 @@
 define([
   'jquery',
   'underscore',
-  'backbone'
+  'backbone',
+  'views/editor/templates'
 ],
-function($, _, Backbone) {
+function($, _, Backbone, templates) {
+  console.log(templates)
 
   var buttonView = Backbone.View.extend({
 
@@ -16,17 +18,17 @@ function($, _, Backbone) {
     },
 
     events: {
-      'click': 'toggle'
+      'click .btn': 'onEditorButtonClick'
     },
 
     render: function() {
-      this.$el.html(this.template.render(this.model.toJSON()));
+      this.$el.html(templates.button.render(this.model.toJSON()));
       return this;
     },
 
-    toggle: function() {
+    onEditorButtonClick: function() {
       var callback = this.model.get('callback');
-      this.dispatcher.trigger('insertMarkdown', callback);
+      this.dispatcher.trigger('editorButtonClick', callback);
     }
 
   });

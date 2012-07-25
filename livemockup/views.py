@@ -38,9 +38,9 @@ def GET_api_items(request):
         buttons=[{
             'class': '',
             'display': 'block',
-            'icon': 'bold',
+            'icon': 'h1',
             'callback': {
-                'function': 'span',
+                'action': 'span',
                 'data':{
                   'prefix': '# ',
                    'suffix': '',

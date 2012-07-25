@@ -34,8 +34,7 @@ function($, _, Backbone, hogan, ButtonCollection, ButtonView) {
 
         custom: {
           dispatcher: this.dispatcher,
-          parent: this,
-          template: this.template
+          parent: this
         }
       });
       var el = buttonView.render().el;

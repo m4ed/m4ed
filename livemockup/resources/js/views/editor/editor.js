@@ -6,10 +6,11 @@ define([
   'views/editor/assetlist',
   'views/editor/wysiwym',
   'views/editor/buttonlist',
+  'views/editor/templates',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView) {
+function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -57,7 +58,7 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView) {
     render: function() {
       var $el = this.$el;
       // Render the template with the model data
-      $el.html(this.templates.editor.render(this.model.toJSON()));
+      $el.html(templates.editor.render(this.model.toJSON()));
 
       // Initiate a new bottom bar view
       this.assetList = new AssetListView({
@@ -77,8 +78,7 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView) {
         buttons: this.model.get('buttons'),
         custom: {
           dispatcher: this.dispatcher,
-          parent: this,
-          template: this.templates.button
+          parent: this
         }
       });
 
@@ -126,7 +126,7 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView) {
       // text before trying to update any data
       var callback = _.bind(function() {
         this.update();
-      }, {update: this.update});
+      }, this);
       setTimeout(callback, 10);
     },
 

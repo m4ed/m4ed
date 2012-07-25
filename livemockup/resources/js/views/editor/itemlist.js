@@ -28,22 +28,6 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
       // in all the child views
       this.globalDispatcher = _.clone(Backbone.Events);
 
-      // Prepare the editor template for individual ItemViews
-      this.templates = {
-        editor: hogan.compile($('#editor-template').html()),
-
-        button: hogan.compile([
-            '<div class="button btn {{class}}" unselectable="on">',
-              '<span class="wrap" unselectable="on">',
-                '<span class="text" style="display:{{display}}" unselectable="on">',
-                  '{{name}}',
-                '</span>',
-                '<i class="icon-{{icon}}"></i>',
-              '</span>',
-            '</div>'
-          ].join(''))
-      }
-
       this.collection.bind('add', this.onAdd, this);
 
       $('.item').each(function(index) {

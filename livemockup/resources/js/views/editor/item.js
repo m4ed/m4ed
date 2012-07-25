@@ -84,8 +84,7 @@ function(_, Backbone, EditorView) {
           custom: {
             globalDispatcher: this.globalDispatcher,
             dispatcher: this.dispatcher,
-            parent: this,
-            templates: this.templates
+            parent: this
           }
         });
       } else {
