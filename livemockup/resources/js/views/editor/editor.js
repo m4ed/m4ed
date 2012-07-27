@@ -4,13 +4,13 @@ define([
   'underscore',
   'backbone',
   'views/editor/assetlist',
-  'views/editor/wysiwym',
+  'views/editor/textarea',
   'views/editor/buttonlist',
   'views/editor/templates',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates) {
+function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -73,19 +73,22 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates)
       this.dispatcher.on('insertImage', this.onInsertImage, this);
 
       // init buttons
-      this.buttons = new ButtonListView({
-        el: $el.find('.editor-buttons'),
-        buttons: this.model.get('buttons'),
-        custom: {
-          dispatcher: this.dispatcher,
-          parent: this
-        }
-      });
+      var buttonGroups = templates.buttonGroups;
+      for (var i in buttonGroups) {
+        var buttons = new ButtonListView({
+          //el: $el.find('.editor-buttons'),
+          buttons: buttonGroups[i],
+          custom: {
+            dispatcher: this.dispatcher,
+            parent: this
+          }
+        });
 
-      // init wysiwym.js
-      //console.log($el.find('.wysiwym-container'));
+        $el.find('.editor-buttons').append(buttons.render().el);
+      }
 
-      this.wysiwym = new WysiwymView({
+
+      this.textarea = new TextareaView({
         el: $el.find('.editor-textarea'),
         model: this.model,
         custom: {
@@ -94,17 +97,10 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates)
         }
       });
 
-      this.wysiwym.render();
-
-      // $el.find('.editor-textarea').wysiwym({
-      //   $buttonContainer:  $el.find('.editor-buttons:first'),
-      //   helpEnabled: true
-      // });
+      this.textarea.render();
 
       // Stupid work around 
       $el.insertAfter(this.parent.$el);
-      //this.generatePreview();
-      //this.toggle();
 
       return this;
     },
@@ -147,11 +143,11 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates)
     },
 
     setEditorText: function(text) {
-      this.$('.editor-textarea').val(text);
+      this.textarea.$el.val(text);
     },
 
     getEditorText: function() {
-      return this.$('.editor-textarea').val();
+      return this.textarea.$el.val();
     },
 
     setPreviewHTML: function(html) {
@@ -180,7 +176,7 @@ function($, _, Backbone, AssetListView, WysiwymView,  ButtonListView, templates)
       this.lastContent = mdContent;
       this.activeXhr = $.ajax({
         'url': '/misaka',
-        'data': {'md': mdContent},
+        'data': {'md': _.escape(mdContent)},
         'type': 'POST',
         error: _.bind(this.onAjaxError, this),
         success: _.bind(this.onAjaxSuccess, this),

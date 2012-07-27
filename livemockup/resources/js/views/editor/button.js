@@ -10,6 +10,14 @@ function($, _, Backbone, templates) {
 
   var buttonView = Backbone.View.extend({
 
+    tagName: 'div',
+
+    className: 'button btn',
+
+    attributes: {
+      unselectable: "on"
+    },
+
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
@@ -17,8 +25,9 @@ function($, _, Backbone, templates) {
       //console.log(this.data);
     },
 
+
     events: {
-      'click .btn': 'onEditorButtonClick'
+      'click': 'onEditorButtonClick'
     },
 
     render: function() {

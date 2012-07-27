@@ -35,19 +35,120 @@ def GET_api_items(request):
         text='This is text for item ID: {}'.format(_id),
         title='Item {}'.format(_id),
         description='This is a description',
-        buttons=[{
-            'class': '',
-            'display': 'block',
-            'icon': 'h1',
-            'callback': {
-                'action': 'span',
-                'data':{
-                  'prefix': '# ',
-                   'suffix': '',
-                   'text': 'Heading 1'
-                }
-            }
-        }]
+        # buttonGroups=[
+        #     [dict(
+        #         icon='h1',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #               prefix='# ',
+        #                suffix='',
+        #                text='Heading 1'
+        #             )
+        #         )
+        #     ),
+        #     dict(
+        #         icon='h2',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #               prefix='## ',
+        #                suffix='',
+        #                text='Heading 2'
+        #             )
+        #         )
+
+        #     ),
+        #     dict(
+        #         icon='h3',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #               prefix='### ',
+        #                suffix='',
+        #                text='Heading 3'
+        #             )
+        #         )
+
+        #     )],
+        #     [dict(
+        #         icon='bold',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #                 prefix='**',
+        #                 suffix='**',
+        #                 text='strong text'
+        #             )
+        #         )
+        #     ),
+        #     dict(
+        #         icon='italic',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #                prefix='_',
+        #                suffix='_',
+        #                text='italic text'
+        #             )
+        #         )
+        #     ),
+        #     dict(
+        #         icon='link',
+        #         callback=dict(
+        #             action='span',
+        #             data=dict(
+        #                 prefix='[',
+        #                 suffix='](http://www.example.com)',
+        #                 text='link text'
+        #             )
+        #         )
+        #     )],
+        #     [dict(
+        #         icon='list',
+        #         callback=dict(
+        #             action='list',
+        #             data=dict(
+        #                 prefix='* ',
+        #                 suffix='',
+        #                 wrap=True
+        #             )
+        #         )
+        #     ),
+        #     dict(
+        #         icon='numbered-list',
+        #         callback=dict(
+        #             action='list',
+        #             data=dict(
+        #                 prefix='0. ',
+        #                 suffix='',
+        #                 wrap=True,
+        #                 regex='^\s*\d+\.\s'
+        #             )
+        #         )
+        #     )],
+        #     [dict(
+        #         icon='quote',
+        #         callback=dict(
+        #             action='list',
+        #             data=dict(
+        #                 prefix='> ',
+        #                 wrap=True
+        #             )
+        #         )
+
+        #     ),
+        #     dict(
+        #         icon='code',
+        #         callback=dict(
+        #             action='block',
+        #             data=dict(
+        #                 prefix='    ',
+        #                 wrap=True
+        #             )
+        #         )
+        #     )]
+        # ]
     )
 
 
