@@ -6,7 +6,8 @@ define([
   'hogan',
   'collections/items',
   'views/editor/item',
-  'views/editor/editor'
+  'views/editor/editor',
+  'jquery.ui'
 ],
 function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
 
@@ -34,6 +35,14 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
         // Temporary ID so we can test the dummy api
         var $this = $(this);
         collection.add({_id: $this.data('id')}, {$el: $this});
+      });
+
+
+      // TODO: editors must be somehow attached to their items,
+      // otherwise this will not work
+      // 
+      this.$el.sortable({
+        items: ".well.item"
       });
 
     },

@@ -5,10 +5,10 @@ define([
   'backbone',
   'collections/assets',
   'views/editor/image',
-  'hogan',
+  'views/editor/templates',
   'jquery.elastislide'
 ],
-function($, _, Backbone, AssetCollection, ImageView, hogan) {
+function($, _, Backbone, AssetCollection, ImageView, templates) {
 
   var assetView = Backbone.View.extend({
 
@@ -21,30 +21,6 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      // Image template for Markdown
-      this.imgMDTemplate = hogan.compile('![{{alt}}]({{src}})');
-
-      // Image template
-      this.imgTemplate = hogan.compile(
-        '<li>'+
-          '<img alt="{{alt}}" src="{{src}}" />'+
-          '<div class="buttons" style="display: none;">'+
-            '{{#buttons}}'+
-              '<div class="btn btn-inverse btn-circle btn-{{name}}">' +
-                '<i class="icon-{{icon}} icon-white"></i>'+
-              '</div>'+
-            '{{/buttons}}'+
-          '</div>'+
-        '</li>');
-
-      this.imgButtons = [{
-        name: 'remove',
-        icon: 'remove'
-      }, {
-        name: 'edit',
-        icon: 'edit'
-      }],
-
       this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
 
       this.assets = new AssetCollection();
@@ -54,17 +30,26 @@ function($, _, Backbone, AssetCollection, ImageView, hogan) {
       this.assets.bind('destroy', this.onDestroy, this);
 
       this.assets.fetch();
+
+      this.imageButtons = [{
+        name: 'remove',
+        icon: 'trash'
+      }, {
+        name: 'edit',
+        icon: 'edit'
+      }];
+
     },
 
     addImage: function(model) {
       var view = new ImageView({
             model: model,
             custom: {
-              template: this.imgTemplate,
+              template: templates.image,
               dispatcher: this.dispatcher,
               parent: this,
-              mdTemplate: this.imgMDTemplate,
-              buttons: this.imgButtons
+              mdTemplate: templates.imageMarkdown,
+              buttons: this.imageButtons
             }
           })
         , $image = view.render().$el;

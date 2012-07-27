@@ -1,3 +1,11 @@
+/*
+ * Elastislide - A Responsive jQuery Carousel Plugin
+ * by Mary Lou, September 12, 2011
+ *
+ * http://tympanus.net/codrops/2011/09/12/elastislide-responsive-carousel/
+ *
+ */
+
 (function( window, $, undefined ) {
 	
 	// http://www.netcu.de/jquery-touchwipe-iphone-ipad-library
