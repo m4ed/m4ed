@@ -11,9 +11,18 @@
 // -------------------------
 @graySemiLight:         #ddd;
 
+
 .container {
   padding-top: 20px;
 } 
+
+.hidden {
+  display: none;
+}
+
+
+// Items
+// -----------------------------------------
 
 .well {
   padding: 8px;
@@ -40,31 +49,10 @@
   margin-left: 60px;
   min-height: 48px;
 }
-.editor {
-  .btn-toolbar {
-    height: auto;
-    margin-top: 0;
-  }
-}
 
-.editor-textarea {
-  height: 294px;
-  overflow: auto;
-  resize: none;
-}
 
-.asset-container {
-  margin-top: 8px;
-  padding: 7px;
-  height: 110px;
-  overflow: auto;
-  background-color: #fff;
-  box-shadow: 0 0 7px #aaa;
-}
-
-.hidden {
-  display: none;
-}
+// Title and description edit
+// -----------------------------------------
 
 input.edit {
   display: none;
@@ -80,6 +68,27 @@ input.edit {
   padding: 0;
 }
 
+
+// Editor
+// -----------------------------------------
+
+.editor {
+  .btn-toolbar {
+    height: auto;
+    margin-top: 0;
+  }
+}
+
+.editor-textarea {
+  height: 294px;
+  overflow: auto;
+  resize: none;
+}
+
+
+// Editor preview
+// -----------------------------------------
+
 .preview {
   height: 286px;
   overflow: auto;
@@ -92,8 +101,89 @@ input.edit {
                     0 0  8px #fff;
 }
 
-img.picture {
- box-shadow: 0 0 7px #ccc;
- margin: 7px;
+
+// Asset container (Elastislide)
+// -----------------------------------------
+
+
+.btn-circle {
+  .border-radius(10px);
+  padding: 3px;
+  line-height: 0;
 }
 
+.asset-container {
+
+  padding:0px 46px;
+  margin-top: 8px;
+  position: relative;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  height: auto;
+  background-color: #fff;
+  box-shadow: 0 0 7px #aaa;
+  .user-select(none);
+
+}
+
+.es-nav span {
+  position:absolute;
+  top:18px;
+  left:12px;
+  background:transparent url(../img/slider-arrow.png) no-repeat top left;
+  width:22px;
+  height:93px;
+  margin-top:0px;
+  text-indent:-9000px;
+  cursor:pointer;
+  opacity:0.8;
+
+  &:hover {opacity:1.0;}
+
+  &.es-nav-next{
+    right:12px;
+    left:auto;
+    background-position:top right;
+  }
+
+}
+
+.es-carousel {
+  overflow:hidden;
+
+  ul {
+    display:block;
+
+    li {
+      width: 166px;
+      height: 132px;
+      float:left;
+      position:relative;
+      display:block;
+
+      img {
+        width: 150px;
+        height: 100px;
+        margin: 16px 8px; 
+        box-shadow: 0 0 7px #ccc;
+      }
+
+      .btn {
+        position: absolute;
+        top: 12px;
+        left: 4px;
+        z-index: 1;
+      }
+
+      .btn-remove {
+        position: absolute;
+        left: auto;
+        right: 4px;
+      }
+
+    }
+
+  }
+
+}

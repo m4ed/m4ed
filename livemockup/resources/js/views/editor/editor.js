@@ -108,13 +108,14 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     events: {
       'keyup .editor-textarea': 'onTextareaKeyup',
       'drop .editor-textarea': 'onTextareaDrop',
-      'click .editor-btn.pictures': 'onPictureButtonClick'
-      //'click .btn': function() { alert('!!!')}
+      'click .editor-btn.pictures': 'onPictureButtonClick',
+      'keyup': 'onKeyup'
     },
 
     onTextareaKeyup: _.throttle(function(e) {
       e.stopPropagation();
       this.update();
+      return false;
     }, 1000),
 
     onTextareaDrop: function(e) {
@@ -176,7 +177,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       this.lastContent = mdContent;
       this.activeXhr = $.ajax({
         'url': '/misaka',
-        'data': {'md': _.escape(mdContent)},
+        'data': {'md': mdContent},
         'type': 'POST',
         error: _.bind(this.onAjaxError, this),
         success: _.bind(this.onAjaxSuccess, this),
@@ -198,6 +199,16 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
     updateImages: function() {
       this.assetList.render();
+    },
+
+    onKeyup: function(e) {
+      // Left arrow or right arrow
+      if (e.keyCode === 37) {
+        this.assetList.navigate('left');
+      } else if (e.keyCode === 39) {
+        this.assetList.navigate('right');
+      }
+      return false;
     }
 
 

@@ -5,6 +5,7 @@ requirejs.config({
     'jquery': 'lib/jquery/jquery.min',
     'jquery.ui': 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min',
     'jquery.autoellipsis': 'lib/jquery/jquery.autoellipsis.min',
+    'jquery.elastislide': 'lib/jquery/jquery.elastislide',
     'jquery.plugins': 'lib/jquery/jquery.plugins',
     'json': 'lib/json/json2',
     'underscore': 'lib/underscore/underscore',
@@ -24,6 +25,7 @@ requirejs.config({
     // defined in shim config
     'jquery.ui': ['jquery'],
     'jquery.autoellipsis': ['jquery'],
+    'jquery.elastislide': ['jquery'],
     'bootstrap.tooltip': ['jquery'],
     'bootstrap.popover': ['jquery', 'bootstrap.tooltip'],
     'wysiwym': ['jquery', 'bootstrap.tooltip', 'bootstrap.popover']

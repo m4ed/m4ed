@@ -45,16 +45,14 @@
 
 <%def name="hogan_editor()">
   <div class="row">
-    <div class="wysiwym-container">
-      <div class="span6 editor-wrap">
-        <div class="btn-toolbar editor-buttons">
-        </div>
-        <div class="wysiwym-editor">
-        <textarea class="span6 editor-textarea">{{text}}</textarea>
-        </div>
+    <div class="span6">
+      <!-- The Markdown editor -->
+      <div class="btn-toolbar editor-buttons">
       </div>
+      <textarea class="span6 editor-textarea">{{text}}</textarea>
     </div>
     <div class="span6">
+      <!-- Buttons for preview -->
       <div class="btn-toolbar preview-buttons">
         <div class="btn-group">
           <button class="btn">Desktop</button>
@@ -67,14 +65,28 @@
     </div>
   </div>
   
+  <!-- Editor control buttons (Save etc.) -->
   <div class="editor-controls">
     <button class="btn btn-primary editor-btn">Save</button>
     <button class="btn editor-btn cancel">Cancel</button>
     <button class="btn editor-btn pictures">Pictures</button>
   </div>
-    <div class="editor-pictures">
-      <div class="asset-container">
-      </div>
+
+  <!-- Asset container -->
+<!--   <div class="asset-container">
+    <div class="slider">
+    </div>
+  </div> -->
+
+  <div class="asset-container es-carousel-wrapper">
+<!--     <div class="es-nav">
+      <span class="es-nav-prev">Previous</span>
+      <span class="es-nav-next">Next</span>
+    </div> -->
+    <div class="es-carousel">
+      <ul>
+      </ul>
+    </div>
   </div>
 </%def>
 

@@ -6,18 +6,9 @@ define([
 function(_, Backbone) {
   var assetView = Backbone.View.extend({
 
-    tagName: 'img',
+    tagName: 'li',
 
-    className: 'picture',
-
-    attributes: function() {
-      var m = this.model;
-      return { 
-        src: m.get('src'),
-        alt: m.get('alt'),
-        title: m.get('title')
-      };
-    },
+    className: 'asset',
 
     initialize: function(options) {
 
@@ -25,21 +16,45 @@ function(_, Backbone) {
       _.extend(this, options.custom);
 
       this.model.bind('change', this.onModelChange, this);
-      this.markdown = options.imgTemplate.render({
+      this.markdown = this.mdTemplate.render({
         alt: 'Alt text goes here',
         src: this.model.get('src')
       });
     },
 
     render: function() {
-      // We have nothing to render since the element is just an
-      // img tag with attributes...
+
+      var m = this.model;
+
+      this.$el.append(this.template.render({
+        src: m.get('src'),
+        alt: m.get('alt'),
+        title: m.get('title'),
+        buttons: this.buttons
+      })); 
+
+      this.$buttons = this.$el.find('.buttons');
+
+      this.$el.find('img').tooltip({
+        title: m.get('desc'),
+        placement: 'bottom',
+        delay: {
+          show: 700,
+          hide: 100
+        }
+      });
+
       return this;
     },
 
+
     events: {
       'click': 'onClick',
-      'dragstart': 'onDragstart'
+      'dragstart img': 'onDragstart',
+      'hoverintent': 'onHoverIntent',
+      'mouseleave': 'onMouseLeave',
+      'click .btn-remove': 'onRemove',
+      'click .btn-edit': 'onEdit'
     },
 
     onClick: function(e) {
@@ -58,9 +73,33 @@ function(_, Backbone) {
       e.originalEvent.dataTransfer.setData('Text', this.markdown);
     },
 
+    onHoverIntent: function(e) {
+      e.stopPropagation();
+      this.$buttons.fadeIn(700);
+    },
+
+    onMouseLeave: function(e) {
+      e.stopPropagation();
+      this.$buttons.fadeOut(50);
+    },
+
     onModelChange: function(model, options) {
-      alert('I have changed!');
+      alert('Asset model changed!');
+    },
+
+    onRemove: function(e) {
+      e.stopPropagation();
+      this.model.destroy();
+      this.remove();
+      alert('Asset removed!');
+    },
+
+    onEdit: function(e) {
+      e.stopPropagation();
+      alert('Edit button clicked!');
     }
+
+
   });
     
   return assetView;

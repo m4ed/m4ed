@@ -175,22 +175,22 @@ def GET_api_media(request):
 
 @view_config(route_name='api_all_media', renderer='json')
 def GET_api_all_media(request):
-    return [
-            {'_id': '1', 'title': 'Test 1', 'src': 'http://placehold.it/150x100'},
-            {'_id': '2', 'title': 'Test 2', 'src': 'http://placehold.it/150x100'},
-            {'_id': '3', 'title': 'Test 3', 'src': 'http://placehold.it/150x100'},
-            {'_id': '4', 'title': 'Test 4', 'src': 'http://placehold.it/150x100'},
-            {'_id': '5', 'title': 'Test 5', 'src': 'http://placehold.it/150x100'},
-            {'_id': '6', 'title': 'Test 6', 'src': 'http://placehold.it/150x100'},
-            {'_id': '7', 'title': 'Test 7', 'src': 'http://placehold.it/150x100'},
-            {'_id': '8', 'title': 'Test 8', 'src': 'http://placehold.it/150x100'}
-    ]
+
+    images = []
+    for i in range(0, 20):
+        images.append({
+            '_id': i,
+            'title': 'Test {}'.format(i),
+            'desc': 'Description for asset {}'.format(i),
+            'src': 'http://placehold.it/150x100'
+        })
+
+    return images
 
 
 @view_config(route_name='misaka', renderer='json', request_method='POST')
 def POST_misaka(request):
     text = request.params.get('md', '')
-    print text
     renderer = MathRenderer()
     md = misaka.Markdown(renderer, extensions=misaka.EXT_TABLES)
     html = md.render(text)
