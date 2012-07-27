@@ -7,10 +7,11 @@ define([
   'views/editor/textarea',
   'views/editor/buttonlist',
   'views/editor/templates',
+  'lib/util/util',
   'jquery.ui',
   'jquery.plugins'
 ],
-function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates) {
+function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates, util) {
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -170,7 +171,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     },
 
     generatePreview: function() {
-      var mdContent = this.model.get('text'); //this.getEditorText();
+      var mdContent = util.sanitizeHTML(this.model.get('text')); //this.getEditorText();
       if (this.activeXhr || this.lastContent == mdContent) {
         return;
       }
