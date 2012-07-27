@@ -3,10 +3,11 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/templates'
+  'views/editor/templates',
+  'bootstrap.tooltip'
 ],
 function($, _, Backbone, templates) {
-  console.log(templates)
+  //console.log(templates)
 
   var buttonView = Backbone.View.extend({
 
@@ -32,6 +33,15 @@ function($, _, Backbone, templates) {
 
     render: function() {
       this.$el.html(templates.button.render(this.model.toJSON()));
+      var label = this.model.get('label');
+      //console.log(this.model.toJSON());
+      this.$el.tooltip({
+        title: label ? label : 'No tooltip available.',
+        delay: {
+          show: 1500,
+          hide: 200
+        }
+      });
       return this;
     },
 

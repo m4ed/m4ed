@@ -42,7 +42,7 @@ function($, _, Backbone, templates, WysiwymTextarea) {
     },
 
     onKeydown: function(e) {
-      console.log('Key is down! ' + e.which);
+      //console.log('Key is down! ' + e.which);
       // Only continue if keyCode === 13 or ctrl/meta key was pressed
       var key = e.which;
       //console.log(e);
