@@ -6,22 +6,22 @@
 <%block name="content">
   <% temporary_exercise_counter = 100 %>
   % for i, lesson in enumerate(lessons):
-    <div class="well item lesson" data-id="${i+1}">
+    <div class="well item lesson" data-id="${lesson._id}">
       <div class="item-icon">
         <img src="http://placehold.it/48x48" />
       </div>
       <div class="item-content">
         <h4 class="title">
-          <span class="view">${lesson.get('title')}</span>
-          <input type="text" class="edit" value="${lesson.get('title')}" data-attr="title"/>
+          <span class="view">${lesson.title}</span>
+          <input type="text" class="edit" value="${lesson.title}" data-attr="title"/>
         </h4>
         <p class="desc">
-          <span class="view">${lesson.get('description')}</span>
-          <input type="text" class="edit" value="${lesson.get('description')}" data-attr="description"/>
+          <span class="view">${lesson.desc}</span>
+          <input type="text" class="edit" value="${lesson.desc}" data-attr="desc"/>
         </p>
       </div>
     </div>
-    % for exercise in lesson.get('exercises'):
+    % for exercise in lesson.exercises:
       <% temporary_exercise_counter += 1 %>
       <div class="well item exercise" data-id="${temporary_exercise_counter}">
         <div class="item-icon">

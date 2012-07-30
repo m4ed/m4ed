@@ -140,7 +140,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     },
 
     update: function() {
-      this.model.set('text', this.getEditorText());
+      this.model.save({'text': this.getEditorText()});
       //this.model.change();
     },
 

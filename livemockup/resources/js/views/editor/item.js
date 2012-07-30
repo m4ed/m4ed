@@ -20,7 +20,7 @@ function(_, Backbone, EditorView) {
 
       // Listen to changes in title and description
       this.model.bind('change:title', this.onTitleChange, this);
-      this.model.bind('change:description', this.onDescriptionChange, this);
+      this.model.bind('change:desc', this.onDescriptionChange, this);
 
       this.editor = null;
       this.editorInitialized = false;
@@ -132,7 +132,10 @@ function(_, Backbone, EditorView) {
       var $target = $(target)
         , attr = $target.data('attr');
       if (save) {
-        this.model.set(attr, $target.val());
+        //this.model.set(attr, $target.val());
+        attributes = {}
+        attributes[attr] = $target.val()
+        this.model.save(attributes);
       } else {
         // Reset the input value if it wasn't saved
         $target.val(this.model.get(attr));

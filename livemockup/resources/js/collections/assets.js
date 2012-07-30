@@ -8,7 +8,7 @@ function(_, Backbone, Asset) {
 
   var imageCollection = Backbone.Collection.extend({
 
-    url: 'api/media',
+    url: 'api/assets',
 
     model: Asset,
 
