@@ -3,7 +3,7 @@ from pyramid.config import Configurator
 import pymongo
 
 from .request import CustomRequestFactory
-from .models import AssetFactory, EditorFactory, ItemFactory
+from .models import AssetFactory, ItemFactory
 
 
 def main(global_config, **settings):
@@ -20,7 +20,7 @@ def main(global_config, **settings):
     config.include('pyramid_fanstatic')
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/pyramid')
-    config.add_route('editor', '/', factory=EditorFactory)
+    config.add_route('editor', '/', factory=ItemFactory)
     config.add_route('misaka', '/misaka')
     config.include(api, route_prefix='/api')
     config.scan()

@@ -9,17 +9,34 @@
 
 // Custom colors
 // -------------------------
-@graySemiLight:         #ddd;
+@graySemiLight:         #e6e6e6;
 
 
-.container {
-  padding-top: 20px;
-} 
+// Global classes
+// -----------------------------------------
 
 .hidden {
   display: none;
 }
 
+.btn-circle {
+  .border-radius(10px);
+  padding: 3px;
+  line-height: 0;
+}
+
+// Item list
+// -----------------------------------------
+
+.container {
+  padding-top: 20px;
+  .user-select(none);
+} 
+
+.ui-sortable {
+  list-style-type: none;
+  margin: 0;
+}
 
 // Items
 // -----------------------------------------
@@ -30,7 +47,7 @@
 }
 
 .item {
-  .lesson {
+  &.lesson {
     background-color: @graySemiLight;
   }
   .desc {
@@ -66,6 +83,12 @@ input.edit {
   display: block;
   margin: 0;
   padding: 0;
+  width: 100%;
+  border: 0;
+  transition: none;
+  box-shadow: none;
+  .transition(none);
+  .box-shadow(none);
 }
 
 
@@ -104,13 +127,6 @@ input.edit {
 
 // Asset container (Elastislide)
 // -----------------------------------------
-
-
-.btn-circle {
-  .border-radius(10px);
-  padding: 3px;
-  line-height: 0;
-}
 
 .asset-container {
 

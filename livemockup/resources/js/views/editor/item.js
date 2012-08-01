@@ -22,6 +22,9 @@ function(_, Backbone, EditorView) {
       this.model.bind('change:title', this.onTitleChange, this);
       this.model.bind('change:desc', this.onDescriptionChange, this);
 
+      this.model.listIndex = options.listIndex;
+      console.log('Item added with index: ' + this.model.listIndex);
+
       this.editor = null;
       this.editorInitialized = false;
 
@@ -42,7 +45,7 @@ function(_, Backbone, EditorView) {
       "click .title > .view": "onTitleClick",
       "click .edit": "onEditClick",
       "click .desc > .view": "onDescriptionClick",
-      "click .item-content": "onContentClick",
+      "click": "onItemClick",
       "blur .edit": "onEditBlur",
       "keyup .edit": "onEditKeyup"
     },
@@ -73,8 +76,19 @@ function(_, Backbone, EditorView) {
       return false;
     },
 
-    onContentClick: function(e) {
-      e.stopPropagation();
+    onItemClick: function(e) {
+
+      // Prevent editor toggle if title or description edit is active
+      if (this.$title.hasClass('editing')) {
+        this.closeEdit(true, this.$titleInput);
+        e.stopPropagation();
+        return false;
+      }
+      if (this.$description.hasClass('editing')) {
+        this.closeEdit(true, this.$descriptionInput);
+        e.stopPropagation();
+        return false;
+      }
 
       // Check if we need a new editor view created
       if (this.editorInitialized === false) {
@@ -97,12 +111,15 @@ function(_, Backbone, EditorView) {
     onEditBlur: function(e) {
       e.stopPropagation();
       // Don't save if the input loses focus
-      this.closeEdit(false, e.currentTarget);
+      this.closeEdit(true, e.currentTarget);
       return false;
     },
 
     onEditKeyup: function(e) {
-      var saveResult = false;
+
+      var target = e.currentTarget
+        , $target = $(target)
+        , saveResult = false;
       switch(keyCodes[e.which]) {
       case undefined:
         // The key wasn't found in keyCodes. Abort...
@@ -114,7 +131,9 @@ function(_, Backbone, EditorView) {
         // Just break since saveResult is already false
         break;
       }
-      this.closeEdit(saveResult, e.currentTarget);
+
+      this.closeEdit(saveResult, target);
+
     },
 
     onTitleChange: function(model, newTitle, options) {
@@ -133,8 +152,8 @@ function(_, Backbone, EditorView) {
         , attr = $target.data('attr');
       if (save) {
         //this.model.set(attr, $target.val());
-        attributes = {}
-        attributes[attr] = $target.val()
+        attributes = {};
+        attributes[attr] = $target.val();
         this.model.save(attributes);
       } else {
         // Reset the input value if it wasn't saved

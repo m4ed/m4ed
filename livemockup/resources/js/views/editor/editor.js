@@ -39,11 +39,11 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       // somewhere else and render it
       if (this.model.has('text')) {
         this.editorInitialized = true;
-        console.log('Battle cruiser operational');
         this.render().toggle();
       } else {
         this.model.fetch();
       }
+
     },
 
     onTextChange: function(model, text, options) {
@@ -59,9 +59,10 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     render: function() {
       var $el = this.$el;
       // Render the template with the model data
+
       $el.html(templates.editor.render(this.model.toJSON()));
 
-      // Initiate a new bottom bar view
+      // Initiate a new asset list view
       this.assetList = new AssetListView({
         el: $el.find('.asset-container'),
         custom: {
@@ -104,6 +105,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       $el.insertAfter(this.parent.$el);
 
       return this;
+
     },
 
     events: {
@@ -165,8 +167,10 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
             scrollTop: parent.$el.offset().top - 8
           }, 200);
         });
+        this.globalDispatcher.trigger('editorOpened');
       } else {
         this.$el.slideUp();
+        this.globalDispatcher.trigger('editorClosed');
       }
     },
 

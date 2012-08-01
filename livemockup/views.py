@@ -15,16 +15,9 @@ def home(request):
 def editor(request):
     # Include .less
     editor_less.need()
-    # Dummy items
-    lessons = [
-        dict(title='Lesson 1', description='This is a description', exercises=['Exercise 1', 'Exercise 2']),
-        dict(title='Lesson 2', description='This is a description', exercises=['Exercise 1', 'Exercise 2', 'Exercise 3']),
-        dict(title='Lesson 3', description='This is a description', exercises=['Exercise 1'])
-    ]
-
     return {
         'project': 'm4ed',
-        'lessons': request.context
+        'items': request.context
     }
 
 
