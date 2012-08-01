@@ -51,7 +51,6 @@ db.assets.drop()
 print "Assets dropped."
 
 r = randint(10, 30)
-listIndex += 1
 
 base62_id = Base62(0)
 

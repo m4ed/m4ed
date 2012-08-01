@@ -6,7 +6,7 @@
 <%block name="content">
   <ul class="ui-sortable">
   % for item in items:
-    <li>
+    <li id='${item._id}'>
       ${item_template(item._id, item.title, item.desc, 'http://placehold.it/48x48', item.type)}
     </li>
   % endfor

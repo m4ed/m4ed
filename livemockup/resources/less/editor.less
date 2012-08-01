@@ -85,10 +85,6 @@ input.edit {
   padding: 0;
   width: 100%;
   border: 0;
-  transition: none;
-  box-shadow: none;
-  .transition(none);
-  .box-shadow(none);
 }
 
 
@@ -101,6 +97,9 @@ input.edit {
     margin-top: 0;
   }
 }
+
+// Editor textarea
+// -----------------------------------------
 
 .editor-textarea {
   height: 294px;
@@ -117,6 +116,7 @@ input.edit {
   overflow: auto;
   padding: 8px;
   margin-bottom: 8px;
+  .user-select(auto);
   background-color: @infoBackground;
   border: 1px solid @infoBorder;
   .border-radius(3px);

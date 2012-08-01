@@ -22,8 +22,7 @@ function(_, Backbone, EditorView) {
       this.model.bind('change:title', this.onTitleChange, this);
       this.model.bind('change:desc', this.onDescriptionChange, this);
 
-      this.model.listIndex = options.listIndex;
-      console.log('Item added with index: ' + this.model.listIndex);
+      this.model.set('listIndex', options.listIndex);
 
       this.editor = null;
       this.editorInitialized = false;
@@ -39,6 +38,9 @@ function(_, Backbone, EditorView) {
       this.$description = $description;
       this.$descriptionSpan = $description.children('.view');
       this.$descriptionInput = $description.children('.edit');
+
+      this.globalDispatcher.on('sortUpdated', this.onSortUpdated, this);
+
     },
 
     events: {
@@ -144,6 +146,28 @@ function(_, Backbone, EditorView) {
     onDescriptionChange: function(model, newDescription, options) {
       this.$descriptionSpan.text(newDescription);
       this.$descriptionInput.val(newDescription);
+    },
+
+    onSortUpdated: function(order) {
+
+      var _id = this.model.get('_id');
+      var currentIndex = this.model.get('listIndex');
+      var newIndex = order.indexOf(_id);
+      if (newIndex !== currentIndex) {
+        var callback = _.bind(this.saveIndex, {'index': newIndex});
+        if (!this.model.has('title')) {
+          this.model.fetch({
+            success: callback
+          });
+        } else {
+          callback(this.model);
+        }
+      }
+
+    },
+
+    saveIndex: function(model, response) {
+      model.save({'listIndex': this.index});
     },
 
     closeEdit: function(save, target) {

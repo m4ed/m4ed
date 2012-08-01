@@ -13,7 +13,7 @@ from io import BytesIO
 
 # TMP ROUTE should point to an URL where nginx with HTTPRedis
 # module installed is listening
-TMP_ROUTE = 'http://127.0.0.1:8081/cache?key='
+TMP_ROUTE = 'http://debian:8081/cache?key='
 CACHE_TIME = 1 * 60
 
 

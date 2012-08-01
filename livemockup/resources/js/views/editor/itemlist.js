@@ -66,19 +66,22 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
     },
 
     onSortUpdate: function(e, ui) {
-      console.log("this.$list.sortable('toArray'):");
-      console.log(this.$list.sortable('toArray'));
-      // this.globalDispatcher.trigger('sortUpdate');
+      var order = this.$list.sortable('toArray');
+      this.globalDispatcher.trigger('sortUpdated', order);
     },
 
     onEditorOpened: function() {
-      if (this.editorsOpen === 0) this.$list.sortable('disable');
+      if (this.editorsOpen === 0) {
+        this.$list.sortable('disable');
+      }
       this.editorsOpen++;
     },
 
     onEditorClosed: function() {
       this.editorsOpen--;
-      if (this.editorsOpen === 0) this.$list.sortable('enable');
+      if (this.editorsOpen === 0) {
+        this.$list.sortable('enable');
+      }
     }
 
   });
