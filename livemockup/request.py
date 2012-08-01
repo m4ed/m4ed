@@ -19,6 +19,12 @@ class CustomRequestFactory(Request):
     def fs(self):
         return GridFS(self.db)
 
+    @reify
+    def misaka(self):
+        return self.registry.settings['misaka']
+        # return Markdown(renderer=math_renderer, extensions=EXT_TABLES)
+
+
     # @reify
     # def user(self):
     #     userid = unauthenticated_userid(self)

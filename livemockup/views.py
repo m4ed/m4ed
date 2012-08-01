@@ -2,8 +2,6 @@ from pyramid.view import view_config, view_defaults, notfound_view_config
 from pyramid.response import Response
 
 from livemockup.resources import editor_less
-import misaka
-from mathrenderer import MathRenderer
 
 
 @view_config(route_name='home', renderer='templates/mytemplate.pt')
@@ -114,9 +112,8 @@ def notfound(self):
 @view_config(route_name='misaka', renderer='json', request_method='POST')
 def POST_misaka(request):
     text = request.params.get('md', '')
-    renderer = MathRenderer()
-    md = misaka.Markdown(renderer, extensions=misaka.EXT_TABLES)
-    html = md.render(text)
+
+    html = request.misaka.render(text)
     return {
         'html': html
     }

@@ -2,6 +2,9 @@ from pyramid.config import Configurator
 
 import pymongo
 
+from htmlrenderer import CustomHtmlRenderer
+from misaka import Markdown, EXT_TABLES
+
 from .request import CustomRequestFactory
 from .models import AssetFactory, ItemFactory
 
@@ -16,6 +19,10 @@ def main(global_config, **settings):
 
     # Set up the mongo connection
     config.registry.settings['db_conn'] = pymongo.Connection()
+
+    # Set up the misaka Markdown renderer
+    renderer = CustomHtmlRenderer()
+    config.registry.settings['misaka'] = Markdown(renderer=renderer, extensions=EXT_TABLES)
 
     config.include('pyramid_fanstatic')
     config.add_static_view('static', 'static', cache_max_age=3600)

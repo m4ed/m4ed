@@ -92,7 +92,6 @@ class ItemFactory(dict):
             update['title'] = kwargs.pop('title')
             update['desc'] = kwargs.pop('desc')
             update['text'] = kwargs.pop('text')
-            update['parent'] = kwargs.pop('parent')
         except ValueError, e:
             print e
 
@@ -116,7 +115,12 @@ class ItemFactory(dict):
         return {}
 
     def __getitem__(self, _id):
+        # Might be unnecessary
+        method = self.request.method
+        if method not in ['GET', 'POST', 'PUT', 'DELETE']:
+            return
         query_params = {}
+
         try:
             query_params['_id'] = ObjectId(_id)
         except InvalidId:
@@ -124,8 +128,9 @@ class ItemFactory(dict):
 
         # Prefix the lowercase request method with an underscore and call
         # it as a function to invoke the request handler
-        handler = '_' + self.request.method.lower()
+        handler = '_' + method.lower()
         item = getattr(self, handler)(query=query_params)
+
         return Item(item, name=str(_id), parent=self)
 
     def __iter__(self):

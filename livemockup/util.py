@@ -9,12 +9,16 @@ class Base62(object):
 
         Used to generate IDs in base 62 for shorter api urls """
 
-    def __init__(self, val):
-        if (isinstance(val, int)):
-            val = str(val)
-
-        self.val = val
-        self.base10_val = self._decode(val)
+    def __init__(self, val=None):
+        if not val:
+            self.base10_val = 0
+            self.val = "0"
+        elif (isinstance(val, int)):
+            self.base10_val = val
+            self.val = self._encode(val)
+        elif (isinstance(val, str)):
+            self.base10_val = self._decode(val)
+            self.val = val
 
     def _decode(self, strng, reverse_base=BASE_DICT):
         length = len(reverse_base)
@@ -33,9 +37,22 @@ class Base62(object):
         return res
 
     def increment(self):
-        self.base10_val += 1
+        return self._add(1)
+
+    def _add(self, val):
+        if isinstance(val, str):
+            val = self._decode(val)
+        self.base10_val += val
         self.val = self._encode(self.base10_val)
         return self.val
+
+    def __add__(self, val):
+        self._add(val)
+        return self
+
+    def __iadd__(self, val):
+        self._add(val)
+        return self
 
     def __int__(self):
         return self.base10_val
