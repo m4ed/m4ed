@@ -7,7 +7,7 @@ define([
   'collections/items',
   'views/editor/item',
   'views/editor/editor',
-  'jquery.ui'
+  'jquery.ui.touch-punch'
 ],
 function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
 
@@ -39,10 +39,16 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
 
       this.$list = this.$el.find('.ui-sortable');
 
-      // Make the list sortable
-      this.$list.sortable({
-        distance: 20
-      });
+      // Make items sortable 
+      if ($.support.touch) {
+        // Show a handle for touch devices
+        $('.item .handle').show();
+        this.$list.sortable({ handle: '.handle' });
+      } else {
+        this.$list.sortable({ distance: 20 });
+      }
+
+      
 
       // Track the number of open editors and disable sorting while > 0
       this.editorsOpen = 0;

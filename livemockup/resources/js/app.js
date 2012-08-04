@@ -3,7 +3,9 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/itemlist'
+  'views/editor/itemlist',
+  'bootstrap.collapse',
+  'bootstrap.dropdown'
 ], function($, _, Backbone, ItemListView) {
   var initialize = function() {
 

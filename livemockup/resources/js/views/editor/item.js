@@ -110,6 +110,17 @@ function(_, Backbone, EditorView) {
       return false;
     },
 
+    scrollTop: function() {
+      if(!this.offset) {
+        this.offset = this.$el.offset().top -
+          this.$el.cssInt('margin-top') -
+          $('body').cssInt('padding-top');
+      }
+      $('html:not(:animated),body:not(:animated)').animate({
+        scrollTop: this.offset
+      }, 200);
+    },
+
     onEditBlur: function(e) {
       e.stopPropagation();
       // Don't save if the input loses focus

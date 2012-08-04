@@ -2,8 +2,19 @@
 
 <%block name="title">m4ed - Content Editor</%block>
 
-
 <%block name="content">
+
+  <header class="header">
+    <div class="user-info">
+      <div class="avatar">
+      </div>
+      <div class="user-name">
+        <span>User Name</span>
+      </div>
+    </div>
+    <div class="location">Learning space / Collection</div>
+  </header>
+
   <ul class="ui-sortable">
   % for item in items:
     <li id='${item._id}'>
@@ -20,9 +31,11 @@
 </%block>
 
 <%def name="item_template(_id, title, desc, icon, classname)">
-  <div class="well item ${classname}" data-id="${_id}">
+  <div class="item ${classname}" data-id="${_id}">
     <div class="item-icon">
       <img src="${icon}" />
+    </div>
+    <div class="handle">
     </div>
     <div class="item-content">
       <h4 class="title">

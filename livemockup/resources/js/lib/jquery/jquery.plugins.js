@@ -31,7 +31,7 @@ define(['jquery'], function($) {
      },
 
     // Get css value as an integer
-    cssValueAsInteger: function(property){
+    cssInt: function(property){
       var v = parseInt(this.css(property),10);
       return isNaN(v) ? 0 : v;
     },

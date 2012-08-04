@@ -1,0 +1,102 @@
+// BASE STYLE
+// -----------------------------------------
+
+@import "../bootstrap/less/bootstrap.less";
+@import "../bootstrap/less/responsive.less";
+
+
+@import "icons.less";
+
+// Custom colors
+// -----------------------------------------
+@graySemiLight:         #e6e6e6;
+
+
+// Global classes
+// -----------------------------------------
+
+.hidden {
+  display: none;
+}
+
+.btn-circle {
+  .border-radius(10px);
+  padding: 3px;
+  line-height: 0;
+}
+
+.well {
+
+  padding: 8px;
+  margin: 8px -9px; // Negative horizontal margin to remove padding and border space
+
+}
+
+// Body
+// -----------------------------------------
+
+body {
+  padding-top: 40px;
+}
+
+@media (max-width: 979px) {
+  /* Remove any padding from the body */
+  body {
+    padding-top: 0;
+  }
+}
+
+// Navbar
+// -----------------------------------------
+
+@media (max-width: 979px) {
+  .navbar-fixed-top {
+    margin-bottom: 0px;
+  }
+}
+
+.navbar .brand {
+  text-indent: -999px;
+  background: url('../img/m4ed-logo-translucent.png') no-repeat center;
+  width: 100px;
+  height: 40px;
+  padding: 0;
+}
+
+// Header
+// -----------------------------------------
+
+.header {
+
+  .well;
+
+  padding: 4px;
+  height: 34px;
+
+  .location {
+    font-weight: bold;
+    margin: 8px;
+  }
+
+  .gradientBar(#d8ffc9, #b1e69c);
+
+  margin-top: 8px;
+
+  .user-info {
+
+    .pull-right;
+
+    .user-name {
+      margin-right: 40px;
+    }
+
+    .avatar {
+      .pull-right;
+      .thumbnail;
+      background: @grayLighter url('../img/icons/defaulticon/user-alt-2.png') no-repeat center;
+      width: 32px;
+      height: 32px;
+      padding: 0; 
+    }
+  }
+}

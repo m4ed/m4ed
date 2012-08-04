@@ -43,7 +43,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       } else {
         this.model.fetch();
       }
-
     },
 
     onTextChange: function(model, text, options) {
@@ -160,13 +159,8 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
     toggle: function() {
       if (this.$el.is(':hidden')) {
-        var parent = this.parent;
-        this.$el.slideDown(100, function() {
-          // Scroll selected selected item to top
-          $('html:not(:animated),body:not(:animated)').animate({
-            scrollTop: parent.$el.offset().top - 8
-          }, 200);
-        });
+        var item = this.parent;
+        this.$el.slideDown(100, _.bind(item.scrollTop, item));
         this.globalDispatcher.trigger('editorOpened');
       } else {
         this.$el.slideUp();
