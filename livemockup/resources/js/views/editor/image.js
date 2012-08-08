@@ -18,7 +18,7 @@ function(_, Backbone) {
       this.model.bind('change', this.onModelChange, this);
       this.markdown = this.mdTemplate.render({
         alt: 'Alt text goes here',
-        src: this.model.get('src')
+        src: this.model.get('id')
       });
     },
 
@@ -27,7 +27,7 @@ function(_, Backbone) {
       var m = this.model;
 
       this.$el.append(this.template.render({
-        src: m.get('src'),
+        src: m.get('url'),
         alt: m.get('alt'),
         title: m.get('title'),
         buttons: this.buttons

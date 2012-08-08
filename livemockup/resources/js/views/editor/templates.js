@@ -1,8 +1,9 @@
 // Filename: 
 define([
+  'jquery',
   'hogan'
 ],
-function(hogan) {
+function($, hogan) {
   console.log('Templates invoked!');
   return {
     editor: hogan.compile($('#editor-template').html()),
@@ -23,7 +24,7 @@ function(hogan) {
     // Asset container templates
     // -------------------------------------
 
-    imageMarkdown: hogan.compile('![{{alt}}]({{src}})'),
+    imageMarkdown: hogan.compile('![{{alt}}](id={{src}})'),
 
     image: hogan.compile([
       '<li>',
@@ -53,8 +54,9 @@ function(hogan) {
           '<a href="#" class="btn btn-primary">Save changes</a>',
         '</div>',
       '</div>'
-    ].join(''))
+    ].join('')),
 
+    fileUpload: hogan.compile($('#editor-template').html())
   };
 
 });

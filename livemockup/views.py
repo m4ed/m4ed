@@ -105,7 +105,8 @@ class RESTAssetsView(object):
 
 
 @notfound_view_config(append_slash=True)
-def notfound(self):
+def notfound(request):
+    request.response.status = 404
     return Response('<h1>404 - Not Found</h1><p>Whatever you were looking for, it is not here.</p>')
 
 

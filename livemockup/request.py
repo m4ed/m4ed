@@ -11,8 +11,8 @@ class CustomRequestFactory(Request):
     @reify
     def db(self):
         settings = self.registry.settings
-        db_name = settings['db_name']
-        db_conn = settings['db_conn']
+        db_name = settings['db.mongo.collection_name']
+        db_conn = settings['db.mongo.conn']
         return db_conn[db_name]
 
     @reify

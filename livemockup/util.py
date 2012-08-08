@@ -19,6 +19,8 @@ class Base62(object):
         elif (isinstance(val, str)):
             self.base10_val = self._decode(val)
             self.val = val
+        else:
+            raise TypeError('Valid input types are string or int')
 
     def _decode(self, strng, reverse_base=BASE_DICT):
         length = len(reverse_base)

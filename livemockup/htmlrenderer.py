@@ -2,8 +2,6 @@ from misaka import HtmlRenderer
 from matplotlib.mathtext import MathTextParser
 from matplotlib.mathtext import ParseFatalException
 
-import redis
-
 import re
 #import os
 import hashlib
@@ -11,26 +9,39 @@ import hashlib
 from io import BytesIO
 
 
-# TMP ROUTE should point to an URL where nginx with HTTPRedis
-# module installed is listening
-TMP_ROUTE = 'http://debian:8081/cache?key='
-CACHE_TIME = 1 * 60
-
-
 class CustomHtmlRenderer(HtmlRenderer):
-    def __init__(self):
-        self.db = redis.StrictRedis()
+    def __new__(cls, flags=0, **kwargs):
+        return super(CustomHtmlRenderer, cls).__new__(cls, flags)
+
+    def __init__(self, *args, **kwargs):
+        settings = kwargs.pop('settings')
+        #print settings
+        self.mongo_db = settings['db.mongo.conn'][settings['db.mongo.collection_name']]
+        self.redis_db = settings['db.redis.conn']
+        self.cache_route = settings['preview.img_cache_route']
+        self.cache_time = int(settings['preview.img_cache_time'])
         self.math_regex = re.compile(r'\$\s*(.*?)\s*\$')
+        self.img_regex = re.compile(r'(\!\[.*?\]\()id[=:]([a-zA-Z0-9]+)(\))')
         self.s_regex = re.compile(r'\s\s+')
 
     def preprocess(self, text):
         # result = re.sub(r'\$\$(.*)\$\$', math_to_img, text, re.M)
         print '------------------------- preprocessing -------------------------'
         result = self.math_regex.sub(self.math_to_img, text)
+        result = self.img_regex.sub(self.imgid_to_imgurl, result)
         return result
 
+    def imgid_to_imgurl(self, match):
+        mongo_db = self.mongo_db
+        matched_imgid = match.group(2)
+        a = mongo_db.assets.find_one({'id': matched_imgid})
+        if not a or not a.get('url'):
+            return ('No image with id {} found! '
+                'Please check your markdown'.format(matched_imgid))
+        return match.group(1) + a.get('url', '') + match.group(3)
+
     def math_to_img(self, match):
-        db = self.db
+        redis_db = self.redis_db
         matched_math = match.group(1)
         # Normalize the spaces within the match and encode it
         matched_math = self.s_regex.sub(' ', matched_math).encode('utf-8')
@@ -40,23 +51,25 @@ class CustomHtmlRenderer(HtmlRenderer):
         m.update(matched_math)
 
         db_key = 'img:png:' + str(m.hexdigest())
-        html = '<img alt="math" src="{}"></img>'.format(TMP_ROUTE + db_key)
-        if db.exists(db_key):
+        html = '<img alt="math" src="{}"></img>'.format(self.cache_route + db_key)
+        if redis_db.exists(db_key):
             print 'Cache hit! Serving the cached img and refreshing cache!'
-            ttl = db.ttl(db_key)
-            print 'The TTL remaining was', ttl, 'seconds => TTL now ', CACHE_TIME, 'seconds'
+            ttl = redis_db.ttl(db_key)
+            print 'The TTL remaining was', ttl, 'seconds'
+            print ' => TTL now ', self.cache_time, 'seconds'
             # Refresh the cache expire timer
-            db.expire(db_key, CACHE_TIME)
+            redis_db.expire(db_key, self.cache_time)
             return html
         print 'Cache miss! Generating a new img!'
 
         _input = BytesIO('$' + matched_math + '$')
         output = BytesIO()
         try:
-            MathTextParser('bitmap').to_png(output, _input.getvalue(), 'black', 120, 10)
-            db.set(db_key, output.getvalue())
+            MathTextParser('bitmap').to_png(output, _input.getvalue(),
+                color='black', dpi=120, fontsize=10)
+            redis_db.set(db_key, output.getvalue())
             # Cache images for 1 minute(s)
-            db.expire(db_key, CACHE_TIME)
+            redis_db.expire(db_key, self.cache_time)
         except ParseFatalException, e:
             print e
             return ''

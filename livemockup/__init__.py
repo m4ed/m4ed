@@ -1,12 +1,13 @@
 from pyramid.config import Configurator
 
 import pymongo
+import redis
 
 from htmlrenderer import CustomHtmlRenderer
 from misaka import Markdown, EXT_TABLES
 
 from .request import CustomRequestFactory
-from .models import AssetFactory, ItemFactory
+from .factories import AssetFactory, ItemFactory
 
 
 def main(global_config, **settings):
@@ -18,10 +19,18 @@ def main(global_config, **settings):
         )
 
     # Set up the mongo connection
-    config.registry.settings['db_conn'] = pymongo.Connection()
+    mongo_host = config.registry.settings['db.mongo.host']
+    mongo_port = int(config.registry.settings['db.mongo.port'])
+    config.registry.settings['db.mongo.conn'] = pymongo.Connection(host=mongo_host, port=mongo_port)
+    # Set up redis connection
+    redis_host = config.registry.settings['db.redis.host']
+    redis_port = int(config.registry.settings['db.redis.port'])
+    redis_db_num = int(config.registry.settings['db.redis.db_num'])
+    config.registry.settings['db.redis.conn'] = redis.StrictRedis(
+        host=redis_host, port=redis_port, db=redis_db_num)
 
     # Set up the misaka Markdown renderer
-    renderer = CustomHtmlRenderer()
+    renderer = CustomHtmlRenderer(settings=config.registry.settings)
     config.registry.settings['misaka'] = Markdown(renderer=renderer, extensions=EXT_TABLES)
 
     config.include('pyramid_fanstatic')
