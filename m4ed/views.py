@@ -1,12 +1,12 @@
 from pyramid.view import view_config, view_defaults, notfound_view_config
 from pyramid.response import Response
 
-from livemockup.resources import editor_less
+from m4ed.resources import editor_less
 
 
 @view_config(route_name='home', renderer='templates/mytemplate.pt')
 def home(request):
-    return {'project': 'livemockup'}
+    return {'project': 'm4ed'}
 
 
 @view_config(route_name='editor', renderer='editor.mako')

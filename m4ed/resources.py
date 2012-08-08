@@ -1,7 +1,7 @@
 from fanstatic import Library
 from js.lesscss import LessResource
 
-library = Library('livemockup', 'resources')
+library = Library('m4ed', 'resources')
 
 editor_less = LessResource(library, 'less/editor.less')
 

@@ -1,6 +1,6 @@
 from random import randint
 import pymongo
-from livemockup.util import Base62
+from m4ed.util import Base62
 
 # Insert some dummy data
 

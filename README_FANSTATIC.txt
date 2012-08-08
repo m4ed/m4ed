@@ -24,11 +24,11 @@ Also add those entry points to the same file::
 
       # Fanstatic resource library
       [fanstatic.libraries]
-      livemockup = livemockup.resources:library
+      m4ed = m4ed.resources:library
 
       # A console script to serve the application and monitor static resources
       [console_scripts]
-      pserve-fanstatic = livemockup.resources:pserve
+      pserve-fanstatic = m4ed.resources:pserve
 
 You also need to add pyramid_fanstatic tween to your applition. Add the
 following to your __init__.py file::

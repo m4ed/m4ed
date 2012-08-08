@@ -13,4 +13,4 @@ class ViewTests(unittest.TestCase):
         from .views import my_view
         request = testing.DummyRequest()
         info = my_view(request)
-        self.assertEqual(info['project'], 'livemockup')
+        self.assertEqual(info['project'], 'm4ed')

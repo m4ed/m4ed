@@ -1,5 +1,5 @@
 requirejs.config({
-  baseUrl: 'fanstatic/livemockup/js',
+  baseUrl: 'fanstatic/m4ed/js',
   //enforceDefine: true,
   paths: {
     'jquery': 'lib/jquery/jquery.min',

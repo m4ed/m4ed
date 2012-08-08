@@ -13,9 +13,9 @@ requires = [
     'js.lesscss'
     ]
 
-setup(name='livemockup',
+setup(name='m4ed',
       version='0.0',
-      description='livemockup',
+      description='m4ed',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -32,17 +32,17 @@ setup(name='livemockup',
       zip_safe=False,
       install_requires=requires,
       tests_require=requires,
-      test_suite="livemockup",
+      test_suite="m4ed",
       entry_points="""\
       [paste.app_factory]
-      main = livemockup:main
+      main = m4ed:main
 
       # Fanstatic resource library
       [fanstatic.libraries]
-      livemockup = livemockup.resources:library
+      m4ed = m4ed.resources:library
 
       # A console script to serve the application and monitor static resources
       [console_scripts]
-      pserve-fanstatic = livemockup.resources:pserve
+      pserve-fanstatic = m4ed.resources:pserve
       """,
       )

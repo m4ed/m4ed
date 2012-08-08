@@ -13,11 +13,11 @@
     <![endif]-->
 
     <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="/fanstatic/livemockup/bootstrap/ico/favicon.ico">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/fanstatic/livemockup/bootstrap/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/fanstatic/livemockup/bootstrap/ico/apple-touch-icon-114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/fanstatic/livemockup/bootstrap/ico/apple-touch-icon-72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="/fanstatic/livemockup/bootstrap/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="/fanstatic/m4ed/bootstrap/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-57-precomposed.png">
 
   </%block>
 </head>
@@ -111,6 +111,6 @@
   ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
 
-  <script data-main="/fanstatic/livemockup/js/main.js" src="/fanstatic/livemockup/js/lib/requirejs/require.js"></script>
+  <script data-main="/fanstatic/m4ed/js/main.js" src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 
 </body>
