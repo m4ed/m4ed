@@ -47,7 +47,6 @@ function(_, Backbone) {
       return this;
     },
 
-
     events: {
       'click': 'onClick',
       'dragstart img': 'onDragstart',

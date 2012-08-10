@@ -7,9 +7,10 @@ define([
   'collections/items',
   'views/editor/item',
   'views/editor/editor',
+  'views/editor/upload',
   'jquery.ui.touch-punch'
 ],
-function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
+function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView) {
 
   var itemListView = Backbone.View.extend({
 
@@ -54,6 +55,14 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView) {
       this.editorsOpen = 0;
       this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
       this.globalDispatcher.on('editorClosed', this.onEditorClosed, this);  
+
+      this.upload = new UploadView({
+        el: '#modal-upload',
+        custom: {
+          globalDispatcher: this.globalDispatcher,
+          parent: this
+        }
+      });
 
     },
 

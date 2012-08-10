@@ -5,7 +5,6 @@ requirejs.config({
     'jquery': 'lib/jquery/jquery.min',
     'jquery.ui': 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min',
     'jquery.ui.touch-punch': 'lib/jquery/jquery.ui.touch-punch',
-    'jquery.ui.widget': 'lib/jqueryui/jquery.ui.widget',
     'jquery.autoellipsis': 'lib/jquery/jquery.autoellipsis.min',
     'jquery.elastislide': 'lib/jquery/jquery.elastislide',
     'jquery.plugins': 'lib/jquery/jquery.plugins',
@@ -23,8 +22,10 @@ requirejs.config({
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
     'bootstrap.popover': '../bootstrap/js/bootstrap-popover',
     'bootstrap.collapse': '../bootstrap/js/bootstrap-collapse',
+    'bootstrap.modal': '../bootstrap/js/bootstrap-modal',
     'bootstrap.dropdown': '../bootstrap/js/bootstrap-dropdown',
-    'wysiwym': 'views/editor/wysiwym'
+    'bootstrap.transition': '../bootstrap/js/bootstrap-transition'
+    // 'wysiwym': 'views/editor/wysiwym'
   },
   shim: {
     'backbone': {
@@ -38,10 +39,12 @@ requirejs.config({
     'jquery.autoellipsis': ['jquery'],
     'jquery.elastislide': ['jquery'],
     'bootstrap.collapse': ['jquery'],
+    'bootstrap.modal': ['jquery'],
     'bootstrap.dropdown': ['jquery'],
+    'bootstrap.transition': ['jquery'],
     'bootstrap.tooltip': ['jquery'],
-    'bootstrap.popover': ['jquery', 'bootstrap.tooltip'],
-    'wysiwym': ['jquery', 'bootstrap.tooltip', 'bootstrap.popover']
+    'bootstrap.popover': ['jquery', 'bootstrap.tooltip']
+    // 'wysiwym': ['jquery', 'bootstrap.tooltip', 'bootstrap.popover']
 
   }
 });

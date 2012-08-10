@@ -5,7 +5,9 @@ define([
   'backbone',
   'views/editor/itemlist',
   'bootstrap.collapse',
-  'bootstrap.dropdown'
+  'bootstrap.dropdown',
+  'bootstrap.modal',
+  'bootstrap.transition'
 ], function($, _, Backbone, ItemListView) {
   var initialize = function() {
 

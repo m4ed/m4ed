@@ -73,8 +73,8 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li class="nav-header">Actions</li>
-                  <li><a href="#"><i class="icon-white icon-plus"></i> Add new <span class="pull-right">Shift + N</span></a></li>
-                  <li><a href="#"><i class="icon-book"></i> Library</a></li>
+                  <li><a href="#"><i class="icon-plus"></i> Add new</a></li>
+                  <li><a href="#" class="toggle-modal-upload"><i class="icon-upload"></i> Upload files</a></li>
                   <li class="nav-header">Management</li>
                   <li><a href="#"><i class="icon-group"></i> Users</a></li>
                   <li><a href="#"><i class="icon-chart"></i> Statistics</a></li>

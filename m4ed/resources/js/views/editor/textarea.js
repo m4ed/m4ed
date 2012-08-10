@@ -51,7 +51,7 @@ function($, _, Backbone, templates, WysiwymTextarea) {
       } else if (e.altKey || e.shiftKey) {
         return true;
       } else if (e.ctrlKey || e.metaKey) {
-        e.preventDefault();
+        // e.preventDefault();
         console.log('We should now handle a shortcut');
         return true;
         //this.handleShortcut(key);

@@ -8,6 +8,8 @@ function($, hogan) {
   return {
     editor: hogan.compile($('#editor-template').html()),
 
+    // fileUpload: hogan.compile($('#template-upload').html()),
+
     button: hogan.compile([
         '<span class="wrap" unselectable="on">',
           '<span class="text" style="display:block" unselectable="on">',
@@ -54,9 +56,7 @@ function($, hogan) {
           '<a href="#" class="btn btn-primary">Save changes</a>',
         '</div>',
       '</div>'
-    ].join('')),
-
-    fileUpload: hogan.compile($('#editor-template').html())
+    ].join(''))
   };
 
 });

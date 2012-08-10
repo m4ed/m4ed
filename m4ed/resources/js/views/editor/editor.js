@@ -9,9 +9,6 @@ define([
   'views/editor/templates',
   'lib/util/util',
   'jquery.ui',
-  'jquery.fileupload',
-  'jquery.fileupload-ui',
-  'jquery.fileupload-fp',
   'jquery.plugins'
 ],
 function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates, util) {
@@ -103,29 +100,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       this.textarea.render();
 
-      // this.$('.fileupload').fileupload();
-
-      // this.$('.fileupload').fileupload('option', {
-      //     url: '/upload',
-      //     maxFileSize: 5000000,
-      //     acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-      //     process: [
-      //         {
-      //             action: 'load',
-      //             fileTypes: /^image\/(gif|jpeg|png)$/,
-      //             maxFileSize: 20000000 // 20MB
-      //         },
-      //         {
-      //             action: 'resize',
-      //             maxWidth: 1440,
-      //             maxHeight: 900
-      //         },
-      //         {
-      //             action: 'save'
-      //         }
-      //     ]
-      // });
-
       // Stupid work around 
       $el.insertAfter(this.parent.$el);
 
@@ -196,7 +170,8 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     },
 
     generatePreview: function() {
-      var mdContent = util.sanitizeHTML(this.model.get('text')); //this.getEditorText();
+      // var mdContent = util.sanitizeHTML(this.model.get('text'));
+      var mdContent = this.model.get('text');
       if (this.activeXhr || this.lastContent == mdContent) {
         return;
       }
