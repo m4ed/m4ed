@@ -74,7 +74,7 @@
                 <ul class="dropdown-menu">
                   <li class="nav-header">Actions</li>
                   <li><a href="#"><i class="icon-plus"></i> Add new</a></li>
-                  <li><a href="#" class="toggle-modal-upload"><i class="icon-upload"></i> Upload files</a></li>
+                  <li><a href="#" class="toggle-modal-upload" data-target="#modal-upload" data-toggle="modal"><i class="icon-upload"></i> Upload files</a></li>
                   <li class="nav-header">Management</li>
                   <li><a href="#"><i class="icon-group"></i> Users</a></li>
                   <li><a href="#"><i class="icon-chart"></i> Statistics</a></li>

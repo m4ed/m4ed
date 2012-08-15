@@ -1,7 +1,12 @@
 // EDITOR STYLE
 // -----------------------------------------
 
-@import "m4ed.less";
+@import "m4ed.less";   // m4ed base style
+@import "upload.less"; // jQuery File Upload
+
+@import "textext/textext.core.less";
+@import "textext/textext.plugin.tags.less";
+
 
 // Item list
 // -----------------------------------------
@@ -22,7 +27,7 @@
   position: relative;
 
   &.lesson {
-    background-color: @graySemiLight;
+    background-color: @grayLight3;
   }
   .desc {
     margin-bottom: 0;
@@ -156,15 +161,15 @@ input.edit {
       display:block;
 
       li {
-        width: 166px;
-        height: 132px;
+        width: 106px;
+        height: 122px;
         float:left;
         position:relative;
         display:block;
 
         img {
-          width: 150px;
-          height: 100px;
+          width: 90px;
+          height: 90px;
           margin: 16px 8px; 
           box-shadow: 0 0 7px #ccc;
         }
@@ -176,10 +181,17 @@ input.edit {
           z-index: 1;
         }
 
-        .btn-remove {
-          position: absolute;
+        .btn-edit {
           left: auto;
           right: 4px;
+        }
+
+        .btn-insert {
+          margin-left: -18px;
+          margin-top: -14px;
+          left: 50%;
+          top: auto;
+          bottom: 20px;
         }
 
       }
@@ -190,124 +202,80 @@ input.edit {
 
 }
 
+// Fix for a bug in modal 
+// when responsive layout is used
+// -----------------------------------------
+
 .modal.fade.in {
   margin-top: -25%;
   top: 50%;
 }
 
+// Asset editor
+// -----------------------------------------
+
+.asset-editor {
+  .asset-editor-nav {
+    margin-right: 20px;
+  }
+}
+
+
+// File upload
+// -----------------------------------------
+
 .modal-upload {
 
-  &.fade.in {
-    margin-top: -210px;
-  }
+  margin-top: -210px;
   width: 800px;
   margin-left: -400px;
   max-height: none;
   overflow: hidden;
+  .user-select(none);
+
+  .modal-header {
+    position:relative;
+  }
+
+  #upload-folder-dropdown {
+    position: absolute;
+    top: 50%;
+    margin-top: -14px;
+    left: 160px;
+  }
+
   .modal-body {
-    background: url('../img/drop-area.png') no-repeat center;
+    position: relative;
     padding: 8px;
     height: 320px;
     table {
       margin: 0;
+      background-color: @white;
+    }
+    .fileupload-progress {
+      margin-bottom: 8px;
+    }
+    .drop-icon {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-top: -80px;
+      margin-left: -300px;
+      background: url('../img/drop-area.png') no-repeat center top;
+      height: 160px;
+      width: 600px;
+      text-align: center;
+      z-index: -100;
+    }
+    .drop-text {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      color: @grayLight2;
     }
   }
   .preview img {
     max-width: 36px;
     max-height: 36px;
-  }
-}
-// .modal-upload .modal-title {
-//   display: inline-block;
-//   max-height: 54px;
-//   overflow: hidden;
-// }
-// .modal-upload .drop-zone {
-//   position: relative;
-//   margin: auto;
-//   min-width: 128px;
-//   min-height: 128px;
-//   overflow: hidden;
-//   cursor: pointer;
-// }
-
-/*
- * jQuery File Upload UI Plugin CSS 6.3
- * https://github.com/blueimp/jQuery-File-Upload
- *
- * Copyright 2010, Sebastian Tschan
- * https://blueimp.net
- *
- * Licensed under the MIT license:
- * http://www.opensource.org/licenses/MIT
- */
-
-.fileinput-button {
-  position: relative;
-  overflow: hidden;
-  float: left;
-
-  input {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 0;
-    border: solid transparent;
-    border-width: 0 0 100px 200px;
-    opacity: 0;
-    filter: alpha(opacity=0);
-    -moz-transform: translate(-300px, 0) scale(4);
-    direction: ltr;
-    cursor: pointer;
-  }
-}
-
-.files .progress {
-  width: 200px;
-}
-.progress-animated .bar {
-  background: url(../img/progressbar.gif) !important;
-  filter: none;
-}
-.fileupload-loading {
-  position: absolute;
-  left: 50%;
-  width: 128px;
-  height: 128px;
-  background: url(../img/loading.gif) center no-repeat;
-  display: none;
-}
-.fileupload-processing .fileupload-loading {
-  display: block;
-}
-
-/* Fix for IE 6: */
-*html .fileinput-button {
-  line-height: 22px;
-  margin: 1px -3px 0 0;
-}
-
-/* Fix for IE 7: */
-*+html .fileinput-button {
-  margin: 1px 0 0 0;
-}
-
-@media (max-width: 480px) {
-  .files .btn span {
-    display: none;
-  }
-  .files .preview * {
-    width: 40px;
-  }
-  .files .name * {
-    width: 80px;
-    display: inline-block;
-    word-wrap: break-word;
-  }
-  .files .progress {
-    width: 20px;
-  }
-  .files .delete {
-    width: 60px;
   }
 }

@@ -15,9 +15,11 @@ function($, _, Backbone, templates) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.$form = $('#fileupload');
+      // this.$form = this.$('#fileupload');
 
-      this.$form.fileupload({
+      this.$progress = this.$('.fileupload-progress');
+
+      this.$el.fileupload({
           dropZone: this.$el,
           url: '/upload',
           maxFileSize: 5000000, // 5MB
@@ -43,7 +45,7 @@ function($, _, Backbone, templates) {
 
       // console.log('UploadView initialized!');
 
-      // this.$('#fileupload')
+      // this.$form
         // .bind('fileuploadadd', function (e, data) {console.log('File added!');})
         // .bind('fileuploadsubmit', function (e, data) {/* ... */})
         // .bind('fileuploadsend', function (e, data) {/* ... */})
@@ -52,30 +54,36 @@ function($, _, Backbone, templates) {
         // .bind('fileuploadalways', function (e, data) {/* ... */})
         // .bind('fileuploadprogress', function (e, data) {/* ... */})
         // .bind('fileuploadprogressall', function (e, data) {/* ... */})
-        // .bind('fileuploadstart', function (e) {/* ... */})
-        // .bind('fileuploadstop', function (e) {/* ... */})
+        // .on('fileuploadstart', _.bind(function(e){
+        //   this.onUploadStart(e);
+        // }, this))
+        // .on('fileuploadstop', _.bind(function(e){
+        //   this.onUploadStop(e);
+        // }, this));
         // .bind('fileuploadchange', function (e, data) {/* ... */})
         // .bind('fileuploadpaste', function (e, data) {/* ... */})
         // .bind('fileuploaddrop', function (e, data) {/* ... */})
         // .bind('fileuploaddragover', function (e) {/* ... */});
 
-      // Bind the menu button event
-      $('.toggle-modal-upload').on('click', _.bind(function(){
-        this.toggle();
-      }, this));
+      // // Bind the menu button event
+      // $('.toggle-modal-upload').on('click', _.bind(function(){
+      //   this.toggle();
+      // }, this));
 
-      // DEBUG: Toggle the modal on init
-      this.toggle();
+    },
 
+    events: {
+      'fileuploadstart': 'onUploadStart',
+      'fileuploadstop': 'onUploadStop'
     },
 
     render: function() {
       return this;
     },
 
-    toggle: function() {
-      this.$el.modal('toggle');
-    },
+    // toggle: function() {
+    //   this.$el.modal('toggle');
+    // },
 
     resize: function() {
       // var $el = this.$el;
@@ -83,8 +91,14 @@ function($, _, Backbone, templates) {
       //   'margin-top': -($el.outerHeight() / 2),
       //   'margin-left': -($el.outerWidth() / 2)
       // });
-    }
+    },
 
+    onUploadStart: function(e) {
+      this.$progress.slideDown();
+    },
+    onUploadStop: function(e) {
+      this.$progress.slideUp();
+    }
 
   });
 

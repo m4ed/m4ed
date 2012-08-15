@@ -1,10 +1,11 @@
-// Filename: views/images/show.js
+// Filename: views/images/asset.js
 define([
   'underscore',
-  'backbone'
+  'backbone',
+  'views/editor/asseteditor'
 ],
-function(_, Backbone) {
-  var assetView = Backbone.View.extend({
+function(_, Backbone, AssetEditorView) {
+  var AssetView = Backbone.View.extend({
 
     tagName: 'li',
 
@@ -27,20 +28,21 @@ function(_, Backbone) {
       var m = this.model;
 
       this.$el.append(this.template.render({
-        src: m.get('url'),
+        src: m.get('thumbnail_url'),
         alt: m.get('alt'),
         title: m.get('title'),
         buttons: this.buttons
       })); 
 
       this.$buttons = this.$el.find('.buttons');
+      this.$img = this.$el.find('img');
 
-      this.$el.find('img').tooltip({
+      this.$img.tooltip({
         title: m.get('desc'),
         placement: 'bottom',
         delay: {
           show: 700,
-          hide: 100
+          hide: 50
         }
       });
 
@@ -48,16 +50,15 @@ function(_, Backbone) {
     },
 
     events: {
-      'click': 'onClick',
       'dragstart img': 'onDragstart',
       'hoverintent': 'onHoverIntent',
       'mouseleave': 'onMouseLeave',
       'click .btn-remove': 'onRemove',
-      'click .btn-edit': 'onEdit'
+      'click .btn-edit': 'onEdit',
+      'click .btn-insert': 'onInsert'
     },
 
-    onClick: function(e) {
-      e.stopPropagation();
+    onInsert: function(e) {
       // Trigger the insertImage
       // event through our dispatcher, 
       // which the editor view is listening to.
@@ -95,11 +96,25 @@ function(_, Backbone) {
 
     onEdit: function(e) {
       e.stopPropagation();
-      alert('Edit button clicked!');
+      // alert('Edit button clicked!');
+
+      if (!this.editor) {
+        this.editor = new AssetEditorView({
+          model: this.model,
+          custom: {
+            template: this.editorTemplate,
+            dispatcher: this.dispatcher,
+            parent: this
+          }
+        });
+        this.editor.render().toggle();
+      } else {
+        this.editor.toggle();
+      }
     }
 
 
   });
     
-  return assetView;
+  return AssetView;
 });

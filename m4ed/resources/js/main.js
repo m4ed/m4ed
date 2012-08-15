@@ -11,6 +11,10 @@ requirejs.config({
     'jquery.fileupload': 'lib/jqueryfileupload/jquery.fileupload',
     'jquery.fileupload-ui': 'lib/jqueryfileupload/jquery.fileupload-ui',
     'jquery.fileupload-fp': 'lib/jqueryfileupload/jquery.fileupload-fp',
+    'jquery.textext': 'lib/jquerytextext/textext.core',
+    'jquery.textext.tags': 'lib/jquerytextext/textext.plugin.tags',
+    'jquery.textext.prompt': 'lib/jquerytextext/textext.plugin.prompt',
+    'jquery.textext.focus': 'lib/jquerytextext/textext.plugin.focus',
     'canvas-to-blob': 'lib/jqueryfileupload/canvas-to-blob.min',
     'load-image': 'lib/jqueryfileupload/load-image.min',
     'tmpl': 'lib/jqueryfileupload/tmpl.min',
@@ -38,12 +42,16 @@ requirejs.config({
     'jquery.ui.touch-punch': ['jquery.ui'],
     'jquery.autoellipsis': ['jquery'],
     'jquery.elastislide': ['jquery'],
+    'jquery.textext': ['jquery'],
+    'jquery.textext.tags': ['jquery.textext'],
+    'jquery.textext.prompt': ['jquery.textext'],
+    'jquery.textext.focus': ['jquery.textext'],
     'bootstrap.collapse': ['jquery'],
     'bootstrap.modal': ['jquery'],
     'bootstrap.dropdown': ['jquery'],
     'bootstrap.transition': ['jquery'],
     'bootstrap.tooltip': ['jquery'],
-    'bootstrap.popover': ['jquery', 'bootstrap.tooltip']
+    'bootstrap.popover': ['bootstrap.tooltip']
     // 'wysiwym': ['jquery', 'bootstrap.tooltip', 'bootstrap.popover']
 
   }

@@ -4,13 +4,13 @@ define([
   'underscore',
   'backbone',
   'collections/assets',
-  'views/editor/image',
+  'views/editor/asset',
   'views/editor/templates',
   'jquery.elastislide'
 ],
-function($, _, Backbone, AssetCollection, ImageView, templates) {
+function($, _, Backbone, AssetCollection, AssetView, templates) {
 
-  var assetView = Backbone.View.extend({
+  var AssetListView = Backbone.View.extend({
 
     initialize: function(options) {
 
@@ -32,20 +32,31 @@ function($, _, Backbone, AssetCollection, ImageView, templates) {
       this.assets.fetch();
 
       this.imageButtons = [{
-        name: 'remove',
-        icon: 'trash'
+        classes: 'btn-inverse btn-circle btn-remove',
+        icon: 'remove'
       }, {
-        name: 'edit',
+        classes: 'btn-inverse btn-circle btn-edit',
         icon: 'edit'
+      }, {
+        classes: 'btn-success btn-insert',
+        icon: 'arrow-up'
       }];
 
     },
 
+    render: function() {
+      this.$slider.empty();
+      // The second parameter is the context of 'this' in the callback
+      this.assets.each(this.addImage, this);
+      this.loadPlugins();
+    },
+
     addImage: function(model) {
-      var view = new ImageView({
+      var view = new AssetView({
             model: model,
             custom: {
               template: templates.image,
+              editorTemplate: templates.assetEditor,
               dispatcher: this.dispatcher,
               parent: this,
               mdTemplate: templates.imageMarkdown,
@@ -53,9 +64,6 @@ function($, _, Backbone, AssetCollection, ImageView, templates) {
             }
           })
         , $image = view.render().$el;
-      //view.bind('destroy', this.onDestroy, this);
-
-      // Wrap image in slide element and append to slider
 
       this.$slider.append($image);
     },
@@ -65,7 +73,7 @@ function($, _, Backbone, AssetCollection, ImageView, templates) {
       this.$el.elastislide({
         // speed   : 450,  // animation speed
         easing    : '', // animation easing effect
-        imageW    : 166,  // the images width
+        imageW    : 106,  // the images width
         margin    : 0,  // image margin right
         border    : 0  // image border
         // minItems  : 1,  // the minimum number of items to show. 
@@ -89,13 +97,6 @@ function($, _, Backbone, AssetCollection, ImageView, templates) {
       }
     },
 
-    render: function() {
-      this.$slider.empty();
-      // The second parameter is the context of 'this' in the callback
-      this.assets.each(this.addImage, this);
-      this.loadPlugins();
-    },
-
     onReset: function() {
       this.render();
     },
@@ -114,5 +115,5 @@ function($, _, Backbone, AssetCollection, ImageView, templates) {
     }
   });
 
-  return assetView;
+  return AssetListView;
 });

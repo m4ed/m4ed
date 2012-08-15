@@ -56,8 +56,9 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
       this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
       this.globalDispatcher.on('editorClosed', this.onEditorClosed, this);  
 
+      // Create a view for the modal upload form
       this.upload = new UploadView({
-        el: '#modal-upload',
+        el: '#fileupload',
         custom: {
           globalDispatcher: this.globalDispatcher,
           parent: this

@@ -50,7 +50,7 @@ for i, item_id in enumerate(item_ids):
 db.assets.drop()
 print "Assets dropped."
 
-r = randint(3, 20)
+r = randint(10, 30)
 
 base62_id = Base62(0)
 
@@ -59,8 +59,8 @@ for i in range(1, r):
     db.assets.insert({
         'desc': 'Description of asset {}'.format(i),
         'name': 'Placeholder thumbnail {}'.format(i),
-        'url': 'http://placehold.it/150x100',
-        'thumbnail_url': 'http://placehold.it/150x100',
+        'url': 'http://placehold.it/320x240',
+        'thumbnail_url': 'http://placehold.it/90x90',
         'delete_url': '',
         'delete_type': 'DELETE',
         'id': str(base62_id),
