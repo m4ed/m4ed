@@ -49,7 +49,7 @@
             <span>Delete</span>
         </button>
         <input type="checkbox" class="toggle pull-left"> -->
-        <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
       </div>
     </form>
   </div>

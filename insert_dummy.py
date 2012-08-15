@@ -65,6 +65,7 @@ for i in range(1, r):
         'delete_type': 'DELETE',
         'id': str(base62_id),
         'type': 'image',
+        'tags': [],
         'size': 150
     })
 print "Added {} images.".format(r)

@@ -123,7 +123,8 @@ function(_, Backbone, EditorView) {
 
     onEditBlur: function(e) {
       e.stopPropagation();
-      // Don't save if the input loses focus
+      var target = e.currentTarget
+        , $target = $(target);
       this.closeEdit(true, e.currentTarget);
       return false;
     },
@@ -133,6 +134,7 @@ function(_, Backbone, EditorView) {
       var target = e.currentTarget
         , $target = $(target)
         , saveResult = false;
+
       switch(keyCodes[e.which]) {
       case undefined:
         // The key wasn't found in keyCodes. Abort...
@@ -144,7 +146,6 @@ function(_, Backbone, EditorView) {
         // Just break since saveResult is already false
         break;
       }
-
       this.closeEdit(saveResult, target);
 
     },
@@ -187,9 +188,12 @@ function(_, Backbone, EditorView) {
         , attr = $target.data('attr');
       if (save) {
         //this.model.set(attr, $target.val());
-        attributes = {};
-        attributes[attr] = $target.val();
-        this.model.save(attributes);
+        var val = $target.val();
+        if (val !== '') {
+          attributes = {};
+          attributes[attr] = val;
+          this.model.save(attributes);
+        }
       } else {
         // Reset the input value if it wasn't saved
         $target.val(this.model.get(attr));

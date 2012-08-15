@@ -21,6 +21,55 @@ class AssetFactory(dict):
         self._id = request.matchdict.get('id')
         self.collection = request.db.assets
 
+    def _get(self, query=None):
+        print 'The query was ', query
+        return self.collection.find_one(query) or dict()
+
+    def _put(self, query=None):
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return {}
+        update = {}
+
+        try:
+            kwargs.pop('_id')
+            # update['desc'] = kwargs.pop('desc')
+            update['name'] = kwargs.pop('name')
+            update['tags'] = kwargs.pop('tags')
+            # update['url'] = kwargs.pop('url')
+            # update['thumbnail_url'] = kwargs.pop('thumbnail_url')
+            # update['delete_url'] = kwargs.pop('delete_url')
+            # update['delete_type'] = kwargs.pop('delete_type')
+            # update['id'] = kwargs.pop('id')
+            # update['type'] = kwargs.pop('type')
+            # update['size'] = kwargs.pop('size')
+
+        except ValueError, e:
+            print e
+
+        # If we still haven't gone through all the parameters,
+        # assume something stupid was PUT'ed and abort
+        # if len(kwargs) != 0:
+        #     print 'Incorrect amount of parameters!'
+        #     print 'The extra ones given are listed below'
+        #     print kwargs
+        #     raise ValueError
+
+        return self.collection.find_and_modify(
+            query=query,
+            update=update
+            )
+
+    #TODO Implement us!
+    def _post(self, query=None):
+        return {}
+
+    def _delete(self, query=None):
+        return {}
+
     def __getitem__(self, _id):
         query_params = {}
         try:

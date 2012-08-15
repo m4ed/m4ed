@@ -17,6 +17,7 @@ function(_, Backbone, AssetEditorView) {
       _.extend(this, options.custom);
 
       this.model.bind('change', this.onModelChange, this);
+
       this.markdown = this.mdTemplate.render({
         alt: 'Alt text goes here',
         src: this.model.get('id')
@@ -30,7 +31,8 @@ function(_, Backbone, AssetEditorView) {
       this.$el.append(this.template.render({
         src: m.get('thumbnail_url'),
         alt: m.get('alt'),
-        title: m.get('title'),
+        title: m.get('name'),
+        tags: m.get('tags'),
         buttons: this.buttons
       })); 
 
@@ -84,7 +86,7 @@ function(_, Backbone, AssetEditorView) {
     },
 
     onModelChange: function(model, options) {
-      alert('Asset model changed!');
+      // alert('Asset model changed!');
     },
 
     onRemove: function(e) {
