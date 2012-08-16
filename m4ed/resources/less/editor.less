@@ -167,11 +167,15 @@ input.edit {
         position:relative;
         display:block;
 
+        &.selected img {
+          .box-shadow(0 0 10px @linkColor);
+        }
+
         img {
           width: 90px;
           height: 90px;
           margin: 16px 8px; 
-          box-shadow: 0 0 7px #ccc;
+          .box-shadow(0 0 7px #ccc);
         }
 
         .btn {

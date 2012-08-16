@@ -34,7 +34,8 @@ function(_, Backbone) {
       this.$el.append(this.template.render({
         src: m.get('thumbnail_url'),
         alt: m.get('alt'),
-        title: m.get('title')
+        title: m.get('title'),
+        tags: m.get('tags')
       }));
 
       this.$tags = this.$('.tags');
@@ -49,9 +50,13 @@ function(_, Backbone) {
 
     events: {
       'shown': 'onShown',
+      'hide': 'onClose',
       'click .title > .view': 'onTitleClick',
       'blur .edit': 'onEditBlur',
-      'keyup .edit': 'onEditKeyup'
+      'keyup .edit': 'onEditKeyup',
+      'tagChange .tags': 'onTagChange',
+      'click .next': 'onNextClick',
+      'click .prev': 'onPrevClick'
     },
 
     toggle: function() {
@@ -67,7 +72,6 @@ function(_, Backbone) {
           tags: {
             items: tags ? tags : []
           },
-          prompt : 'Add a tag...',
           html: {
             tag:  '<span class="text-tag label label-info">'+
                     '<span class="text-label" />'+
@@ -133,7 +137,7 @@ function(_, Backbone) {
         if (val !== '') {
           attributes = {};
           attributes[attr] = val;
-          this.model.save(attributes);
+          this.model.set(attributes);
         }
       } else {
         // Reset the input value if it wasn't saved
@@ -147,9 +151,34 @@ function(_, Backbone) {
       this.$modalTitle.text(newTitle);
       this.$titleSpan.text(newTitle);
       this.$titleInput.val(newTitle);
+    },
+
+    onTagChange: function(e, context) {
+      this.model.set({'tags': context.result});
+    },
+
+    onClose: function(e) {
+      this.model.save();
+    },
+
+    onPrevClick: function(e) {
+      var prevIndex = this.parent.index - 1;
+      if (prevIndex >= 0) this.dispatcher.trigger('assetSelected', prevIndex);
+      if (prevIndex >= 0) this.dispatcher.trigger('assetEdit', prevIndex);
+      this.toggle();
+    },
+
+    onNextClick: function(e) {
+      var nextIndex = this.parent.index + 1;
+      this.dispatcher.trigger('assetSelected', nextIndex);
+      this.dispatcher.trigger('assetEdit', nextIndex);
+      this.toggle();
     }
 
+
+
   });
-    
+
   return AssetEditorView;
+
 });

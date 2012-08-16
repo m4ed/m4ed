@@ -5,22 +5,29 @@ define([
 ],
 function(_, Backbone) {
 
-    var imageModel = Backbone.Model.extend({
+  var asset = Backbone.Model.extend({
 
-        idAttribute: '_id',
+    idAttribute: '_id',
 
-        defaults: {
-            title: 'Herpderp',
-            alt: 'asset',
-            markdown: '### Title',
-            thumb: 'http://placehold.it/150x100'
-        },
+    defaults: {
+      'title': 'Asset',
+      'desc': 'Description',
+      'name': '',
+      'url': 'http://placehold.it/90x90',
+      'thumbnail_url': 'http://placehold.it/90x90',
+      'delete_url': '',
+      'delete_type': 'DELETE',
+      'id': undefined,
+      'type': 'image',
+      'tags': [],
+      'size': 0
+    },
 
-        initialize: function() {
+    initialize: function() {
 
-        }
+    }
 
-    });
+  });
 
-    return imageModel;
+  return asset;
 });

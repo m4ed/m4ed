@@ -23,6 +23,10 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
 
       this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
 
+      // Local navigation events between Assets, AssetList and AssetEditor
+      this.dispatcher.bind('assetSelected', this.onAssetSelected, this);
+      this.dispatcher.bind('assetEdit', this.onAssetEdit, this);
+
       this.assets = new AssetCollection();
       // Fetch will trigger the 'reset' event
       this.assets.bind('reset', this.onReset, this);
@@ -54,6 +58,7 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
     addImage: function(model) {
       var view = new AssetView({
             model: model,
+            index: this.assets.indexOf(model),
             custom: {
               template: templates.image,
               editorTemplate: templates.assetEditor,
@@ -73,7 +78,7 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       this.$el.elastislide({
         // speed   : 450,  // animation speed
         easing    : '', // animation easing effect
-        imageW    : 106,  // the images width
+        imageW    : 106,  // the images width (90 + 16)
         margin    : 0,  // image margin right
         border    : 0  // image border
         // minItems  : 1,  // the minimum number of items to show. 
@@ -83,6 +88,10 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
                   // when we resize the window, the carousel will make sure this item is visible 
         // onClick   : function() { return false; } // click item callback
       });
+      this.$el.elastislide('setCurrent', 0);
+
+      // TODO: Save the selection somehow?
+      this.$('li:first-child').addClass('selected');
 
     },
 
@@ -95,6 +104,18 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
         console.log('Some assets in my collection have changed!');
         this.assets.fetch();
       }
+    },
+
+    onAssetSelected: function(assetIndex) {
+      this.$('li').removeClass('selected');
+      this.$('li:eq('+assetIndex+')').addClass('selected');
+      this.$el.elastislide('setCurrent', assetIndex);
+      // console.log('Asset ' + assetIndex);
+    },
+
+    onAssetEdit: function(assetIndex) {
+      this.$('li:eq('+assetIndex+')').trigger('edit');
+      // console.log('Asset edit ' + assetIndex);
     },
 
     onReset: function() {

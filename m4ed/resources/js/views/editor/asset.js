@@ -16,12 +16,15 @@ function(_, Backbone, AssetEditorView) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.model.bind('change', this.onModelChange, this);
+      this.model.bind('change:title', this.onTitleChange, this);
 
       this.markdown = this.mdTemplate.render({
         alt: 'Alt text goes here',
         src: this.model.get('id')
       });
+
+      // Index for elastislide
+      this.index = options.index;
     },
 
     render: function() {
@@ -32,7 +35,6 @@ function(_, Backbone, AssetEditorView) {
         src: m.get('thumbnail_url'),
         alt: m.get('alt'),
         title: m.get('name'),
-        tags: m.get('tags'),
         buttons: this.buttons
       })); 
 
@@ -40,7 +42,7 @@ function(_, Backbone, AssetEditorView) {
       this.$img = this.$el.find('img');
 
       this.$img.tooltip({
-        title: m.get('desc'),
+        title: m.get('title'),
         placement: 'bottom',
         delay: {
           show: 700,
@@ -52,11 +54,13 @@ function(_, Backbone, AssetEditorView) {
     },
 
     events: {
+      'click': 'onClick',
       'dragstart img': 'onDragstart',
       'hoverintent': 'onHoverIntent',
       'mouseleave': 'onMouseLeave',
       'click .btn-remove': 'onRemove',
       'click .btn-edit': 'onEdit',
+      'edit': 'onEdit',
       'click .btn-insert': 'onInsert'
     },
 
@@ -66,6 +70,11 @@ function(_, Backbone, AssetEditorView) {
       // which the editor view is listening to.
       this.dispatcher.trigger('insertImage', this.markdown);
      //this.model.destroy();
+    },
+
+    onClick: function(e) {
+      this.dispatcher.trigger('assetSelected', this.index);
+      this.$el.addClass('selected');
     },
 
     onDragstart: function(e) {
@@ -85,21 +94,22 @@ function(_, Backbone, AssetEditorView) {
       this.$buttons.fadeOut(50);
     },
 
-    onModelChange: function(model, options) {
-      // alert('Asset model changed!');
+    onTitleChange: function(model, newTitle, options) {
+      this.$img.attr('title', newTitle).tooltip('fixTitle');
     },
 
     onRemove: function(e) {
       e.stopPropagation();
       this.model.destroy();
       this.remove();
-      alert('Asset removed!');
+      // alert('Asset removed!');
     },
 
     onEdit: function(e) {
       e.stopPropagation();
       // alert('Edit button clicked!');
 
+      this.$el.addClass('selected');
       if (!this.editor) {
         this.editor = new AssetEditorView({
           model: this.model,

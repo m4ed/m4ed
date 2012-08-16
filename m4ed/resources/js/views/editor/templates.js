@@ -4,7 +4,7 @@ define([
   'hogan'
 ],
 function($, hogan) {
-  console.log('Templates invoked!');
+  
   return {
     
     editor: hogan.compile($('#editor-template').html()),

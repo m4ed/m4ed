@@ -1083,6 +1083,9 @@
 
 		self.trigger(EVENT_SET_FORM_DATA  , data['form']);
 		self.trigger(EVENT_SET_INPUT_DATA , data['input']);
+
+		// Quick fix for tagChange event in tags plugin
+		return data;
 	};
 
 	//--------------------------------------------------------------------------------

@@ -37,7 +37,7 @@ class AssetFactory(dict):
         try:
             kwargs.pop('_id')
             # update['desc'] = kwargs.pop('desc')
-            update['name'] = kwargs.pop('name')
+            update['title'] = kwargs.pop('title')
             update['tags'] = kwargs.pop('tags')
             # update['url'] = kwargs.pop('url')
             # update['thumbnail_url'] = kwargs.pop('thumbnail_url')
@@ -60,7 +60,9 @@ class AssetFactory(dict):
 
         return self.collection.find_and_modify(
             query=query,
-            update=update
+            update=update,
+            upsert=True,
+            safe=True
             )
 
     #TODO Implement us!
@@ -71,6 +73,11 @@ class AssetFactory(dict):
         return {}
 
     def __getitem__(self, _id):
+
+        method = self.request.method
+        if method not in ['GET', 'POST', 'PUT', 'DELETE']:
+            return
+
         query_params = {}
         try:
             query_params['_id'] = ObjectId(_id)
@@ -78,8 +85,13 @@ class AssetFactory(dict):
             return {'error': 'Invalid Object ID'}
         finally:
             print 'Asset API call with ', query_params
-            a = self.collection.find_one(query_params) or dict()
-        return Asset(a, name=str(_id), parent=self)
+
+        # Prefix the lowercase request method with an underscore and call
+        # it as a function to invoke the request handler
+        handler = '_' + method.lower()
+        asset = getattr(self, handler)(query=query_params)
+
+        return Asset(asset, name=str(_id), parent=self)
 
     def __iter__(self):
         assets = self.collection.find()  # .sort('index', direction=ASCENDING)
@@ -132,7 +144,9 @@ class ItemFactory(dict):
 
         return self.collection.find_and_modify(
             query=query,
-            update=update
+            update=update,
+            upsert=True,
+            safe=True
             )
 
     #TODO Implement us!
