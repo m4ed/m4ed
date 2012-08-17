@@ -1,6 +1,6 @@
 <%def name="modal_upload()">
   <div id="modal-upload" class="modal-upload modal hide fade">
-    <form id="fileupload" class="fileupload modal-form" action="/upload" method="POST" enctype="multipart/form-data">
+    <form id="fileupload" class="fileupload modal-form" action="/api/assets" method="POST" enctype="multipart/form-data">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">×</button>
         <div class="dropdown" id="upload-folder-dropdown">

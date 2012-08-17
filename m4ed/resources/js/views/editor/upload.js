@@ -21,7 +21,7 @@ function($, _, Backbone, templates) {
 
       this.$el.fileupload({
           dropZone: this.$el,
-          url: '/upload',
+          url: '/api/assets',
           maxFileSize: 5000000, // 5MB
           acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
           previewMaxWidth: 36,

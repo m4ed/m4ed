@@ -1,12 +1,19 @@
-from pyramid.security import Allow, Everyone, ALL_PERMISSIONS
+from pyramid.security import Allow, Everyone, Authenticated, ALL_PERMISSIONS
 
 
 class Asset(dict):
     @property
     def __acl__(self):
-        return [
-            (Allow, Everyone, ALL_PERMISSIONS)
-        ]
+        res = [(Allow, Everyone, ALL_PERMISSIONS)]
+        # for g in self.get('groups_read', []):
+        #     print 'READ GROUPS'
+        #     print g
+        #     res.append((Allow, 'g:{}'.format(g), 'read'))
+        # for g in self.get('groups_write', []):
+        #     print 'WRITE GROUPS'
+        #     print g
+        #     res.append((Allow, 'g:{}'.format(g), 'write'))
+        return res
 
     def __init__(self, a_dict, name=None, parent=None):
         super(Asset, self).__init__(self)
@@ -27,7 +34,7 @@ class Item(dict):
     @property
     def __acl__(self):
         return [
-            (Allow, Everyone, ALL_PERMISSIONS)
+            #(Allow, Authenticated, ALL_PERMISSIONS)
         ]
 
     def __init__(self, a_dict, name=None, parent=None):
