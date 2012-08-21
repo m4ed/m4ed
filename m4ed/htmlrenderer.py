@@ -70,7 +70,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             redis_db.set(db_key, output.getvalue())
             # Cache images for 1 minute(s)
             redis_db.expire(db_key, self.cache_time)
-        except ParseFatalException, e:
+        except ParseFatalException, e:  # pragma: no cover
             print e
             return ''
         return html

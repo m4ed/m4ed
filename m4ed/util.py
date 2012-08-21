@@ -1,4 +1,5 @@
 import string
+import copy
 
 BASE_LIST = string.digits + string.letters
 BASE_DICT = dict((c, i) for i, c in enumerate(BASE_LIST))
@@ -39,21 +40,33 @@ class Base62(object):
         return res
 
     def increment(self):
-        return self._add(1)
-
-    def _add(self, val):
-        if isinstance(val, str):
-            val = self._decode(val)
-        self.base10_val += val
-        self.val = self._encode(self.base10_val)
-        return self.val
+        return self.__iadd__(1)
 
     def __add__(self, val):
-        self._add(val)
-        return self
+        if isinstance(val, int):
+            pass
+        elif isinstance(val, str):
+            val = self._decode(val)
+        elif isinstance(val, type(self)):
+            val = int(val)
+        else:
+            raise TypeError('Invalid type')
+        c = copy.deepcopy(self)
+        c.base10_val += val
+        c.val = self._encode(c.base10_val)
+        return c
 
     def __iadd__(self, val):
-        self._add(val)
+        if isinstance(val, int):
+            pass
+        elif isinstance(val, str):
+            val = self._decode(val)
+        elif isinstance(val, type(self)):
+            val = val.base10_val
+        else:
+            raise TypeError('Invalid type')
+        self.base10_val += val
+        self.val = self._encode(self.base10_val)
         return self
 
     def __int__(self):

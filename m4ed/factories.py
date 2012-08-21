@@ -1,4 +1,4 @@
-from pyramid.security import Allow, Everyone, Authenticated, ALL_PERMISSIONS
+from pyramid.security import Allow, Deny, Everyone, Authenticated, ALL_PERMISSIONS
 
 from pymongo import ASCENDING
 from pymongo.errors import InvalidId
@@ -11,8 +11,9 @@ from .models import Asset, Item
 
 class RootFactory(object):
     __acl__ = [
-        (Allow, Everyone, ALL_PERMISSIONS),
-        (Allow, 'g:superuser', ALL_PERMISSIONS)
+        (Allow, Authenticated, ALL_PERMISSIONS),
+        (Allow, 'g:superuser', ALL_PERMISSIONS),
+        (Deny, Everyone, ALL_PERMISSIONS)
     ]
 
     def __init__(self, request):
@@ -24,7 +25,7 @@ class AssetFactory(dict):
     __parent__ = RootFactory
 
     __acl__ = [
-        #(Allow, Everyone, ALL_PERMISSIONS),
+        (Allow, Authenticated, ALL_PERMISSIONS),
         #(Allow, 'g:superuser', 'write')
     ]
 
@@ -41,7 +42,7 @@ class AssetFactory(dict):
         except InvalidId:
             try:
                 query_params['id'] = str(Base62(str(_id)))
-            except TypeError:
+            except TypeError:  # pragma: no cover
                 return {'error': 'Invalid Object ID'}
 
         print 'Asset API call with ', query_params
@@ -58,6 +59,7 @@ class ItemFactory(dict):
     __parent__ = RootFactory
 
     __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS),
         #(Allow, 'g:superuser', ALL_PERMISSIONS)
     ]
 

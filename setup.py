@@ -16,7 +16,7 @@ requires = [
 setup(name='m4ed',
       version='0.0',
       description='m4ed',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
         "Programming Language :: Python",
         "Framework :: Pylons",

@@ -4,7 +4,7 @@ from pyramid.security import Allow, Everyone, Authenticated, ALL_PERMISSIONS
 class Asset(dict):
     @property
     def __acl__(self):
-        res = [(Allow, Everyone, ALL_PERMISSIONS)]
+        res = [(Allow, Authenticated, ALL_PERMISSIONS)]
         # for g in self.get('groups_read', []):
         #     print 'READ GROUPS'
         #     print g
@@ -34,7 +34,7 @@ class Item(dict):
     @property
     def __acl__(self):
         return [
-            #(Allow, Authenticated, ALL_PERMISSIONS)
+            (Allow, Authenticated, ALL_PERMISSIONS)
         ]
 
     def __init__(self, a_dict, name=None, parent=None):

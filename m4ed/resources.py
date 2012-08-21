@@ -6,7 +6,7 @@ library = Library('m4ed', 'resources')
 editor_less = LessResource(library, 'less/editor.less')
 
 
-def pserve():
+def pserve():  # pragma: no cover
     """A script aware of static resource"""
     import pyramid.scripts.pserve
     import pyramid_fanstatic
