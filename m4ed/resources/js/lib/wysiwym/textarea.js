@@ -13,7 +13,7 @@ define(['./selection'], function(Selection) {
    * the the current text and selection positions. The general idea is to keep track of the
    * textarea in terms of Line objects.  A line object contains a lineType and supporting text.
    *--------------------------------------------------------------------------------------------- */
-  WysiwymTextarea = function(el) {
+  var WysiwymTextarea = function(el) {
     this.init(el);
   }
 

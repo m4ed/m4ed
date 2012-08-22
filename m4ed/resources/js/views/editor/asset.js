@@ -32,7 +32,7 @@ function(_, Backbone, AssetEditorView) {
       var m = this.model;
 
       this.$el.append(this.template.render({
-        src: m.get('thumbnail_url'),
+        src: '/api/assets/' + m.get('id') + '/thumb', // m.get('thumbnail_url')
         alt: m.get('alt'),
         title: m.get('name'),
         buttons: this.buttons

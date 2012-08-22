@@ -1,7 +1,7 @@
 
 from random import randint
 import pymongo
-from m4ed.util import Base62
+from m4ed.util.base62 import Base62
 
 db_name = 'm4ed_test'
 db_conn = pymongo.Connection()

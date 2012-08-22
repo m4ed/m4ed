@@ -4,7 +4,7 @@ from pymongo import ASCENDING
 from pymongo.errors import InvalidId
 from bson import ObjectId
 
-from .util import Base62
+from .util.base62 import Base62
 
 from .models import Asset, Item
 

@@ -13,7 +13,7 @@ class UtilTests(unittest.TestCase):
     #     testing.tearDown()
 
     def test_Base62(self):
-        from m4ed.util import Base62
+        from m4ed.util.base62 import Base62
         b = Base62()
         self.assertEqual(str(b), '0')
         self.assertEqual(str(Base62('10')), '10')

@@ -14,7 +14,7 @@
 .ui-sortable {
   list-style-type: none;
   margin: 0;
-  .user-select(none);
+  .user-select(-moz-none);
 }
 
 // Items
@@ -94,6 +94,7 @@ input.edit {
     height: 294px;
     overflow: auto;
     resize: none;
+    .user-select(text);
   }
 
 
