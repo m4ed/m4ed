@@ -8,6 +8,8 @@ import hashlib
 # Python 3.0 stuff, equivalent to cStringIO in 2.7
 from io import BytesIO
 
+from redis.exceptions import ConnectionError
+
 
 class CustomHtmlRenderer(HtmlRenderer):
     def __new__(cls, flags=0, **kwargs):
@@ -24,43 +26,49 @@ class CustomHtmlRenderer(HtmlRenderer):
         self.img_regex = re.compile(r'(\!\[.*?\]\()id[=:]([a-zA-Z0-9]+)(\))')
         self.s_regex = re.compile(r'\s\s+')
 
-    def preprocess(self, text):
+    def preprocess(self, text, debug=False):
         # result = re.sub(r'\$\$(.*)\$\$', math_to_img, text, re.M)
-        print '------------------------- preprocessing -------------------------'
+        if debug:
+            print '------------------------- preprocessing -------------------------'
         result = self.math_regex.sub(self.math_to_img, text)
         result = self.img_regex.sub(self.imgid_to_imgurl, result)
         return result
 
     def imgid_to_imgurl(self, match):
-        mongo_db = self.mongo_db
         matched_imgid = match.group(2)
-        a = mongo_db.assets.find_one({'id': matched_imgid})
+        a = self.mongo_db.assets.find_one({'id': matched_imgid})
         if not a or not a.get('url'):
             return ('No image with id {} found! '
                 'Please check your markdown'.format(matched_imgid))
         return match.group(1) + a.get('url', '') + match.group(3)
 
-    def math_to_img(self, match):
+    def math_to_img(self, match, debug=False):
         redis_db = self.redis_db
         matched_math = match.group(1)
         # Normalize the spaces within the match and encode it
         matched_math = self.s_regex.sub(' ', matched_math).encode('utf-8')
-        print matched_math
+        if debug:
+            print matched_math
 
         m = hashlib.md5()
         m.update(matched_math)
 
         db_key = 'img:png:' + str(m.hexdigest())
         html = '<img alt="math" src="{}"></img>'.format(self.cache_route + db_key)
-        if redis_db.exists(db_key):
-            print 'Cache hit! Serving the cached img and refreshing cache!'
-            ttl = redis_db.ttl(db_key)
-            print 'The TTL remaining was', ttl, 'seconds'
-            print ' => TTL now ', self.cache_time, 'seconds'
-            # Refresh the cache expire timer
-            redis_db.expire(db_key, self.cache_time)
-            return html
-        print 'Cache miss! Generating a new img!'
+        try:
+            if redis_db.exists(db_key):
+                ttl = redis_db.ttl(db_key)
+                if debug:
+                    print 'Cache hit! Serving the cached img and refreshing cache!'
+                    print 'The TTL remaining was', ttl, 'seconds'
+                    print ' => TTL now ', self.cache_time, 'seconds'
+                # Refresh the cache expire timer
+                redis_db.expire(db_key, self.cache_time)
+                return html
+            if debug:
+                print 'Cache miss! Generating a new img!'
+        except ConnectionError:
+            return ''
 
         _input = BytesIO('$' + matched_math + '$')
         output = BytesIO()

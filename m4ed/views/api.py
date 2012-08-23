@@ -129,7 +129,7 @@ class AssetView(object):
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        print 'We don\'t get here'
+        #print 'We don\'t get here'
         return self.request.context
 
     @view_config(request_method='PUT')

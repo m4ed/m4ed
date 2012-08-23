@@ -52,10 +52,10 @@ class FunctionalTests(unittest.TestCase):
         from webtest import TestApp
         self.testapp = TestApp(app)
 
-    def _login(self, login='superuser', password='1234'):
+    def _login(self, name='superuser', password='1234'):
         # Can be used to log into the app
         params = {
-            'login': login,
+            'name': name,
             'password': password,
             'form.submitted': 'true'  # The value of this field does not matter
         }
@@ -71,7 +71,7 @@ class FunctionalTests(unittest.TestCase):
         self.testapp.reset()
         res = self.testapp.get('/login')
         form = res.form
-        form['login'] = 'user'
+        form['name'] = 'user'
         form['password'] = '1234'
         res = form.submit('form.submitted')
         self.failUnless(res.status == '302 Found')
@@ -88,7 +88,7 @@ class FunctionalTests(unittest.TestCase):
         self.testapp.reset()
         res = self.testapp.get('/login')
         form = res.form
-        form['login'] = 'user'
+        form['name'] = 'user'
         form['password'] = 'invalid_password'
         res = form.submit('form.submitted')
         self.failUnless(res.request.url == 'http://localhost/login')

@@ -13,7 +13,7 @@ class RootFactory(object):
     __acl__ = [
         (Allow, Authenticated, ALL_PERMISSIONS),
         (Allow, 'g:superuser', ALL_PERMISSIONS),
-        (Deny, Everyone, ALL_PERMISSIONS)
+        #(Deny, Everyone, ALL_PERMISSIONS)
     ]
 
     def __init__(self, request):
@@ -31,7 +31,7 @@ class AssetFactory(dict):
 
     def __init__(self, request):
         self.request = request
-        print request.method
+        #print request.method
         self._id = request.matchdict.get('id')
         self.collection = request.db.assets
 
@@ -45,7 +45,7 @@ class AssetFactory(dict):
             except TypeError:  # pragma: no cover
                 return {'error': 'Invalid Object ID'}
 
-        print 'Asset API call with ', query_params
+        #print 'Asset API call with ', query_params
         a = self.collection.find_one(query_params) or dict()
         return Asset(a, name=str(_id), parent=self)
 

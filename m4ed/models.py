@@ -23,10 +23,10 @@ class Asset(dict):
         self.__name__ = name
         self.__parent__ = parent
 
-    def __getattr__(self, key):
-        attr = self.get(key, None)
+    def __getattr__(self, name):
+        attr = self.get(name, None)
         if attr is None:
-            raise AttributeError(key)
+            raise AttributeError(name)
         return attr
 
 
@@ -45,8 +45,44 @@ class Item(dict):
         self.__name__ = name
         self.__parent__ = parent
 
-    def __getattr__(self, key):
-        attr = self.get(key, None)
+    def __getattr__(self, name):
+        attr = self.get(name, None)
         if attr is None:
-            raise AttributeError(key)
+            raise AttributeError(name)
         return attr
+
+
+class User(dict):
+    @property
+    def __acl__(self):
+        return [
+            (Allow, 'g' + self.username, ALL_PERMISSIONS)
+        ]
+
+    def __init__(self, dict_with_the_data):
+        dict.__init__(self)
+        self.update(dict_with_the_data or {})
+
+    @property
+    def groups(self):
+        try:
+            res = dict.__getitem__(self, 'groups')
+            res.append(self.name)
+            return res
+        except KeyError:
+            return list(self.name)
+
+    def __getattr__(self, name):
+        try:
+            return dict.__getitem__(self, name)
+        except KeyError:
+            raise AttributeError
+
+    def __setattr__(self, name, value):
+        dict.__setitem__(self, name, value)
+
+    def __delattr__(self, name):
+        try:
+            dict.__delitem__(self, name)
+        except KeyError:
+            raise AttributeError

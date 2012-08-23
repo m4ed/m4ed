@@ -9,7 +9,7 @@ from m4ed.resources import editor_less
 @view_config(route_name='editor', renderer='editor.mako')
 def editor(request):
     # Include .less
-    request.session['wakalaka'] = 'yep'
+    #request.session['wakalaka'] = 'yep'
     editor_less.need()
     return {
         'project': 'm4ed',

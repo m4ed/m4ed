@@ -11,8 +11,8 @@ import zmq
 from htmlrenderer import CustomHtmlRenderer
 from misaka import Markdown, EXT_TABLES
 
-from .security import groupfinder
-from .util.settings import parse_asset_settings
+from m4ed.security import groupfinder
+from m4ed.util.settings import parse_asset_settings
 
 
 def main(global_config, **settings):
@@ -32,7 +32,7 @@ def main(global_config, **settings):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy,
         session_factory=session_factory,
-        root_factory='.factories:RootFactory'
+        root_factory='m4ed.factories:RootFactory'
     )
 
     config.registry.settings['assets'] = parse_asset_settings(settings)
@@ -42,9 +42,9 @@ def main(global_config, **settings):
     mongo_port = int(config.registry.settings['db.mongo.port'])
     mongo_conn = pymongo.Connection(host=mongo_host, port=mongo_port)
     config.registry.settings['db.mongo.conn'] = mongo_conn
-    config.set_request_property('.request_properties:db',
+    config.set_request_property('m4ed.request_properties:db',
                                 name='db', reify=True)
-    config.set_request_property('.request_properties.fs',
+    config.set_request_property('m4ed.request_properties.fs',
                                 name='fs', reify=True)
 
     # Set up redis connection
@@ -65,11 +65,11 @@ def main(global_config, **settings):
     work_queue = zmq.Context().socket(zmq.PUSH)
     work_queue.connect(settings['zmq.socket'])
     config.registry.settings['zmq.work_queue'] = work_queue
-    config.set_request_property('.request_properties:work_queue',
+    config.set_request_property('m4ed.request_properties:work_queue',
                                 name='work_queue', reify=True)
 
     config.include('pyramid_fanstatic')
-    config.include('.routes')
+    config.include('m4ed.routes')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
     config.scan()
