@@ -6,6 +6,8 @@ define([
 function($, hogan) {
   
   return {
+
+    item: hogan.compile($('#item-template').html()),
     
     editor: hogan.compile($('#editor-template').html()),
 

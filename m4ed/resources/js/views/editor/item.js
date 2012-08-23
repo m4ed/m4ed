@@ -2,9 +2,10 @@
 define([
   'underscore',
   'backbone',
-  'views/editor/editor'
+  'views/editor/editor',
+  'views/editor/templates'
 ],
-function(_, Backbone, EditorView) {
+function(_, Backbone, EditorView, templates) {
 
   // key codes for keyup event
   var keyCodes = {
@@ -14,62 +15,76 @@ function(_, Backbone, EditorView) {
 
   var itemView = Backbone.View.extend({
 
+    tagName: 'li',
+
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      // Listen to changes in title and description
+      // Listen to changes in model
       this.model.bind('change:title', this.onTitleChange, this);
       this.model.bind('change:desc', this.onDescriptionChange, this);
-
-      this.model.set('listIndex', options.listIndex);
 
       this.editor = null;
       this.editorInitialized = false;
 
-      var $el = $(options.el)
-        , $title = $el.find('.title')
-        , $description = $el.find('.desc');
+      if (!options.el) {
+        this.render();
+      }
 
-      this.$title = $title;
-      this.$titleSpan = $title.children('.view');
-      this.$titleInput = $title.children('input.edit');
+      this.$item = this.$el.children('.item');
 
-      this.$description = $description;
-      this.$descriptionSpan = $description.children('.view');
-      this.$descriptionInput = $description.children('.edit');
+      var $title = this.$item.find('.title')
+        , $description = this.$item.find('.desc');
+
+      this.editables = {
+        title: {
+          '$wrapper': $title,
+          '$view': $title.children('.view'),
+          '$edit': $title.children('.edit')
+        },
+        desc: {
+          '$wrapper': $description,
+          '$view': $description.children('.view'),
+          '$edit': $description.children('.edit')       
+        }
+      };
 
       this.globalDispatcher.on('sortUpdated', this.onSortUpdated, this);
+      this.globalDispatcher.on('itemSelected', this.onItemSelected, this);
 
     },
 
+    render: function() {
+      this.$el
+          .attr('id', this.model.get('_id'))
+          // .data('index', this.model.get('listIndex'))
+          .html(templates.item.render(this.model.toJSON()));
+    },
+
     events: {
-      "click .title > .view": "onTitleClick",
+      "click .view": "onEditableClick",
       "click .edit": "onEditClick",
-      "click .desc > .view": "onDescriptionClick",
-      "click": "onItemClick",
+      "click .item": "onItemClick",
       "blur .edit": "onEditBlur",
       "keyup .edit": "onEditKeyup"
     },
 
-    onTitleClick: function(e) {
+    onEditableClick: function(e) {
       e.stopPropagation();
-      if (!this.model.has('title')) {
-        // Sync the model if it doesn't seem to have a title
+      var field = $(e.currentTarget).parent().attr('class');
+      // Sync the model if it doesn't seem to have the needed field
+      if (!this.model.has(field)) {
         this.model.fetch();
       }
-      this.$title.addClass('editing');
-      this.$titleInput.select();
-    },
+      this.editables[field].$wrapper.addClass('editing');
+      this.editables[field].$edit.select();
 
-    onDescriptionClick: function(e) {
-      e.stopPropagation();
-      if (!this.model.has('description')) {
-        // Sync the model if it doesn't seem to have a description
-        this.model.fetch();
-      }
-      this.$description.addClass('editing');
-      this.$descriptionInput.select();
+      // Select the item if not selected already
+      if (!this.isSelected()) {
+        this.select();
+      }      
+
     },
 
     onEditClick: function(e) {
@@ -81,15 +96,18 @@ function(_, Backbone, EditorView) {
     onItemClick: function(e) {
 
       // Prevent editor toggle if title or description edit is active
-      if (this.$title.hasClass('editing')) {
-        this.closeEdit(true, this.$titleInput);
-        e.stopPropagation();
-        return false;
+      for (var key in this.editables) {
+        var field = this.editables[key];
+        if (field.$wrapper.hasClass('editing')){
+          this.closeEdit(true, field.$edit);
+          e.stopPropagation();
+          return false;
+        }
       }
-      if (this.$description.hasClass('editing')) {
-        this.closeEdit(true, this.$descriptionInput);
-        e.stopPropagation();
-        return false;
+
+      // Select the item if not selected already
+      if (!this.isSelected()) {
+        this.select();
       }
 
       // Check if we need a new editor view created
@@ -103,37 +121,52 @@ function(_, Backbone, EditorView) {
             parent: this
           }
         });
-      } else {
-        this.editor.toggle();
-      }
-
+      } 
+      this.editor.toggle();
       return false;
     },
 
     scrollTop: function() {
-      if(!this.offset) {
-        this.offset = this.$el.offset().top -
-          this.$el.cssInt('margin-top') -
+      var offset = this.$item.offset().top -
+          this.$item.cssInt('margin-top') - 
           $('body').cssInt('padding-top');
-      }
       $('html:not(:animated),body:not(:animated)').animate({
-        scrollTop: this.offset
+        scrollTop: offset
       }, 200);
+    },
+
+    select: function() {
+      this.$item.addClass('selected');
+      // Sync the model if it doesn't have an id
+      if (!this.model.has('_id')) {
+        this.model.fetch();
+      }
+      this.globalDispatcher.trigger('itemSelected', this.model.get('_id'));
+    },
+
+    deselect: function() {
+      this.$item.removeClass('selected');
+    },
+
+    isSelected: function() {
+      return this.$item.hasClass('selected');
+    },
+
+    onItemSelected: function(_id) {
+      if (this.isSelected() && _id !== this.model.get('_id')) {
+        this.deselect();
+      } 
     },
 
     onEditBlur: function(e) {
       e.stopPropagation();
-      var target = e.currentTarget
-        , $target = $(target);
       this.closeEdit(true, e.currentTarget);
       return false;
     },
 
     onEditKeyup: function(e) {
 
-      var target = e.currentTarget
-        , $target = $(target)
-        , saveResult = false;
+      var saveResult = false;
 
       switch(keyCodes[e.which]) {
       case undefined:
@@ -146,18 +179,21 @@ function(_, Backbone, EditorView) {
         // Just break since saveResult is already false
         break;
       }
-      this.closeEdit(saveResult, target);
+      this.closeEdit(saveResult, e.currentTarget);
 
     },
 
     onTitleChange: function(model, newTitle, options) {
-      this.$titleSpan.text(newTitle);
-      this.$titleInput.val(newTitle);
+      this.updateEditable(this.editables.title, newTitle);
     },
 
     onDescriptionChange: function(model, newDescription, options) {
-      this.$descriptionSpan.text(newDescription);
-      this.$descriptionInput.val(newDescription);
+      this.updateEditable(this.editables.desc, newDescription);
+    },
+
+    updateEditable: function(field, value) {
+      field.$view.text(value);
+      field.$edit.val(value);
     },
 
     onSortUpdated: function(order) {

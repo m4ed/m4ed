@@ -15,7 +15,7 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
   var itemListView = Backbone.View.extend({
 
     events: {
-      "sortupdate": "onSortUpdate"
+      'sortupdate': 'onSortUpdate'
     },
     
     initialize: function(options) {
@@ -26,19 +26,15 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
       this.collection = new ItemCollection();
       var collection = this.collection;
 
-      // Make a clone of BackBone.Events and use it as an event dispatcher
-      // in all the child views
-      this.globalDispatcher = _.clone(Backbone.Events);
-
-      this.collection.bind('add', this.onAdd, this);
-
-      $('.item').each(function(index) {
-        // Temporary ID so we can test the dummy api
-        var $this = $(this);
-        collection.add({_id: $this.data('id')}, {$el: $this, listIndex: index});
-      });
+      this.collection.on('add', this.onAdd, this);
 
       this.$list = this.$el.find('.ui-sortable');
+
+      // Init collection from rendered content
+      $('.ui-sortable li').each(function(index) {
+        var $li = $(this);
+        collection.add({_id: $li.attr('id')}, {$el: $li});
+      });
 
       // Make items sortable 
       if ($.support.touch) {
@@ -49,12 +45,13 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
         this.$list.sortable({ distance: 20 });
       }
 
-      
-
-      // Track the number of open editors and disable sorting while > 0
+      // Keep count of open editors
       this.editorsOpen = 0;
+
+      // Bind global events
       this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
       this.globalDispatcher.on('editorClosed', this.onEditorClosed, this);  
+      this.globalDispatcher.on('action:addItem', this.add, this); 
 
       // Create a view for the modal upload form
       this.upload = new UploadView({
@@ -67,11 +64,43 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
 
     },
 
+    add: function() {
+      this.collection.add({
+        listIndex: 0,
+        title: 'Click to add a title',
+        desc: 'Click to add a description',
+        text: ''
+      });
+    },
+
     onAdd: function(item, collection, options) {
+
+      // In case of a new item sync the model and add the view to the list
+      if(!options.$el) {
+        console.log('Saving new item...');
+        item.save({}, {
+          success: _.bind(function(model, response){
+            console.log('Save successful.');
+            // addMethod can be 'append' or 'prepend'
+            // TODO: move addMethod to options
+            this.createItemView(model, {addMethod: 'prepend'});
+          }, this),
+          error: function(){
+            console.log("Error: couldn't save item.");
+          }
+        });
+        
+      }
+
+      this.createItemView(item, options);
+
+    },
+
+    createItemView: function(model, options) {
+
       var itemView = new ItemView({
-        model: item,
+        model: model,
         el: options.$el,
-        listIndex: options.listIndex,
         custom: {
           dispatcher: _.clone(Backbone.Events),
           globalDispatcher: this.globalDispatcher,
@@ -79,9 +108,21 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
           templates: this.templates
         }
       });
+
+      // Update sortable and indexes if necessary
+      if (options.addMethod) {
+        var order = this.$list[options.addMethod](itemView.$el).sortable('refresh').sortable('toArray');
+        this.globalDispatcher.trigger('sortUpdated', order);
+        // Scroll to item
+        itemView.scrollTop();
+        // Select the new item
+        itemView.select();
+      }
+
     },
 
     onSortUpdate: function(e, ui) {
+      console.log('Sort updated!');
       var order = this.$list.sortable('toArray');
       this.globalDispatcher.trigger('sortUpdated', order);
     },

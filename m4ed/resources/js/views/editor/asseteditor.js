@@ -31,12 +31,7 @@ function(_, Backbone) {
 
       var m = this.model;
 
-      this.$el.append(this.template.render({
-        src: m.get('thumbnail_url'),
-        alt: m.get('alt'),
-        title: m.get('title'),
-        tags: m.get('tags')
-      }));
+      this.$el.append(this.template.render(this.model.toJSON()));
 
       this.$tags = this.$('.tags');
 

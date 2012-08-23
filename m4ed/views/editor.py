@@ -6,7 +6,7 @@ from m4ed.resources import editor_less
 
 
 # This should have permission='read'
-@view_config(route_name='editor', renderer='editor.mako')
+@view_config(route_name='editor', renderer='editor/editor.mako')
 def editor(request):
     # Include .less
     #request.session['wakalaka'] = 'yep'

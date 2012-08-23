@@ -34,25 +34,16 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
 
+      console.log('Editor initialized.');
 
       // If the model already has text, assume it has been initialized
       // somewhere else and render it
       if (this.model.has('text')) {
         this.editorInitialized = true;
-        this.render().toggle();
+        this.render();
       } else {
         this.model.fetch();
       }
-    },
-
-    onTextChange: function(model, text, options) {
-      //console.log('The model has changed!');
-      if (!this.editorInitialized) {
-        this.editorInitialized = true;
-        console.log('First time change!');
-        this.render().toggle();
-      } 
-      this.generatePreview();
     },
 
     render: function() {
@@ -101,8 +92,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       this.textarea.render();
 
       // Stupid work around 
-      $el.insertAfter(this.parent.$el);
-
+      $el.appendTo(this.parent.$el);
 
       return this;
 
@@ -113,6 +103,16 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       'drop .editor-textarea': 'onTextareaDrop',
       'click .editor-btn.pictures': 'onPictureButtonClick',
       'keyup': 'onKeyup'
+    },
+
+    onTextChange: function(model, text, options) {
+      //console.log('The model has changed!');
+      if (!this.editorInitialized) {
+        this.editorInitialized = true;
+        console.log('First time change!');
+        this.render();
+      } 
+      this.generatePreview();
     },
 
     onTextareaKeyup: _.throttle(function(e) {

@@ -15,7 +15,7 @@ define(['./selection'], function(Selection) {
    *--------------------------------------------------------------------------------------------- */
   var WysiwymTextarea = function(el) {
     this.init(el);
-  }
+  };
 
   WysiwymTextarea.prototype = {
 

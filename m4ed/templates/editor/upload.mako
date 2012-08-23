@@ -1,3 +1,5 @@
+## Modal upload form template
+
 <%def name="modal_upload()">
   <div id="modal-upload" class="modal-upload modal hide fade">
     <form id="fileupload" class="fileupload modal-form" action="/api/assets" method="POST" enctype="multipart/form-data">

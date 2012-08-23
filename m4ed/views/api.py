@@ -60,7 +60,6 @@ class ItemView(object):
             self.request.response.status = '503'
             return {}
         update['listIndex'] = kwargs.pop('listIndex')
-        update['type'] = kwargs.pop('type')
         update['title'] = kwargs.pop('title')
         update['desc'] = kwargs.pop('desc')
         update['text'] = kwargs.pop('text')
@@ -101,7 +100,35 @@ class ItemsView(object):
 
     @view_config(request_method='POST')
     def post(self):
-        return {'result': 'POST accepted'}
+
+        # self.request.response.status = '200'
+        # return {'context': self.request.context}
+
+        # if not self.request.context:
+        #     self.request.response.status = '404'
+        #     return {}
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return HTTPNotAcceptable()
+
+        item = {}
+
+        item['title'] = kwargs.pop('title', 'Click to add a title')
+        item['desc'] = kwargs.pop('desc', 'Click to add a description')
+        item['text'] = kwargs.pop('text', '')
+        item['listIndex'] = kwargs.pop('listIndex', 0)
+
+        item_id = self.request.db.items.insert(item, safe=True)
+        item_id = str(item_id)
+
+        item['_id'] = item_id
+
+        print 'POST: Item added witd id ' + item_id
+        self.request.response.status = '200'
+        return item
 
     @view_config(request_method='PUT')
     def put(self):
@@ -109,7 +136,7 @@ class ItemsView(object):
 
     @view_config(request_method='DELETE')
     def delete(self):
-        return {'result': 'PUT accepted'}
+        return {'result': 'DELETE accepted'}
 
 
 # @view_defaults(route_name='rest_folders', renderer='json')

@@ -109,6 +109,7 @@ function(_, Backbone, AssetEditorView) {
       e.stopPropagation();
       // alert('Edit button clicked!');
 
+      this.dispatcher.trigger('assetSelected', this.index);
       this.$el.addClass('selected');
       if (!this.editor) {
         this.editor = new AssetEditorView({

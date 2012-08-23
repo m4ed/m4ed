@@ -12,9 +12,9 @@ items = []
 child_items = []
 
 # Insert some lessons
-for i in range(5):
+r = randint(2, 5)
+for i in range(0, r):
     items.append({
-        'type': 'lesson',
         'title': 'Lesson {}'.format(i + 1),
         'desc': 'Description for lesson {}'.format(i + 1),
         'text': '## Content for lesson {}'.format(i + 1),
@@ -29,13 +29,12 @@ listIndex = 0
 
 # Insert some exercises
 for i, item_id in enumerate(item_ids):
-    r = randint(0, 5)
+    r = randint(0, 3)
     item = db.items.find_and_modify(query={'_id': item_id}, update={'$set': {'listIndex': listIndex}})
     listIndex += 1
     i += 1
     for j in range(1, r):
         db.items.insert({
-            'type': 'exercise',
             'title': 'Exercise {}.{}'.format(i, j),
             'desc': 'Description for exercise {}.{}'.format(i, j),
             'text': '## Content for exercise {}.{}'.format(i, j),
@@ -60,7 +59,7 @@ for i in range(1, r):
         'desc': 'Description of asset {}'.format(i),
         'name': 'Placeholder thumbnail {}'.format(i),
         'url': 'http://placehold.it/320x240',
-        'thumbnail_url': 'http://placehold.it/90x90',
+        'thumbnail_url': '/fanstatic/m4ed/img/90x90.gif',
         'delete_url': '',
         'delete_type': 'DELETE',
         'id': str(base62_id),
