@@ -8,10 +8,10 @@
     <div class="handle">
     </div>
     <div class="item-content">
-      <h4 class="title">
+      <h5 class="title">
         <span class="view">${title}</span>
         <input type="text" class="edit" value="${title}" data-attr="title" maxlength="160"/>
-      </h4>
+      </h5>
       <p class="desc">
         <span class="view">${desc}</span>
         <input type="text" class="edit" value="${desc}" data-attr="desc" maxlength="160"/>

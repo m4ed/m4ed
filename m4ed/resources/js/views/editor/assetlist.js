@@ -21,10 +21,11 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
+      // this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
 
       // Local navigation events between Assets, AssetList and AssetEditor
       this.dispatcher.bind('assetSelected', this.onAssetSelected, this);
+      this.dispatcher.bind('assetSwitch', this.onAssetSwitch, this);
       this.dispatcher.bind('assetEdit', this.onAssetEdit, this);
 
       this.assets = new AssetCollection();
@@ -53,6 +54,7 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       // The second parameter is the context of 'this' in the callback
       this.assets.each(this.addImage, this);
       this.loadPlugins();
+      console.log('Slider rendered.');
     },
 
     addImage: function(model) {
@@ -88,34 +90,32 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
                   // when we resize the window, the carousel will make sure this item is visible 
         // onClick   : function() { return false; } // click item callback
       });
-      this.$el.elastislide('setCurrent', 0);
 
-      // TODO: Save the selection somehow?
-      this.$('li:first-child').addClass('selected');
+      var ci = this.currentIndex;
+      var len = this.assets.length;
+      // Make sure index is beyond the array
+      ci = ci > 0 ? (ci < len ? ci : len-1) : 0;
+      if (ci !== this.currentIndex) this.currentIndex = ci;
+      this.$el.elastislide('setCurrent', ci);
 
     },
 
-    onAssetChange: function(assetId) {
-      // This event gets triggered when some other editor view or asset list
-      // notices a change in their assests.
-      // Check if the asset that was changed is in our collection and handle
-      // refreshing it.
-      if (this.assets.get(assetId)) {
-        console.log('Some assets in my collection have changed!');
-        this.assets.fetch();
-      }
-    },
+    // onAssetChange: function(assetId) {
+    //   // This event gets triggered when some other editor view or asset list
+    //   // notices a change in their assests.
+    //   // Check if the asset that was changed is in our collection and handle
+    //   // refreshing it.
+    //   if (this.assets.get(assetId)) {
+    //     console.log('Some assets in my collection have changed!');
+    //     // this.assets.fetch();
+    //   }
+    // },
 
-    onAssetSelected: function(assetIndex) {
-      this.$('li').removeClass('selected');
-      this.$('li:eq('+assetIndex+')').addClass('selected');
-      this.$el.elastislide('setCurrent', assetIndex);
-      // console.log('Asset ' + assetIndex);
-    },
-
-    onAssetEdit: function(assetIndex) {
-      this.$('li:eq('+assetIndex+')').trigger('edit');
-      // console.log('Asset edit ' + assetIndex);
+    onAssetSelected: function(model) {
+      this.currentIndex = this.assets.indexOf(model);
+      if (this.currentIndex !== -1) this.$el.elastislide('setCurrent', this.currentIndex);
+      var _id = model ? model.get('_id') : undefined; 
+      console.log('Asset selected: index: ' + this.currentIndex + ' id: ' + _id);
     },
 
     onReset: function() {
@@ -124,10 +124,30 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
 
     onDestroy: function(model) {
       console.log('Destroy event triggered!');
-      this.globalDispatcher.trigger('assetChange', model.get('_id'));
+      this.$el.elastislide('refresh', function(){
+        console.log('Elastislide refreshed.');
+      });
+      // this.render();
+      // this.globalDispatcher.trigger('assetChange', model.get('_id'));
     },
 
-    navigate: function(dir) {
+    onAssetSwitch: function (direction) {
+      var newIndex = -1;
+      if (direction === 'prev') {
+        newIndex = this.currentIndex - 1;
+      } else {
+        newIndex = this.currentIndex + 1;
+      }
+      // if (newIndex >= 0 && newIndex < this.assets.length) {
+        this.currentIndex = newIndex;
+        var asset = this.assets.at(this.currentIndex);
+        var _id = asset ? asset.get('_id') : undefined; 
+        console.log(direction+' asset selected; index: ' + this.currentIndex + ' id: ' + _id);
+        this.dispatcher.trigger('assetEdit', asset);
+      // }
+    },
+
+    scrollSlider: function(dir) {
       if (dir === 'left') {
         this.$el.find('.es-nav-prev').click();
       } else if (dir === 'right') {

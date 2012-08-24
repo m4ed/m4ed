@@ -978,8 +978,8 @@
 
 		height = input.outerHeight();
 
-		input.width(width);
-		wrap.width(width).height(height);
+		input.outerWidth(width);
+		wrap.outerWidth(width).height(height);
 		container.height(height);
 
 		self.trigger(EVENT_POST_INVALIDATE);

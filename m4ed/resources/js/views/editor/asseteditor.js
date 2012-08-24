@@ -16,7 +16,7 @@ function(_, Backbone) {
 
     tagName: 'div',
 
-    className: 'asset-editor modal hide fade',
+    className: 'asset-editor modal hide',
 
     initialize: function(options) {
 
@@ -36,9 +36,15 @@ function(_, Backbone) {
       this.$tags = this.$('.tags');
 
       this.$modalTitle = this.$('.modal-header h3');
-      this.$title = this.$('.title');
-      this.$titleSpan = this.$title.children('.view');
-      this.$titleInput = this.$title.children('input.edit');
+      var $title = this.$('.title');
+
+      this.editables = {
+        title: {
+          '$wrapper': $title,
+          '$view': $title.children('.view'),
+          '$edit': $title.children('.edit')
+        }
+      };
 
       return this;
     },
@@ -46,12 +52,12 @@ function(_, Backbone) {
     events: {
       'shown': 'onShown',
       'hide': 'onClose',
-      'click .title > .view': 'onTitleClick',
+      'click .title > .view': 'onEditableClick',
       'blur .edit': 'onEditBlur',
       'keyup .edit': 'onEditKeyup',
       'tagChange .tags': 'onTagChange',
-      'click .next': 'onNextClick',
-      'click .prev': 'onPrevClick'
+      'click .next': 'onSwitchClick',
+      'click .prev': 'onSwitchClick'
     },
 
     toggle: function() {
@@ -83,14 +89,15 @@ function(_, Backbone) {
       }
     },
 
-    onTitleClick: function(e) {
+    onEditableClick: function(e) {
       e.stopPropagation();
-      if (!this.model.has('title')) {
-        // Sync the model if it doesn't seem to have a title
+      var field = $(e.currentTarget).parent().attr('class');
+      // Sync the model if it doesn't seem to have the needed field
+      if (!this.model.has(field)) {
         this.model.fetch();
       }
-      this.$title.addClass('editing');
-      this.$titleInput.select();
+      this.editables[field].$wrapper.addClass('editing');
+      this.editables[field].$edit.select();
     },
 
     onEditBlur: function(e) {
@@ -144,8 +151,8 @@ function(_, Backbone) {
 
     onTitleChange: function(model, newTitle, options) {
       this.$modalTitle.text(newTitle);
-      this.$titleSpan.text(newTitle);
-      this.$titleInput.val(newTitle);
+      this.editables.title.$view.text(newTitle);
+      this.editables.title.$edit.val(newTitle);
     },
 
     onTagChange: function(e, context) {
@@ -156,21 +163,12 @@ function(_, Backbone) {
       this.model.save();
     },
 
-    onPrevClick: function(e) {
-      var prevIndex = this.parent.index - 1;
-      if (prevIndex >= 0) this.dispatcher.trigger('assetSelected', prevIndex);
-      if (prevIndex >= 0) this.dispatcher.trigger('assetEdit', prevIndex);
-      this.toggle();
-    },
-
-    onNextClick: function(e) {
-      var nextIndex = this.parent.index + 1;
-      this.dispatcher.trigger('assetSelected', nextIndex);
-      this.dispatcher.trigger('assetEdit', nextIndex);
+    onSwitchClick: function(e) {
+      var c = $(e.currentTarget).attr('class');
+      var dir = c.indexOf('next') !== -1 ? 'next' : 'prev';
+      this.dispatcher.trigger('assetSwitch', dir);
       this.toggle();
     }
-
-
 
   });
 

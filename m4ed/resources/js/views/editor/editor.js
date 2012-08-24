@@ -62,7 +62,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         }
       });
 
-      this.dispatcher.on('insertImage', this.onInsertImage, this);
+      this.dispatcher.on('insertAsset', this.onInsertAsset, this);
 
       // init buttons
       var buttonGroups = templates.buttonGroups;
@@ -136,7 +136,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       this.$('.asset-container').slideToggle();
     },
 
-    onInsertImage: function(markdown) {
+    onInsertAsset: function(markdown) {
       this.$el.find('.editor-textarea').insertAtCaret(markdown);
       this.update();
     },
@@ -205,9 +205,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     onKeyup: function(e) {
       // Left arrow or right arrow
       if (e.keyCode === 37) {
-        this.assetList.navigate('left');
+        this.assetList.scrollSlider('left');
       } else if (e.keyCode === 39) {
-        this.assetList.navigate('right');
+        this.assetList.scrollSlider('right');
       }
       return false;
     }

@@ -1,6 +1,6 @@
 from random import randint
 import pymongo
-from m4ed.util import Base62
+from m4ed.util.base62 import Base62
 
 # Insert some dummy data
 
@@ -56,8 +56,9 @@ base62_id = Base62(0)
 for i in range(1, r):
     base62_id += 1
     db.assets.insert({
-        'desc': 'Description of asset {}'.format(i),
-        'name': 'Placeholder thumbnail {}'.format(i),
+        'title': 'Asset #{}'.format(base62_id),
+        'desc': 'Description of asset #{}'.format(base62_id),
+        'name': 'Placeholder thumbnail #{}'.format(base62_id),
         'url': 'http://placehold.it/320x240',
         'thumbnail_url': '/fanstatic/m4ed/img/90x90.gif',
         'delete_url': '',

@@ -27,7 +27,7 @@
 
   ${navigation()}
 
-  <div class="container">
+  <div class="container small">
     <%block name="content">
     </%block>
   </div>

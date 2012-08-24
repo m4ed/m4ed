@@ -399,6 +399,15 @@
 			
 			// adds new items to the carousel
 			this.$items 		= this.$items.add( $newelems );
+			this.refresh();
+			
+			if ( callback ) callback.call( $newelems );
+			
+		},
+		refresh				: function( callback ) {
+			
+			// refresh the items (added by m4ed)
+			console.log(this.$items);
 			this.itemsCount		= this.$items.length;
 			this._setDim();
 			this._setCurrentValues();
@@ -406,8 +415,8 @@
 				width	: this.sliderW
 			});
 			this._slideToCurrent();
-			
-			if ( callback ) callback.call( $newelems );
+
+			if ( callback ) callback.call();
 			
 		},
 		setCurrent			: function( idx, callback ) {

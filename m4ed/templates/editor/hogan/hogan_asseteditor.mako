@@ -13,7 +13,7 @@
         <span class="view">{{title}}</span>
         <input type="text" class="edit" value="{{title}}" data-attr="title" maxlength="160"/>
       </h4>
-      <textarea class="tags" rows="1"></textarea>
+      <input class="tags" type="text" placeholder="Add tags…"></input>
 
     </div>
     <div class="modal-footer">

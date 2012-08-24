@@ -3,7 +3,8 @@ define([
   'underscore',
   'backbone',
   'views/editor/editor',
-  'views/editor/templates'
+  'views/editor/templates',
+  'jquery.plugins'
 ],
 function(_, Backbone, EditorView, templates) {
 
@@ -32,10 +33,10 @@ function(_, Backbone, EditorView, templates) {
         this.render();
       }
 
-      this.$item = this.$el.children('.item');
+      this.$item = this.$('.item');
 
-      var $title = this.$item.find('.title')
-        , $description = this.$item.find('.desc');
+      var $title = this.$('.title')
+        , $description = this.$('.desc');
 
       this.editables = {
         title: {
@@ -84,7 +85,6 @@ function(_, Backbone, EditorView, templates) {
       if (!this.isSelected()) {
         this.select();
       }      
-
     },
 
     onEditClick: function(e) {

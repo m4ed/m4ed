@@ -8,6 +8,8 @@
 *.sublime-*
 *.min.css
 
+development.ini
+assets.ini
 server_config.ini
 .coverage
 .tox/

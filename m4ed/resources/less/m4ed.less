@@ -7,10 +7,14 @@
 
 @import "icons.less";
 
-// Custom colors
+// Custom variables
 // -----------------------------------------
 @grayLight2:         #bbb;
+@headerColor:        #d8ffc9;
+
 @itemColor:          #f5f5f5;
+@itemTextColor:      inherit;
+@itemTextShadow:     0 -1px 0 rgba(255,255,255,.25);
 
 
 // Global classes
@@ -79,7 +83,7 @@ body {
     margin: 8px;
   }
 
-  .gradientBar(#d8ffc9, #b1e69c);
+  .gradientBar(lighten(@headerColor, 5%), darken(@headerColor, 5%), inherit, none);
 
   margin-top: 8px;
 

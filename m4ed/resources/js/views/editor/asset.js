@@ -2,7 +2,8 @@
 define([
   'underscore',
   'backbone',
-  'views/editor/asseteditor'
+  'views/editor/asseteditor',
+  'jquery.hoverintent'
 ],
 function(_, Backbone, AssetEditorView) {
   var AssetView = Backbone.View.extend({
@@ -23,8 +24,10 @@ function(_, Backbone, AssetEditorView) {
         src: this.model.get('id')
       });
 
-      // Index for elastislide
-      this.index = options.index;
+      this.dispatcher.on('assetSelected', this.onAssetSelected, this);
+      this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
+      this.dispatcher.on('assetEdit', this.onAssetEdit, this);
+
     },
 
     render: function() {
@@ -39,15 +42,20 @@ function(_, Backbone, AssetEditorView) {
       })); 
 
       this.$buttons = this.$el.find('.buttons');
-      this.$img = this.$el.find('img');
+      this.$img = this.$el.children('img');
+
+      this.$el.hoverIntent({
+        sensitivity: 1,
+        interval: 100,
+        over: _.bind(this.onHoverOver, this),
+        timeout: 100,
+        out: _.bind(this.onHoverOut, this)
+      });
 
       this.$img.tooltip({
         title: m.get('title'),
         placement: 'bottom',
-        delay: {
-          show: 700,
-          hide: 50
-        }
+        trigger: 'manual'
       });
 
       return this;
@@ -56,25 +64,42 @@ function(_, Backbone, AssetEditorView) {
     events: {
       'click': 'onClick',
       'dragstart img': 'onDragstart',
-      'hoverintent': 'onHoverIntent',
-      'mouseleave': 'onMouseLeave',
-      'click .btn-remove': 'onRemove',
-      'click .btn-edit': 'onEdit',
-      'edit': 'onEdit',
+      'click .btn-remove': 'onRemoveClick',
+      'click .btn-edit': 'onEditClick',
       'click .btn-insert': 'onInsert'
     },
 
+    select: function() {
+      this.dispatcher.trigger('assetSelected', this.model);
+      this.$el.addClass('selected');
+    },
+
+    deselect: function() {
+      this.$el.removeClass('selected');
+    },
+
+    isSelected: function() {
+      return this.$el.hasClass('selected');
+    },
+
+    onAssetSelected: function (model) {
+      if (this.isSelected() && !model || model.id !== this.model.id) {
+        this.deselect();
+      } 
+    },
+
     onInsert: function(e) {
-      // Trigger the insertImage
+      // Trigger the insertAsset
       // event through our dispatcher, 
       // which the editor view is listening to.
-      this.dispatcher.trigger('insertImage', this.markdown);
+      this.dispatcher.trigger('insertAsset', this.markdown);
      //this.model.destroy();
     },
 
     onClick: function(e) {
-      this.dispatcher.trigger('assetSelected', this.index);
-      this.$el.addClass('selected');
+      if (!this.isSelected()) {
+        this.select();
+      } 
     },
 
     onDragstart: function(e) {
@@ -84,46 +109,59 @@ function(_, Backbone, AssetEditorView) {
       e.originalEvent.dataTransfer.setData('Text', this.markdown);
     },
 
-    onHoverIntent: function(e) {
+    onHoverOver: function(e) {
       e.stopPropagation();
-      this.$buttons.fadeIn(700);
+      this.$buttons.fadeIn(300);
+      this.$img.tooltip('show');
     },
 
-    onMouseLeave: function(e) {
+    onHoverOut: function(e) {
       e.stopPropagation();
       this.$buttons.fadeOut(50);
+      this.$img.tooltip('hide');
     },
 
     onTitleChange: function(model, newTitle, options) {
       this.$img.attr('title', newTitle).tooltip('fixTitle');
     },
 
-    onRemove: function(e) {
+    onRemoveClick: function(e) {
       e.stopPropagation();
+      this.$img.tooltip('destroy');
       this.model.destroy();
+      if (this.editor) this.editor.remove();
       this.remove();
       // alert('Asset removed!');
     },
 
-    onEdit: function(e) {
+    onEditClick: function(e) {
       e.stopPropagation();
       // alert('Edit button clicked!');
+      this.dispatcher.trigger('assetEdit', this.model);
+    },
 
-      this.dispatcher.trigger('assetSelected', this.index);
-      this.$el.addClass('selected');
-      if (!this.editor) {
-        this.editor = new AssetEditorView({
-          model: this.model,
-          custom: {
-            template: this.editorTemplate,
-            dispatcher: this.dispatcher,
-            parent: this
-          }
-        });
-        this.editor.render().toggle();
-      } else {
-        this.editor.toggle();
+    onAssetEdit: function(model) {
+
+      if (model === this.model) {
+
+        this.select();  
+
+        if (!this.editor) {
+          this.editor = new AssetEditorView({
+            model: this.model,
+            custom: {
+              template: this.editorTemplate,
+              dispatcher: this.dispatcher,
+              parent: this
+            }
+          });
+          this.editor.render().toggle();
+        } else {
+          this.editor.toggle();
+        }
+
       }
+
     }
 
 

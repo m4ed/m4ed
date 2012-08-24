@@ -31,6 +31,7 @@ requirejs.config({
     // Other jQuery plugins
     'jquery.autoellipsis': 'lib/jquery/plugins/jquery.autoellipsis.min',
     'jquery.elastislide': 'lib/jquery/plugins/jquery.elastislide',
+    'jquery.hoverintent': 'lib/jquery/plugins/jquery.hoverIntent.min',
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
 
     // Utils
@@ -60,6 +61,7 @@ requirejs.config({
     'jquery.ui.touch-punch': ['jquery.ui'],
     'jquery.autoellipsis': ['jquery'],
     'jquery.elastislide': ['jquery'],
+    'jquery.hoverintent': ['jquery'],
     'jquery.textext': ['jquery'],
     'jquery.textext.tags': ['jquery.textext'],
     'jquery.textext.prompt': ['jquery.textext'],
