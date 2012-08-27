@@ -6,7 +6,7 @@ from bson import ObjectId
 
 from .util.base62 import Base62
 
-from .models import Asset, Item
+from .models import Asset, Item, User
 
 
 class RootFactory(object):
@@ -77,3 +77,46 @@ class ItemFactory(dict):
     def __iter__(self):
         items = self.collection.find().sort('listIndex', direction=ASCENDING)
         return (Item(item, name=str(item['_id']), parent=self) for item in items)
+
+
+class UserFactory(dict):
+    __name__ = None
+    __parent__ = RootFactory
+
+    __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS)
+    ]
+
+    def __init__(self, request):
+        self.request = request
+        self._id = request.matchdict.get('id')
+        self.collection = request.db.users
+
+    def __getitem__(self, _id):
+        try:
+            query = dict(_id=ObjectId(_id))
+        except InvalidId:
+            query = dict(name=_id)
+        item = self.collection.find_one(query)
+
+        if not item:
+            raise KeyError
+
+        return User(item, name=str(_id), parent=self)
+
+    def __setitem__(self, user):
+        self.save(user)
+
+    def get(self, name, default=None):
+        try:
+            return self.__getitem__(name)
+        except KeyError:
+            return default
+
+    def save(self, user):
+        _id = self.collection.insert(user, safe=True)
+        return User(user, name=str(_id), parent=self)
+
+    def __iter__(self):
+        items = self.collection.find().sort('listIndex', direction=ASCENDING)
+        return (User(item, name=str(item['_id']), parent=self) for item in items)
