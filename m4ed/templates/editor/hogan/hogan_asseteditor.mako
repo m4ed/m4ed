@@ -21,7 +21,7 @@
         <div class="btn prev"><i class="icon-arrow-left"></i> Prev</div>
         <div class="btn next">Next <i class="icon-arrow-right"></i></div>
       </div>
-      <a href="#" class="btn btn-danger" data-dismiss="modal"><i class="icon-trash icon-white"></i> Delete</a>
+      <a href="#" class="btn btn-danger delete" data-dismiss="modal"><i class="icon-trash icon-white"></i> Delete</a>
       <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
     </div>
   </script>

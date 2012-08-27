@@ -49,7 +49,7 @@ for i, item_id in enumerate(item_ids):
 db.assets.drop()
 print "Assets dropped."
 
-r = randint(10, 30)
+r = randint(20, 50)
 
 base62_id = Base62(0)
 

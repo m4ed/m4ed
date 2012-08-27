@@ -24,6 +24,7 @@ function(_, Backbone) {
       _.extend(this, options.custom);
 
       this.model.bind('change:title', this.onTitleChange, this);
+      this.model.bind('destroy', this.onDestroy, this);
 
     },
 
@@ -51,13 +52,14 @@ function(_, Backbone) {
 
     events: {
       'shown': 'onShown',
-      'hide': 'onClose',
+      'hide': 'onHide',
       'click .title > .view': 'onEditableClick',
       'blur .edit': 'onEditBlur',
       'keyup .edit': 'onEditKeyup',
       'tagChange .tags': 'onTagChange',
-      'click .next': 'onSwitchClick',
-      'click .prev': 'onSwitchClick'
+      'click .next': 'onNextClick',
+      'click .prev': 'onPrevClick',
+      'click .delete': 'onDeleteClick'
     },
 
     toggle: function() {
@@ -159,15 +161,27 @@ function(_, Backbone) {
       this.model.set({'tags': context.result});
     },
 
-    onClose: function(e) {
+    onHide: function(e) {
       this.model.save();
     },
 
-    onSwitchClick: function(e) {
-      var c = $(e.currentTarget).attr('class');
-      var dir = c.indexOf('next') !== -1 ? 'next' : 'prev';
-      this.dispatcher.trigger('assetSwitch', dir);
+    onPrevClick: function(e) {
+      this.dispatcher.trigger('assetSwitch', 'prev');
       this.toggle();
+    },
+
+    onNextClick: function(e) {
+      this.dispatcher.trigger('assetSwitch', 'next');
+      this.toggle();
+    },
+
+    onDeleteClick: function(e) {
+      e.stopPropagation();
+      this.model.destroy();
+    },
+
+    onDestroy: function() {
+      this.close();
     }
 
   });

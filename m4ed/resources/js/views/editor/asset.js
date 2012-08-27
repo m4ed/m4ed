@@ -18,6 +18,7 @@ function(_, Backbone, AssetEditorView) {
       _.extend(this, options.custom);
 
       this.model.bind('change:title', this.onTitleChange, this);
+      this.model.bind('destroy', this.onDestroy, this);
 
       this.markdown = this.mdTemplate.render({
         alt: 'Alt text goes here',
@@ -26,7 +27,7 @@ function(_, Backbone, AssetEditorView) {
 
       this.dispatcher.on('assetSelected', this.onAssetSelected, this);
       this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
-      this.dispatcher.on('assetEdit', this.onAssetEdit, this);
+      this.dispatcher.on('showButtons', this.onHoverOver, this);
 
     },
 
@@ -34,7 +35,7 @@ function(_, Backbone, AssetEditorView) {
 
       var m = this.model;
 
-      this.$el.append(this.template.render({
+      this.$el.html(this.template.render({
         src: '/api/assets/' + m.get('id') + '/thumb', // m.get('thumbnail_url')
         alt: m.get('alt'),
         title: m.get('name'),
@@ -64,9 +65,16 @@ function(_, Backbone, AssetEditorView) {
     events: {
       'click': 'onClick',
       'dragstart img': 'onDragstart',
-      'click .btn-remove': 'onRemoveClick',
+      'click .btn-remove': 'onDeleteClick',
       'click .btn-edit': 'onEditClick',
-      'click .btn-insert': 'onInsert'
+      'click .btn-insert': 'onInsertClick'
+    },
+
+    onClose: function() {
+      // console.log('AssetView closed!');
+      this.$img.tooltip('destroy');
+      if (this.editor) this.editor.close();
+      this.remove();
     },
 
     select: function() {
@@ -82,13 +90,13 @@ function(_, Backbone, AssetEditorView) {
       return this.$el.hasClass('selected');
     },
 
-    onAssetSelected: function (model) {
-      if (this.isSelected() && !model || model.id !== this.model.id) {
-        this.deselect();
-      } 
-    },
+    // onAssetSelected: function (model) {
+    //   if (this.isSelected() && !model || model.id !== this.model.id) {
+    //     this.deselect();
+    //   } 
+    // },
 
-    onInsert: function(e) {
+    onInsertClick: function(e) {
       // Trigger the insertAsset
       // event through our dispatcher, 
       // which the editor view is listening to.
@@ -125,41 +133,37 @@ function(_, Backbone, AssetEditorView) {
       this.$img.attr('title', newTitle).tooltip('fixTitle');
     },
 
-    onRemoveClick: function(e) {
+    onDeleteClick: function(e) {
       e.stopPropagation();
-      this.$img.tooltip('destroy');
       this.model.destroy();
-      if (this.editor) this.editor.remove();
-      this.remove();
-      // alert('Asset removed!');
+    },
+
+    onDestroy: function(e) {
+      this.close();
     },
 
     onEditClick: function(e) {
       e.stopPropagation();
       // alert('Edit button clicked!');
-      this.dispatcher.trigger('assetEdit', this.model);
+      this.edit();
     },
 
-    onAssetEdit: function(model) {
+    edit: function() {
 
-      if (model === this.model) {
+      this.select();  
 
-        this.select();  
-
-        if (!this.editor) {
-          this.editor = new AssetEditorView({
-            model: this.model,
-            custom: {
-              template: this.editorTemplate,
-              dispatcher: this.dispatcher,
-              parent: this
-            }
-          });
-          this.editor.render().toggle();
-        } else {
-          this.editor.toggle();
-        }
-
+      if (!this.editor) {
+        this.editor = new AssetEditorView({
+          model: this.model,
+          custom: {
+            template: this.editorTemplate,
+            dispatcher: this.dispatcher,
+            parent: this
+          }
+        });
+        this.editor.render().toggle();
+      } else {
+        this.editor.toggle();
       }
 
     }

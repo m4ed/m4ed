@@ -398,23 +398,22 @@
 		add					: function( $newelems, callback ) {
 			
 			// adds new items to the carousel
-			this.$items 		= this.$items.add( $newelems );
-			this.refresh();
+			this.refresh( this.$items.add( $newelems ) );
 			
 			if ( callback ) callback.call( $newelems );
 			
 		},
-		refresh				: function( callback ) {
+		refresh				: function( $items, callback ) {
 			
-			// refresh the items (added by m4ed)
-			console.log(this.$items);
-			this.itemsCount		= this.$items.length;
+			// refresh the items
+			this.$items = $items ? $items : this.$slider.children('li');
+			this.itemsCount = this.$items.length;
 			this._setDim();
 			this._setCurrentValues();
 			this.$slider.css({
 				width	: this.sliderW
 			});
-			this._slideToCurrent();
+			// this._slideToCurrent();
 
 			if ( callback ) callback.call();
 			
