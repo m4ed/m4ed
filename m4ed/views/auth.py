@@ -47,22 +47,16 @@ def valid_password(user, password):
             return False
     except AttributeError:
         # When the user has no password for some reason
-        # message = 'Invalid password'
         return False
-        #pass
     # work_factor = int(user.password.split("$")[2])
     # if DEFAULT_WORK_FACTOR == work_factor:
     #     return user
     return user
 
-    # else:
-    #     pass  # TODO make new password set here
-
 
 @view_config(route_name='login', renderer='login.mako')
 @forbidden_view_config(renderer='login.mako')
 def login(request):
-    #print request.session
     next = request.params.get('next') or request.route_url('editor')
     if authenticated_userid(request):
         return HTTPFound(location=next)
@@ -93,7 +87,6 @@ def bcrypt_password(password, log_rounds):
 
 
 def valid_registration(request):
-    #form_data = valid_registration_form(request)
     message = ''
     params = request.params
     name = force_utf8(params.get('name', ''))
@@ -125,14 +118,6 @@ def valid_registration(request):
         return (new_user, message)
 
     return (dict(name=name, email=email), message)
-
-
-# def valid_registration_form(request):
-#     params = request.params
-#     return [
-
-#     ]
-    #return (name, pw1, pw2, email)
 
 
 @view_config(route_name='register', renderer='register.mako')
