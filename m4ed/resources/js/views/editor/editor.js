@@ -34,7 +34,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
 
-      console.log('Editor initialized.');
+      // console.log('Editor initialized.');
 
       // If the model already has text, assume it has been initialized
       // somewhere else and render it
@@ -66,17 +66,20 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       // init buttons
       var buttonGroups = templates.buttonGroups;
+      var $buttonBar = $el.find('.editor-buttons');
       for (var i in buttonGroups) {
-        var buttons = new ButtonListView({
-          //el: $el.find('.editor-buttons'),
-          buttons: buttonGroups[i],
+        var group = buttonGroups[i];
+        var buttonList = new ButtonListView({
+          buttons: group.buttons,
+          className: 'btn-group '+ group.className,
           custom: {
             dispatcher: this.dispatcher,
-            parent: this
+            parent: this,
+            label: group.label,
+            hideLabels: group.hideLabels
           }
         });
-
-        $el.find('.editor-buttons').append(buttons.render().el);
+        $buttonBar.append(buttonList.render().el);
       }
 
 
@@ -109,7 +112,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       //console.log('The model has changed!');
       if (!this.editorInitialized) {
         this.editorInitialized = true;
-        console.log('First time change!');
+        // console.log('First time change!');
         this.render();
       } 
       this.generatePreview();

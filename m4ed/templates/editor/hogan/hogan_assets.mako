@@ -1,6 +1,18 @@
 ## Hogan template for the asset editor
 
-<%def name="hogan_asset_editor()">
+<%def name="hogan_assets()">
+
+  <script id="asset-template" type="text/hogan">
+    <img alt="{{alt}}" src="{{src}}" />
+    <div class="buttons" style="display:none;">
+      {{#buttons}}
+        <div class="btn {{classes}}">
+          <i class="icon-{{icon}} icon-white"></i>
+        </div>
+      {{/buttons}}
+    </div>
+  </script>
+
   <script id="asset-editor" type="text/hogan">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal">&times;</button>

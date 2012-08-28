@@ -4,8 +4,10 @@
 @import "../bootstrap/less/bootstrap.less";
 @import "../bootstrap/less/responsive.less";
 
-
 @import "icons.less";
+
+.icon-undo         { background-position: -336px -96px; .fliph();}
+.icon-redo         { background-position: -336px -96px; }
 
 // Custom variables
 // -----------------------------------------
@@ -16,6 +18,24 @@
 @itemTextColor:      inherit;
 @itemTextShadow:     0 -1px 0 rgba(255,255,255,.25);
 
+// Mixins
+
+.fliph() {
+  -moz-transform: scaleX(-1);
+  -webkit-transform: scaleX(-1);
+  -o-transform: scaleX(-1);
+  transform: scaleX(-1);
+  -ms-filter: fliph; /*IE*/
+  filter: fliph; /*IE*/
+}
+.flipv() {
+  -moz-transform: scaleY(-1);
+  -webkit-transform: scaleY(-1);
+  -o-transform: scaleY(-1);
+  transform: scaleY(-1);
+  -ms-filter: flipv; /*IE*/
+  filter: flipv; /*IE*/
+}
 
 // Global classes
 // -----------------------------------------

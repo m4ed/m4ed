@@ -74,7 +74,7 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
             model: model,
             index: this.assets.indexOf(model),
             custom: {
-              template: templates.image,
+              template: templates.asset,
               editorTemplate: templates.assetEditor,
               dispatcher: this.dispatcher,
               parent: this,

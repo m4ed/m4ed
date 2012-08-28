@@ -11,12 +11,10 @@ function($, _, Backbone, templates) {
 
   var buttonView = Backbone.View.extend({
 
-    tagName: 'div',
-
-    className: 'button btn',
+    tagName: 'a',
 
     attributes: {
-      unselectable: "on"
+      href: '#'
     },
 
     initialize: function(options) {
@@ -26,23 +24,28 @@ function($, _, Backbone, templates) {
       //console.log(this.data);
     },
 
-
     events: {
       'click': 'onEditorButtonClick'
     },
 
     render: function() {
+
       this.$el.html(templates.button.render(this.model.toJSON()));
-      var label = this.model.get('label');
       //console.log(this.model.toJSON());
-      this.$el.tooltip({
-        title: label ? label : 'No tooltip available.',
-        delay: {
-          show: 1500,
-          hide: 200
-        }
-      });
+      if (this.hideLabel) {
+        var label = this.model.get('label');
+        this.$el.tooltip({
+          title: label ? label : 'No tooltip available.',
+          delay: {
+            show: 1500,
+            hide: 200
+          }
+        });
+        this.$('.btn-label').addClass('hide');
+      }
+
       return this;
+
     },
 
     onEditorButtonClick: function() {

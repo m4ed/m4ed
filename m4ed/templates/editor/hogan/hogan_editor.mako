@@ -13,10 +13,10 @@
       <!-- Buttons for preview -->
       <div class="btn-toolbar preview-buttons">
         <div class="btn-group">
-        <button class="btn">Desktop</button>
-        <button class="btn">Tablet</button>
-        <button class="btn">Smartphone</button>
-        <button class="btn">Feature phone</button>
+        <button class="btn">Mini</button>
+        <button class="btn">Small</button>
+        <button class="btn">Default</button>
+        <button class="btn">Large</button>
         </div>
       </div>
       <div class="preview"></div>
@@ -38,4 +38,12 @@
       </div>
     </div>
   </script>
+
+  <script id="editor-dropdown-toggle" type="text/hogan">
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+      {{label}}
+      <span class="caret"></span>
+    </a>
+  </script>
+
 </%def>

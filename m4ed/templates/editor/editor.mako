@@ -3,7 +3,7 @@
 <%namespace file="item.mako" import="*"/>
 <%namespace file="upload.mako" import="*"/>
 
-<%namespace file="hogan/hogan_asseteditor.mako" import="*"/>
+<%namespace file="hogan/hogan_assets.mako" import="*"/>
 <%namespace file="hogan/hogan_download.mako" import="*"/>
 <%namespace file="hogan/hogan_editor.mako" import="*"/>
 <%namespace file="hogan/hogan_item.mako" import="*"/>
@@ -43,7 +43,7 @@
   <!-- Hogan templates -->
   ${hogan_item()}
   ${hogan_editor()}
-  ${hogan_asset_editor()}
+  ${hogan_assets()}
   ${hogan_upload()}
   ${hogan_download()}
 

@@ -6,13 +6,13 @@ define([
 ],
 function(_, Backbone, ButtonModel) {
 
-    var buttonCollection = Backbone.Collection.extend({
+  var buttonCollection = Backbone.Collection.extend({
 
-        model: ButtonModel,
+    model: ButtonModel,
 
-        initialize: function(model, options) {}
+    initialize: function(model, options) {}
 
-    });
+  });
 
-    return buttonCollection;
+  return buttonCollection;
 });

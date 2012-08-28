@@ -3,11 +3,11 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'hogan',
   'collections/buttons',
-  'views/editor/button'
+  'views/editor/button',
+  'views/editor/templates'
 ],
-function($, _, Backbone, hogan, ButtonCollection, ButtonView) {
+function($, _, Backbone, ButtonCollection, ButtonView, templates) {
 
   var buttonListView = Backbone.View.extend({
 
@@ -23,30 +23,50 @@ function($, _, Backbone, hogan, ButtonCollection, ButtonView) {
       this.buttons.bind('add', this.onAdd, this);
       //this.buttons.bind('reset', this.onReset, this);
       this.buttonData = options.buttons;
+      var isDropdown = this.label !== undefined;
+      for (var i in this.buttonData) {
+        // Set button type (dropdown if label is defined)
+        this.buttons.add(this.buttonData[i], {
+          isDropdown: isDropdown
+        });
+      }
     },
 
     render: function() {
-      //console.log(this.el);
-      for (var i in this.buttonData) {
-        this.buttons.add(this.buttonData[i]);
+      // Render as dropdown if label is defined
+      if (this.label) {
+        this.$el.html(templates.dropdownToggle.render({
+          label: this.label
+        }));
+        this.$el.append(this.$buttons);
+      } else {
+        this.$el.append(this.$buttons.html());
       }
       return this;
     },
 
     onAdd: function(button, collection, options) {
+
+      var isDropdown = options.isDropdown;
+
+      var wrapper = isDropdown ? '<ul class="dropdown-menu">' : '<div>';
+      var className = isDropdown ? 'dropdown-item' : 'btn';
+
       var buttonView = new ButtonView({
         model: button,
-
+        className: className,
         custom: {
           dispatcher: this.dispatcher,
-          parent: this
+          parent: this,
+          hideLabel: this.hideLabels
         }
       });
-      var el = buttonView.render().el;
-
-      this.$el.append(el);
-
-
+      var $button = buttonView.render().$el;
+      if (isDropdown) $button = $('<li>').append($button); 
+      if (!this.$buttons) {
+        this.$buttons = $(wrapper);
+      }
+      this.$buttons.append($button);
     }
 
   });
