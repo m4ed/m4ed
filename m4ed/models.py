@@ -56,12 +56,15 @@ class User(dict):
     @property
     def __acl__(self):
         return [
-            (Allow, 'g' + self.username, ALL_PERMISSIONS)
+            (Allow, 'g' + self.name, ALL_PERMISSIONS)
         ]
 
-    def __init__(self, dict_with_the_data):
+    def __init__(self, dict_with_the_data, name=None, parent=None):
         dict.__init__(self)
-        self.update(dict_with_the_data or {})
+        if dict_with_the_data:
+            self.update(dict_with_the_data)
+        self.__name__ = name
+        self.__parent__ = parent
 
     @property
     def groups(self):
@@ -71,6 +74,9 @@ class User(dict):
             return res
         except KeyError:
             return list(self.name)
+
+    def save(self):
+        self.__parent__.save(self)
 
     def __getattr__(self, name):
         try:

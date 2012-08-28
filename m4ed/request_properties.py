@@ -13,17 +13,9 @@ def fs(request):
     return GridFS(request.db)
 
 
-# def cloud(request):
-#     return request.registry.settings['cloud']
-
-
 def work_queue(request):
     return request.registry.settings['zmq.work_queue']
 
 
 def misaka(request):
     return request.registry.settings['misaka']
-
-
-def imager(request):
-    return request.registry.settings['imager']
