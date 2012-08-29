@@ -20,18 +20,16 @@ function($, _, Backbone, templates) {
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
-      //this.data = options.button;
-      //console.log(this.data);
     },
 
     events: {
-      'click': 'onEditorButtonClick'
+      'click': 'onClick'
     },
 
     render: function() {
 
       this.$el.html(templates.button.render(this.model.toJSON()));
-      //console.log(this.model.toJSON());
+
       if (this.hideLabel) {
         var label = this.model.get('label');
         this.$el.tooltip({
@@ -48,9 +46,10 @@ function($, _, Backbone, templates) {
 
     },
 
-    onEditorButtonClick: function() {
+    onClick: function(e) {
+      e.preventDefault();
       var callback = this.model.get('callback');
-      this.dispatcher.trigger('editorButtonClick', callback);
+      if (callback) this.dispatcher.trigger('editorButtonClick', callback);
     }
 
   });

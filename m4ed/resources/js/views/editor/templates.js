@@ -22,24 +22,26 @@ function($, hogan) {
       hideLabels: true,
       buttons: [{
         "label": "Undo",
-        "icon": "undo",
-        "callback": {
-          // "action": "span",
-          // "data": {
-          //   "text": "Heading 1",
-          //   "prefix": "# ",
-          //   "suffix": ""
-        }
+        "icon": "undo"
+        // "callback": {
+        //   "action": "span",
+        //   "data": {
+        //     "text": "Heading 1",
+        //     "prefix": "# ",
+        //     "suffix": ""
+        //   }
+        // }
       }, {
         "label": "Redo",
-        "icon": "redo",
-        "callback": {
-          // "action": "span",
-          // "data": {
-          //   "text": "Heading 1",
-          //   "prefix": "# ",
-          //   "suffix": ""
-        }
+        "icon": "redo"
+        // "callback": {
+        //   "action": "span",
+        //   "data": {
+        //     "text": "Heading 1",
+        //     "prefix": "# ",
+        //     "suffix": ""
+        //   }
+        // }
       }]
     }, {
       label: "Format",
@@ -159,14 +161,17 @@ function($, hogan) {
           }
         }
       }, {
+        // TODO: implement a better table helper
         "label": "Table",
         "icon": "table",
         "callback": {
           "action": "span",
           "data": {
-            "text": "Table",
-            "prefix": "",
-            "suffix": ""
+            "text": "header",
+            "prefix": "| ",
+            "suffix":         "        |         header |\n" +
+                      "|:--------------|---------------:|\n" + 
+                      "| aligned left  |  aligned right |"
           }
         }
       }]

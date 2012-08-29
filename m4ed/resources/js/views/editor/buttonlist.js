@@ -40,7 +40,7 @@ function($, _, Backbone, ButtonCollection, ButtonView, templates) {
         }));
         this.$el.append(this.$buttons);
       } else {
-        this.$el.append(this.$buttons.html());
+        this.$el.append(this.$buttons.children());
       }
       return this;
     },
