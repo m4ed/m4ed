@@ -1,8 +1,9 @@
 
 
 def includeme(config):
-    config.add_route('home', '/pyramid')
-    config.add_route('editor', '/', factory='m4ed.factories:ItemFactory')
+    config.add_route('home', '/')
+    config.add_route('exercise', '/e/{id}', factory='m4ed.factories:ItemFactory', traverse='/{id}')
+    config.add_route('editor', '/editor', factory='m4ed.factories:ItemFactory')
     config.add_route('misaka', '/misaka')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')

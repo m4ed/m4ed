@@ -8,9 +8,6 @@ import pymongo
 import redis
 import zmq
 
-from htmlrenderer import CustomHtmlRenderer
-from misaka import Markdown, EXT_TABLES
-
 from m4ed.security import groupfinder
 from m4ed.util.settings import parse_asset_settings
 
@@ -55,11 +52,11 @@ def main(global_config, **settings):
         host=redis_host, port=redis_port, db=redis_db_num)
 
     # Set up the misaka Markdown renderer
-    renderer = CustomHtmlRenderer(settings=config.registry.settings)
-    config.registry.settings['misaka'] = Markdown(renderer=renderer,
-                                                  extensions=EXT_TABLES)
-    config.set_request_property('.request_properties:misaka',
-                                name='misaka', reify=True)
+    # renderer = CustomHtmlRenderer(settings=config.registry.settings)
+    # config.registry.settings['misaka'] = Markdown(renderer=renderer,
+    #                                               extensions=EXT_TABLES)
+    # config.set_request_property('.request_properties:misaka',
+    #                             name='misaka', reify=True)
 
     # Set up ZeroMQ work queue
     work_queue = zmq.Context().socket(zmq.PUSH)

@@ -43,10 +43,15 @@ class AssetFactory(dict):
             try:
                 query_params['id'] = str(Base62(str(_id)))
             except TypeError:  # pragma: no cover
-                return {'error': 'Invalid Object ID'}
+                raise KeyError
+                #return {'error': 'Invalid Object ID'}
 
         #print 'Asset API call with ', query_params
-        a = self.collection.find_one(query_params) or dict()
+        a = self.collection.find_one(query_params)
+
+        if not a:
+            raise KeyError
+
         return Asset(a, name=str(_id), parent=self)
 
     def __iter__(self):
@@ -69,8 +74,14 @@ class ItemFactory(dict):
         self.collection = request.db.items
 
     def __getitem__(self, _id):
-        query = dict(_id=ObjectId(_id))
-        item = self.collection.find_one(query) or dict()
+        try:
+            query = dict(_id=ObjectId(_id))
+        except InvalidId:
+            raise KeyError
+        item = self.collection.find_one(query)
+
+        if not item:
+            raise KeyError
 
         return Item(item, name=str(_id), parent=self)
 

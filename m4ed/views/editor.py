@@ -3,6 +3,11 @@ from pyramid.security import (
     authenticated_userid
     )
 from m4ed.resources import editor_less
+from m4ed.htmlrenderer import CustomHtmlRenderer
+from misaka import (
+    Markdown,
+    EXT_TABLES
+    )
 
 
 # This should have permission='read'
@@ -24,7 +29,8 @@ def misaka(request):
         return {'status': 'error', 'reason': 'forbidden'}
     text = request.params.get('md', '')
 
-    html = request.misaka.render(text)
+    renderer = CustomHtmlRenderer(settings=request.registry.settings)
+    html = Markdown(renderer=renderer, extensions=EXT_TABLES).render(text)
     return {
         'html': html
     }

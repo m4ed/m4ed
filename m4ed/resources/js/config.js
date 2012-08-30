@@ -77,6 +77,3 @@ requirejs.config({
   }
 });
 
-require(['app', 'domReady!'], function(App) {
-  App.initialize();
-});
