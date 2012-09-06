@@ -1,18 +1,16 @@
-// Filename: views/items/show.js
+// Filename: views/editor/item.js
 define([
   'underscore',
   'backbone',
   'views/editor/editor',
   'views/editor/templates',
-  'jquery.plugins'
+  'jquery.plugins',
+  'jquery.textext.tags',
+  'jquerypp/event/resize'
 ],
 function(_, Backbone, EditorView, templates) {
 
-  // key codes for keyup event
-  var keyCodes = {
-    27: 'esc',
-    13: 'enter'
-  };
+  var INPUT_SPACE = 15; // Add some space to the auto-resizing input
 
   var itemView = Backbone.View.extend({
 
@@ -29,14 +27,24 @@ function(_, Backbone, EditorView, templates) {
       this.editor = null;
       this.editorInitialized = false;
 
+      this.throttledResize = _.throttle( function (e) {
+        // Refresh TextExt input
+        var textExt = this.$tags.textext()[0];
+        if (textExt) textExt.invalidateBounds();
+      }, 500 );
+
       if (!options.el) {
         this.render();
       }
 
       this.$item = this.$('.item');
 
+      this.$content = this.$('.item-content');
+
       var $title = this.$('.title')
         , $description = this.$('.desc');
+
+      this.$tags = this.$('.tags');
 
       this.editables = {
         title: {
@@ -54,6 +62,21 @@ function(_, Backbone, EditorView, templates) {
       this.globalDispatcher.on('sortUpdated', this.onSortUpdated, this);
       this.globalDispatcher.on('itemSelected', this.onItemSelected, this);
 
+      var tags = this.$item.data('tags');
+
+      this.$tags.textext({
+        plugins : 'tags',
+        tags: {
+          items: tags ? tags : []
+        },
+        html: {
+          tag:  '<span class="text-tag label label-info">'+
+                  '<span class="text-label" />'+
+                  '<button type="button" class="text-remove close">×</button>'+
+                '</span>'
+        }   
+      });
+
     },
 
     render: function() {
@@ -61,25 +84,47 @@ function(_, Backbone, EditorView, templates) {
           .attr('id', this.model.get('_id'))
           // .data('index', this.model.get('listIndex'))
           .html(templates.item.render(this.model.toJSON()));
+
     },
 
     events: {
-      "click .view": "onEditableClick",
-      "click .edit": "onEditClick",
-      "click .item": "onItemClick",
-      "blur .edit": "onEditBlur",
-      "keyup .edit": "onEditKeyup"
+      'click .item-actions': 'onActionClick',
+      'click .view': 'onEditableClick',
+      'click .text-tags': 'onTagsClick',
+      'click .edit': 'onEditClick',
+      'click .item': 'onItemClick',
+      'resize': 'onResize',
+      'blur .edit': 'onEditBlur',
+      'keyup.esc .edit': 'onEditKeyupEsc',
+      'keyup.return .edit': 'onEditKeyupReturn',
+      'keyup .edit': 'onEditKeyup',
+      'tagChange .tags': 'onTagChange',
+      'keyup.tab .edit': 'onEditKeyupTab',
+      'keyup.tab .tags': 'onTagsKeyupTab'
     },
 
     onEditableClick: function(e) {
       e.stopPropagation();
+
       var field = $(e.currentTarget).parent().attr('class');
+      if (field !== 'title' && field !== 'desc' ) return; 
+
+      function swapToInput(field) {
+        field.$edit.width(field.$view.width() + INPUT_SPACE);
+        field.$wrapper.addClass('editing');
+        field.$edit.select();
+      }
+
+      field = this.editables[field];
+
       // Sync the model if it doesn't seem to have the needed field
       if (!this.model.has(field)) {
-        this.model.fetch();
+        this.model.fetch({
+          success: _.bind(swapToInput, this, field)
+        });
+      } else {
+        swapToInput(field);
       }
-      this.editables[field].$wrapper.addClass('editing');
-      this.editables[field].$edit.select();
 
       // Select the item if not selected already
       if (!this.isSelected()) {
@@ -87,7 +132,19 @@ function(_, Backbone, EditorView, templates) {
       }      
     },
 
+    onTagsClick: function(e) {
+      if (!this.isSelected()) {
+        this.select();
+      }       
+    },
+
     onEditClick: function(e) {
+      // This prevents clicks going through the edit input area
+      e.stopPropagation();
+      return false;
+    },
+
+    onActionClick: function(e) {
       // This prevents clicks going through the edit input area
       e.stopPropagation();
       return false;
@@ -126,6 +183,10 @@ function(_, Backbone, EditorView, templates) {
       return false;
     },
 
+    onResize: function () {
+      this.throttledResize();
+    }, 
+
     scrollTop: function() {
       var offset = this.$item.offset().top -
           this.$item.cssInt('margin-top') - 
@@ -142,10 +203,12 @@ function(_, Backbone, EditorView, templates) {
         this.model.fetch();
       }
       this.globalDispatcher.trigger('itemSelected', this.model.get('_id'));
+      this.$el.trigger('resize');
     },
 
     deselect: function() {
       this.$item.removeClass('selected');
+      this.$el.trigger('resize');
     },
 
     isSelected: function() {
@@ -165,22 +228,37 @@ function(_, Backbone, EditorView, templates) {
     },
 
     onEditKeyup: function(e) {
-
-      var saveResult = false;
-
-      switch(keyCodes[e.which]) {
-      case undefined:
-        // The key wasn't found in keyCodes. Abort...
-        return;
-      case 'enter':
-        saveResult = true;
-        break;
-      case 'esc':
-        // Just break since saveResult is already false
-        break;
+      var field;
+      if ($(e.currentTarget).parent().attr('class').indexOf('title') !== -1) {
+        field = 'title';
+      } else {
+        field = 'desc';
       }
-      this.closeEdit(saveResult, e.currentTarget);
+      field = this.editables[field];
+      if (field.$edit.val() !== "") {
+        field.$view.text(field.$edit.val());
+        field.$edit.width(field.$view.width() + INPUT_SPACE);
+      } 
+    },
 
+    onEditKeyupEsc: function(e) {
+      this.closeEdit(false, e.currentTarget);
+    },
+
+    onEditKeyupReturn: function(e) {
+      this.closeEdit(true, e.currentTarget);
+    },
+
+    onEditKeyupTab: function(e) {
+      // TODO: Implement me
+      // Check whether the current editable is title or description
+      // and move to next editable accordingly
+    },
+
+    onTagsKeyupTab: function(e) {
+      // TODO: Implement me
+      // If editor is open, move to the textarea.
+      // Else, move to the first input of the next item.
     },
 
     onTitleChange: function(model, newTitle, options) {
@@ -238,13 +316,22 @@ function(_, Backbone, EditorView, templates) {
       $target.parent().removeClass('editing');
     },
 
-    clearSelection: function() {
-      if (document.selection && document.selection.empty) {
-          document.selection.empty();
-      } else if (window.getSelection) {
-          var sel = window.getSelection();
-          sel.removeAllRanges();
+    onTagChange: function(e, context) {
+      if (!this.model.has('tags')) {
+        this.model.fetch();
+      } 
+      var callback = _.bind(this.saveTags, {'tags': context.result});
+      if (!this.model.has('tags')) {
+        this.model.fetch({
+          success: callback
+        });
+      } else {
+        callback(this.model);
       }
+    },
+
+    saveTags: function(model, response) {
+      model.save({'tags': this.tags});
     }
 
   });

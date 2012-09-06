@@ -55,7 +55,8 @@ function(_, Backbone) {
       'hide': 'onHide',
       'click .title > .view': 'onEditableClick',
       'blur .edit': 'onEditBlur',
-      'keyup .edit': 'onEditKeyup',
+      'keyup.esc .edit': 'onEditKeyupEsc',
+      'keyup.return .edit': 'onEditKeyupReturn',
       'tagChange .tags': 'onTagChange',
       'click .next': 'onNextClick',
       'click .prev': 'onPrevClick',
@@ -104,31 +105,16 @@ function(_, Backbone) {
 
     onEditBlur: function(e) {
       e.stopPropagation();
-      var target = e.currentTarget
-        , $target = $(target);
       this.closeEdit(true, e.currentTarget);
       return false;
     },
 
-    onEditKeyup: function(e) {
+    onEditKeyupEsc: function(e) {
+      this.closeEdit(false, e.currentTarget);
+    },
 
-      var target = e.currentTarget
-        , $target = $(target)
-        , saveResult = false;
-
-      switch(keyCodes[e.which]) {
-      case undefined:
-        // The key wasn't found in keyCodes. Abort...
-        return;
-      case 'enter':
-        saveResult = true;
-        break;
-      case 'esc':
-        // Just break since saveResult is already false
-        break;
-      }
-      this.closeEdit(saveResult, target);
-
+    onEditKeyupReturn: function(e) {
+      this.closeEdit(true, e.currentTarget);
     },
 
     closeEdit: function(save, target) {
@@ -166,13 +152,13 @@ function(_, Backbone) {
     },
 
     onPrevClick: function(e) {
-      this.dispatcher.trigger('assetSwitch', 'prev');
       this.toggle();
+      this.dispatcher.trigger('assetSwitch', 'prev');
     },
 
     onNextClick: function(e) {
-      this.dispatcher.trigger('assetSwitch', 'next');
       this.toggle();
+      this.dispatcher.trigger('assetSwitch', 'next');
     },
 
     onDeleteClick: function(e) {

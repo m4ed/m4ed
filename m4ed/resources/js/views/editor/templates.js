@@ -44,6 +44,35 @@ function($, hogan) {
         // }
       }]
     }, {
+      label: "Elements",
+      className: "elements pull-right",
+      buttons: [{
+        "label": "Link",
+        "icon": "link",
+        "callback": {
+          "action": "span",
+          "data": {
+            "text": "link text",
+            "prefix": "[",
+            "suffix": "](http://www.example.com)"
+          }
+        }
+      }, {
+        // TODO: implement a better table helper
+        "label": "Table",
+        "icon": "table",
+        "callback": {
+          "action": "span",
+          "data": {
+            "text": "header",
+            "prefix": "| ",
+            "suffix":         "        |         header |\n" +
+                      "|:--------------|---------------:|\n" + 
+                      "| aligned left  |  aligned right |"
+          }
+        }
+      }]
+    }, {
       label: "Format",
       className: "format pull-right",
       buttons: [{
@@ -143,35 +172,6 @@ function($, hogan) {
           "data": {
             "wrap": true,
             "prefix": "    "
-          }
-        }
-      }]
-    }, {
-      label: "Elements",
-      className: "elements pull-right",
-      buttons: [{
-        "label": "Link",
-        "icon": "link",
-        "callback": {
-          "action": "span",
-          "data": {
-            "text": "link text",
-            "prefix": "[",
-            "suffix": "](http://www.example.com)"
-          }
-        }
-      }, {
-        // TODO: implement a better table helper
-        "label": "Table",
-        "icon": "table",
-        "callback": {
-          "action": "span",
-          "data": {
-            "text": "header",
-            "prefix": "| ",
-            "suffix":         "        |         header |\n" +
-                      "|:--------------|---------------:|\n" + 
-                      "| aligned left  |  aligned right |"
           }
         }
       }]

@@ -62,6 +62,7 @@ class ItemView(object):
         update['listIndex'] = kwargs.pop('listIndex')
         update['title'] = kwargs.pop('title')
         update['desc'] = kwargs.pop('desc')
+        update['tags'] = kwargs.pop('tags')
         update['text'] = kwargs.pop('text')
 
         item = self.request.context
@@ -119,6 +120,7 @@ class ItemsView(object):
         item['title'] = kwargs.pop('title', 'Click to add a title')
         item['desc'] = kwargs.pop('desc', 'Click to add a description')
         item['text'] = kwargs.pop('text', '')
+        item['tags'] = kwargs.pop('tags', [])
         item['listIndex'] = kwargs.pop('listIndex', 0)
 
         item_id = self.request.db.items.insert(item, safe=True)

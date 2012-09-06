@@ -1,3 +1,7 @@
+<%!
+  import json
+%>
+
 <%inherit file="base.mako"/>
 
 <%namespace file="item.mako" import="*"/>
@@ -14,13 +18,6 @@
 <%block name="content">
 
   <header class="header">
-    <div class="user-info">
-      <div class="avatar">
-      </div>
-      <div class="user-name">
-        <span>User Name</span>
-      </div>
-    </div>
     <div class="location">Learning space / Collection</div>
   </header>
 
@@ -28,7 +25,7 @@
   <ul class="ui-sortable">
   % for item in items:
     <li id='${item._id}' data-index='${item.listIndex}'>
-      ${item_template(item.title, item.desc, '/fanstatic/m4ed/img/48x48.gif')}
+      ${item_template(item.title, item.desc, '/fanstatic/m4ed/img/48x48.gif', json.dumps(item.tags))}
     </li>
   % endfor
   </ul>
@@ -51,7 +48,7 @@
     File Upload locale temporarily here,
     until a common locale system is implemented
   -->
-  <script>
+  <!--<script>
   window.locale = {
     "fileupload": {
       "errors": {
@@ -68,6 +65,6 @@
       "destroy": "Delete"
     }
   };
-  </script>
+  </script>-->
 
 </%block>

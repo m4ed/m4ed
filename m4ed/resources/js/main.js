@@ -13,6 +13,9 @@ requirejs.config({
     // Require.js plugins
     'domReady': 'lib/requirejs/domReady',
 
+    // jQuery++
+    'jquerypp': 'lib/jquery/plugins/jquerypp',
+
     // jQuery UI
     'jquery.ui': 'lib/jquery/plugins/jquery-ui/jquery-ui.min',
     'jquery.ui.touch-punch': 'lib/jquery/plugins/jquery-ui/jquery.ui.touch-punch.min',
@@ -31,7 +34,7 @@ requirejs.config({
     // Other jQuery plugins
     'jquery.autoellipsis': 'lib/jquery/plugins/jquery.autoellipsis.min',
     'jquery.elastislide': 'lib/jquery/plugins/jquery.elastislide',
-    'jquery.hoverintent': 'lib/jquery/plugins/jquery.hoverIntent.min',
+    'jquery.hotkeys': 'lib/jquery/plugins/jquery.hotkeys',
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
 
     // Utils
@@ -41,6 +44,7 @@ requirejs.config({
     'json': 'lib/util/json2',
 
     // Bootstrap
+    'bootstrap.button': '../bootstrap/js/bootstrap-button',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
     'bootstrap.popover': '../bootstrap/js/bootstrap-popover',
     'bootstrap.collapse': '../bootstrap/js/bootstrap-collapse',
@@ -62,11 +66,13 @@ requirejs.config({
     'jquery.autoellipsis': ['jquery'],
     'jquery.elastislide': ['jquery'],
     'jquery.hoverintent': ['jquery'],
+    'jquery.hotkeys': ['jquery'],
     'jquery.textext': ['jquery'],
     'jquery.textext.tags': ['jquery.textext'],
     'jquery.textext.prompt': ['jquery.textext'],
     'jquery.textext.focus': ['jquery.textext'],
 
+    'bootstrap.button': ['jquery'],
     'bootstrap.collapse': ['jquery'],
     'bootstrap.modal': ['jquery'],
     'bootstrap.dropdown': ['jquery'],

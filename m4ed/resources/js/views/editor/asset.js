@@ -3,7 +3,7 @@ define([
   'underscore',
   'backbone',
   'views/editor/asseteditor',
-  'jquery.hoverintent'
+  'jquerypp/event/hover'
 ],
 function(_, Backbone, AssetEditorView) {
   var AssetView = Backbone.View.extend({
@@ -27,7 +27,8 @@ function(_, Backbone, AssetEditorView) {
 
       this.dispatcher.on('assetSelected', this.onAssetSelected, this);
       this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
-      this.dispatcher.on('showButtons', this.onHoverOver, this);
+      this.dispatcher.on('showButtons', this.onHoverEnter, this);
+      this.dispatcher.on('hideButtons', this.onHoverLeave, this);
 
     },
 
@@ -45,14 +46,6 @@ function(_, Backbone, AssetEditorView) {
       this.$buttons = this.$el.find('.buttons');
       this.$img = this.$el.children('img');
 
-      this.$el.hoverIntent({
-        sensitivity: 1,
-        interval: 100,
-        over: _.bind(this.onHoverOver, this),
-        timeout: 100,
-        out: _.bind(this.onHoverOut, this)
-      });
-
       this.$img.tooltip({
         title: m.get('title'),
         placement: 'bottom',
@@ -67,7 +60,10 @@ function(_, Backbone, AssetEditorView) {
       'dragstart img': 'onDragstart',
       'click .btn-remove': 'onDeleteClick',
       'click .btn-edit': 'onEditClick',
-      'click .btn-insert': 'onInsertClick'
+      'click .btn-insert': 'onInsertClick',
+      'hoverinit': 'onHoverInit',
+      'hoverenter': 'onHoverEnter',
+      'hoverleave': 'onHoverLeave'
     },
 
     onClose: function() {
@@ -117,14 +113,16 @@ function(_, Backbone, AssetEditorView) {
       e.originalEvent.dataTransfer.setData('Text', this.markdown);
     },
 
-    onHoverOver: function(e) {
-      e.stopPropagation();
+    onHoverInit: function(e, hover) {
+      hover.delay(200);
+    },
+
+    onHoverEnter: function(e) {
       this.$buttons.fadeIn(300);
       this.$img.tooltip('show');
     },
 
-    onHoverOut: function(e) {
-      e.stopPropagation();
+    onHoverLeave: function(e) {
       this.$buttons.fadeOut(50);
       this.$img.tooltip('hide');
     },

@@ -17,6 +17,7 @@ for i in range(0, r):
     items.append({
         'title': 'Lesson {}'.format(i + 1),
         'desc': 'Description for lesson {}'.format(i + 1),
+        'tags': [],
         'text': '## Content for lesson {}'.format(i + 1),
     })
 # Clear the collection
@@ -37,6 +38,7 @@ for i, item_id in enumerate(item_ids):
         db.items.insert({
             'title': 'Exercise {}.{}'.format(i, j),
             'desc': 'Description for exercise {}.{}'.format(i, j),
+            'tags': [],
             'text': '## Content for exercise {}.{}'.format(i, j),
             'listIndex': listIndex
         })

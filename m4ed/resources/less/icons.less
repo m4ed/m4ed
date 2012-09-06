@@ -2,6 +2,8 @@
 // These will be combined into a single sprite
 // -------------------------------------------
 
+@import "mixins.less";
+
 .icon-h1            { background-position: center; background-image: url("../img/icons/icon-h1.png"); }
 .icon-h2            { background-position: center; background-image: url("../img/icons/icon-h2.png"); }
 .icon-h3            { background-position: center; background-image: url("../img/icons/icon-h3.png"); }
@@ -10,10 +12,29 @@
 .icon-link          { background-position: center; background-image: url("../img/icons/icon-link.png"); }
 .icon-code          { background-position: center; background-image: url("../img/icons/icon-code.png"); }
 .icon-quote         { background-position: center; background-image: url("../img/icons/icon-quote.png"); }
+.icon-undo          { background-position: -336px -96px; .fliph();}
+.icon-redo          { background-position: -336px -96px; }
 
 .icon-group         { background-position: center; background-image: url("../img/icons/glyphicons_043_group.png"); }
 .icon-chart         { background-position: center; background-image: url("../img/icons/glyphicons_041_charts.png"); }
 .icon-history       { background-position: center; background-image: url("../img/icons/glyphicons_057_history.png"); }
 .icon-table         { background-position: center; background-image: url("../img/icons/glyphicons_090_table.png"); }
+.icon-keys          { background-position: center; background-image: url("../img/icons/glyphicons_044_keys.png"); }
 
+.icon-size-mini     { background-position: center; background-image: url("../img/icons/glyphicons_139_phone.png"); }
+.icon-size-small    { background-position: center; background-image: url("../img/icons/glyphicons_163_iphone.png"); }
+.icon-size-medium   { background-position: center; background-image: url("../img/icons/glyphicons_162_ipad.png"); }
+.icon-size-large    { background-position: center; background-image: url("../img/icons/glyphicons_160_imac.png"); }
 
+i.large {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+}
+
+.icon-quick.large {
+  background-position: center; background-image: url("../img/icons/nav/glyphicons_060_compass_gray.png");
+  &.icon-white {
+    background-image: url("../img/icons/nav/glyphicons_060_compass_white.png");
+  }
+}

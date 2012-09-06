@@ -64,7 +64,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       this.dispatcher.on('insertAsset', this.onInsertAsset, this);
 
-      // init buttons
+      // init buttons (reverse group list for pull-right)
       var buttonGroups = templates.buttonGroups;
       var $buttonBar = $el.find('.editor-buttons');
       for (var i in buttonGroups) {
@@ -104,8 +104,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     events: {
       'keyup .editor-textarea': 'onTextareaKeyup',
       'drop .editor-textarea': 'onTextareaDrop',
-      'click .editor-btn.pictures': 'onPictureButtonClick',
-      'keyup': 'onKeyup'
+      'click .editor-btn.pictures': 'onPictureButtonClick'
     },
 
     onTextChange: function(model, text, options) {
@@ -203,16 +202,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
     updateImages: function() {
       this.assetList.render();
-    },
-
-    onKeyup: function(e) {
-      // Left arrow or right arrow
-      if (e.keyCode === 37) {
-        this.assetList.scrollSlider('left');
-      } else if (e.keyCode === 39) {
-        this.assetList.scrollSlider('right');
-      }
-      return false;
     }
 
 

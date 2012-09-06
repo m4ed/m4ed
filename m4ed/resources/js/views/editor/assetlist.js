@@ -57,6 +57,18 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       this.assets.each(this.addAssetView, this);
       this.loadPlugins();
       // console.log('Slider rendered.');
+
+      this.$navPrev = this.$el.find('.es-nav-prev');
+      this.$navNext = this.$el.find('.es-nav-next');
+
+    },
+
+    events: {
+      'click': 'onClick',
+      'focus': 'onFocus',
+      'blur': 'onBlur',
+      'keyup.left': 'onKeyupLeft',
+      'keyup.right': 'onKeyupRight'
     },
 
     clearAssetViews: function() {
@@ -130,6 +142,21 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
     //   }
     // },
 
+    onClick: function(e) {
+      // This seems to be unnecessary (at least in Chrome)
+      // if (!this.$el.hasClass('selected')) this.$el.focus();
+    },
+
+    onFocus: function(e) {
+      // Remove other possible selections
+      $('.asset-container').removeClass('selected');
+      this.$el.addClass('selected');
+    },
+
+    onBlur: function(e) {
+      this.$el.removeClass('selected');
+    },
+
     onAssetSelected: function(model) {
       this.assetViews[this.currentIndex].deselect();
       this.currentIndex = this.assets.indexOf(model);
@@ -147,38 +174,54 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       this.render();
     },
 
+    // This is triggered when 'next' or 'prev'
+    // is clicked in asset editor
     onAssetSwitch: function (direction) {
-      if (!this.assetViews) return;
-
-      var view = this.assetViews[this.currentIndex];
-      if (view) {
-        view.deselect();
-      }
-
-      var newIndex = -1;
+      var newView;
       if (direction === 'prev') {
-        newIndex = this.currentIndex - 1;
+        newView = this.selectPrev();
       } else {
-        newIndex = this.currentIndex + 1;
+        newView = this.selectNext();
       }
-      if (newIndex >= 0 && newIndex < this.assets.length) {
-        this.currentIndex = newIndex;
-        // var asset = this.assets.at(this.currentIndex);
-        // var _id = asset ? asset.get('_id') : undefined; 
-        // console.log(direction+' asset - index: ' + this.currentIndex + ' id: ' + _id);
-        var newView = this.assetViews[this.currentIndex];
-        if (newView) {
-          newView.edit();
-        }
+      if (newView) {
+        newView.edit();
       }
     },
 
-    scrollSlider: function(dir) {
-      if (dir === 'left') {
-        this.$el.find('.es-nav-prev').click();
-      } else if (dir === 'right') {
-        this.$el.find('.es-nav-next').click();
+    selectAsset: function(index) {
+      if (!this.assetViews) return;
+      var current = this.assetViews[this.currentIndex];
+      if (current) current.deselect();
+      var view;
+      if (index >= 0 && index < this.assets.length) {
+        // console.log('Asset selected (index: ' + index + ')');
+        this.currentIndex = index;
+        view = this.assetViews[this.currentIndex];
+        if (view) view.select();
       }
+      return view;
+    },
+
+    selectPrev: function() {
+      var ci = this.currentIndex
+        , i = ci === 0 ? this.assets.length - 1 : ci - 1; 
+      return this.selectAsset(i);
+    },
+
+    selectNext: function() {
+      var ci = this.currentIndex
+        , i = ci === this.assets.length - 1 ? 0 : ci + 1; 
+      return this.selectAsset(i);
+    },
+
+    onKeyupLeft: function (e) {
+      if (!this.$navPrev.is(':hidden')) this.$navPrev.click();
+      this.dispatcher.trigger('hideButtons');
+    },
+
+    onKeyupRight: function (e) {
+      if (!this.$navNext.is(':hidden')) this.$navNext.click();
+      this.dispatcher.trigger('hideButtons');
     }
   });
 

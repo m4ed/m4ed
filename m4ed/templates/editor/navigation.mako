@@ -3,15 +3,18 @@
     <div class="navbar-inner">
       <div class="container">
 
-        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </a>
-
         <a class="brand" href="/">m4ed</a>
 
-        <div class="nav-collapse">
+        <a class="btn btn-navbar btn-large-icon" data-toggle="collapse" data-target=".nav-collapse.context-menu">
+          <i class="icon-quick large"></i> 
+        </a>
+
+        <a class="btn btn-navbar btn-large-icon" data-toggle="collapse" data-target=".nav-collapse.quick-menu">
+          <i class="icon-quick large"></i> 
+        </a>
+
+        <!-- <div class="nav-collapse"> -->
+        <div class="nav-collapse quick-menu"> 
           <ul class="nav">
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -28,29 +31,44 @@
               </ul>
             </li>
           </ul>
+        </div>
 
+        <div class="nav-collapse context-menu"> 
           <ul class="nav pull-right">
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                 Context menu <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                <li class="nav-header">Actions</li>
-                <li><a href="#" class="action add"><i class="icon-plus"></i> Add new</a></li>
-                <li><a href="#" class="toggle-modal-upload" data-target="#modal-upload" data-toggle="modal"><i class="icon-upload"></i> Upload files</a></li>
-                <li class="nav-header">Management</li>
-                <li><a href="#"><i class="icon-group"></i> Users</a></li>
-                <li><a href="#"><i class="icon-chart"></i> Statistics</a></li>
-                <li class="nav-header">User account</li>
-                <li><a href="#"><i class="icon-user"></i> Profile</a></li>
-                <li><a href="#"><i class="icon-cog"></i> Settings</a></li>
-                <li><a href="#"><i class="icon-off"></i> Logout</a></li>
+
+                <li>
+                  <a href="#" class="profile">
+                    <div class="avatar">
+                    </div>
+                    <div class="info">
+                      <div class="user-name">
+                        User Name
+                      </div>
+                      <div class="desc">
+                        View my profile page
+                      </div>
+                    </div>
+                  </a>
+                </li>
+
                 <li class="divider"></li>
-                <li><a href="#"><i class="icon-flag"></i> Help</a></li>
+
+                <li><a href="#" class="action add"><i class="icon-plus"></i> Add new</a></li>
+                <li><a href="#" class="action duplicate"><i class="icon-plus-sign"></i> Duplicate</a></li>
+                <li><a href="#" class="toggle-deletion"><i class="icon-minus-sign"></i> Deletion mode</a></li>
+                <li><a href="#" class="access-control"><i class="icon-keys"></i> Cluster access control</a></li>
+                <li><a href="#" class="action on-off"><i class="icon-off"></i> Online / Offline</a></li>
+
               </ul>
             </li>
           </ul>
         </div>
+
       </div>
     </div>
   </div>

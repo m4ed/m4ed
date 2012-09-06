@@ -11,6 +11,7 @@ def editor(request):
     # Include .less
     #request.session['wakalaka'] = 'yep'
     editor_less.need()
+
     return {
         'project': 'm4ed',
         'items': request.context

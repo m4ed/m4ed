@@ -5,10 +5,12 @@ define([
   'backbone',
   'views/editor/itemlist',
   'views/editor/navigation',
+  'jquery.hotkeys',
   'bootstrap.collapse',
   'bootstrap.dropdown',
   'bootstrap.modal',
-  'bootstrap.transition'
+  'bootstrap.transition',
+  'bootstrap.button'
 ], function($, _, Backbone, ItemListView, NavigationView) {
   var initialize = function() {
 

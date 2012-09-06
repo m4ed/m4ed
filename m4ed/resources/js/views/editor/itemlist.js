@@ -31,7 +31,7 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
       this.$list = this.$el.find('.ui-sortable');
 
       // Init collection from rendered content
-      $('.ui-sortable li').each(function(index) {
+      this.$list.children('li').each(function(index) {
         var $li = $(this);
         collection.add({_id: $li.attr('id')}, {$el: $li});
       });
@@ -69,7 +69,8 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
         listIndex: 0,
         title: 'Click to add a title',
         desc: 'Click to add a description',
-        text: ''
+        text: '',
+        tags: []
       });
     },
 
@@ -89,10 +90,9 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
             console.log("Error: couldn't save item.");
           }
         });
-        
+      } else {
+        this.createItemView(item, options); 
       }
-
-      this.createItemView(item, options);
 
     },
 
