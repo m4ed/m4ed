@@ -51,12 +51,13 @@ def main(global_config, **settings):
     config.registry.settings['db.redis.conn'] = redis.StrictRedis(
         host=redis_host, port=redis_port, db=redis_db_num)
 
-    # Set up the misaka Markdown renderer
-    # renderer = CustomHtmlRenderer(settings=config.registry.settings)
-    # config.registry.settings['misaka'] = Markdown(renderer=renderer,
-    #                                               extensions=EXT_TABLES)
-    # config.set_request_property('.request_properties:misaka',
-    #                             name='misaka', reify=True)
+    # Set up the shared math text parser
+    config.set_request_property('m4ed.request_properties:math_text_parser',
+                                  name='math_text_parser', reify=True)
+
+    # For debugging matplotlib
+    # from matplotlib import verbose
+    # verbose.level = 'debug-annoying'
 
     # Set up ZeroMQ work queue
     work_queue = zmq.Context().socket(zmq.PUSH)

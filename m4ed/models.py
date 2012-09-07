@@ -51,6 +51,32 @@ class Item(dict):
             raise AttributeError(name)
         return attr
 
+    def save(self):
+        self.__parent__.save(self)
+
+    def check_answer(self, block_id, answer_id):
+        #print 'Checking some answers'
+        #print self
+        answers = self.get('answers', None)
+        is_correct = False
+        if answers:
+            block_answers = answers.get(block_id, None)
+            if not block_answers:
+                pass
+            elif isinstance(block_answers, list):
+                if answer_id in block_answers:
+                    is_correct = True
+            else:
+                print 'WE DONT KNOW WHAT TO DO NEXT'
+        self.mark_answer(is_correct, block_id, answer_id)
+        return is_correct
+        #(block_id, answer_id)
+
+    def mark_answer(self, is_correct, block_id, answer_id):
+        print 'Marking some answers'
+        print is_correct, block_id, answer_id
+        self.__parent__.mark_answer(self, is_correct, block_id, answer_id)
+
 
 class User(dict):
     @property

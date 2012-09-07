@@ -31,3 +31,4 @@ def asset_image(config):
 
 def item_api(config):
     config.add_route('rest_item', '/{id}', factory='m4ed.factories:ItemFactory', traverse='/{id}')
+    config.add_route('rest_item_answer', '/{id}/answer', factory='m4ed.factories:ItemFactory', traverse='/{id}')

@@ -12,7 +12,7 @@ from misaka import (
 
 # This should have permission='read'
 @view_config(route_name='editor', renderer='editor/editor.mako')
-def editor(request):
+def get_editor(request):
     # Include .less
     #request.session['wakalaka'] = 'yep'
     editor_less.need()
@@ -23,14 +23,21 @@ def editor(request):
 
 
 @view_config(route_name='misaka', renderer='json', request_method='POST')
-def misaka(request):
+def post_preview(request):
     if not authenticated_userid(request):
         request.response.status = 403
         return {'status': 'error', 'reason': 'forbidden'}
     text = request.params.get('md', '')
 
-    renderer = CustomHtmlRenderer(settings=request.registry.settings)
-    html = Markdown(renderer=renderer, extensions=EXT_TABLES).render(text)
+    html = Markdown(
+        renderer=CustomHtmlRenderer(
+            settings=request.registry.settings,
+            math_text_parser=request.math_text_parser,
+            mongo_db=request.db
+            ),
+        extensions=EXT_TABLES
+    ).render(text)
+    #print html
     return {
         'html': html
     }

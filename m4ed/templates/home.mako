@@ -9,8 +9,12 @@
   <script data-main="/fanstatic/m4ed/js/student_main.js" src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 </head>
 <body>
+  <style>
+    .green { color: green; }
+    .red { color: red; }
+  </style>
   <div>
-    <div style="border:1px dotted black;margin:auto;width:600px;" id="content">${e|n}</div>
+    <div class="container" id="content">${html|n}</div>
   </div>
 </body>
 </%block>
