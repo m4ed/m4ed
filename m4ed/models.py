@@ -24,6 +24,9 @@ class MongoDict(dict):
     def save(self):
         self.__parent__.save(self)
 
+    def remove(self):
+        self.__parent__.remove(self)
+
 
 class Asset(dict):
     @property
@@ -69,9 +72,6 @@ class Item(MongoDict):
         self['_id'] = str(self['_id'])
         self.__name__ = name
         self.__parent__ = parent
-
-    def save(self):
-        self.__parent__.save(self)
 
     def check_answer(self, block_id, answer_id):
         #print 'Checking some answers'

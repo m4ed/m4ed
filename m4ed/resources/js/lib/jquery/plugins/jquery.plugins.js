@@ -5,7 +5,7 @@ define(['jquery'], function($) {
       // http://stackoverflow.com/a/3651124
       insertAtCaret: function(myValue){
       var obj;
-      //console.log(this);
+      console.log(this);
       if( typeof this[0].name !='undefined' ) obj = this[0];
       else obj = this;
 
@@ -15,11 +15,12 @@ define(['jquery'], function($) {
         sel.text = myValue;
         obj.focus();
       }
-      else if ($.browser.mozilla || $.browser.webkit) {
+      else if (obj.selectionStart !== undefined) {
         var startPos = obj.selectionStart;
         var endPos = obj.selectionEnd;
+        // console.log(startPos, endPos);
         var scrollTop = obj.scrollTop;
-        obj.value = obj.value.substring(0, startPos)+myValue+obj.value.substring(endPos,obj.value.length);
+        obj.value = obj.value.substring(0, startPos) + myValue + obj.value.substring(endPos,obj.value.length);
         obj.focus();
         obj.selectionStart = startPos + myValue.length;
         obj.selectionEnd = startPos + myValue.length;
@@ -27,8 +28,8 @@ define(['jquery'], function($) {
       } else {
         obj.value += myValue;
         obj.focus();
-       }
-     },
+      }
+    },
 
     // Get css value as an integer
     cssInt: function(property){

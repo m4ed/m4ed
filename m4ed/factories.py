@@ -128,6 +128,25 @@ class ItemFactory(dict):
             safe=True
         )
 
+    def remove(self, item):
+        # Pop the item ID since we can't update it
+        _id = item.pop('_id', None)
+        if not _id:
+            return
+        elif not isinstance(_id, ObjectId):
+            _id = ObjectId(_id)
+        item.pop('__name__', None)
+        item.pop('__parent__', None)
+        self.collection.remove(
+            {'_id': _id},
+            safe=True
+        )
+
+        self.progress_collection.remove(
+            {'itemId': _id},
+            safe=True
+        )
+
     def mark_answer(self, item, is_correct, block_id, answer_id):
         if not self.user_id:
             return

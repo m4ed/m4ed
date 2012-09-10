@@ -20,6 +20,10 @@ function($, _, Backbone, templates) {
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
+
+      // this.dispatcher.on('close', this.onClose, this);
+      this.model.bind('destroy', this.onDestroy, this);
+
     },
 
     events: {
@@ -50,6 +54,12 @@ function($, _, Backbone, templates) {
       e.preventDefault();
       var callback = this.model.get('callback');
       if (callback) this.dispatcher.trigger('editorButtonClick', callback);
+    },
+
+    onDestroy: function(e) {
+      this.$el.tooltip('destroy');
+      this.close();
+      // console.log('Button closed.');
     }
 
   });

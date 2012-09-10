@@ -33,6 +33,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
+      this.model.bind('destroy', this.onDestroy, this);
+
+      this.dispatcher.on('insertAsset', this.onInsertAsset, this);
 
       // console.log('Editor initialized.');
 
@@ -61,8 +64,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
           parent: this
         }
       });
-
-      this.dispatcher.on('insertAsset', this.onInsertAsset, this);
 
       // init buttons (reverse group list for pull-right)
       var buttonGroups = templates.buttonGroups;
@@ -107,6 +108,19 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       'click .editor-btn.pictures': 'onPictureButtonClick'
     },
 
+    onDestroy: function(e) {
+      if (this.$el.is(':visible')) {
+        this.$el.slideUp();
+        this.globalDispatcher.trigger('editorClosed');
+      }
+      this.close();
+    },
+
+    onClose: function(e) {
+      this.dispatcher.trigger('closeButtons');
+      // console.log('Editor closed.');
+    },
+
     onTextChange: function(model, text, options) {
       //console.log('The model has changed!');
       if (!this.editorInitialized) {
@@ -143,7 +157,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     },
 
     onInsertAsset: function(markdown) {
-      this.$el.find('.editor-textarea').insertAtCaret(markdown);
+      this.textarea.$el.insertAtCaret(markdown);
       this.update();
     },
 

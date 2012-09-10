@@ -23,6 +23,7 @@ function(_, Backbone, EditorView, templates) {
       // Listen to changes in model
       this.model.bind('change:title', this.onTitleChange, this);
       this.model.bind('change:desc', this.onDescriptionChange, this);
+      this.model.bind('destroy', this.onDestroy, this);
 
       this.editor = null;
       this.editorInitialized = false;
@@ -93,6 +94,7 @@ function(_, Backbone, EditorView, templates) {
       'click .text-tags': 'onTagsClick',
       'click .edit': 'onEditClick',
       'click .item': 'onItemClick',
+      'click .btn-remove': 'onDeleteClick',
       'resize': 'onResize',
       'blur .edit': 'onEditBlur',
       'keyup.esc .edit': 'onEditKeyupEsc',
@@ -164,7 +166,6 @@ function(_, Backbone, EditorView, templates) {
       }
 
       if (document.activeElement == this.$tags[0]) {
-        console.log('tags match');
         this.$tags[0].blur();
         return false;
       } 
@@ -190,7 +191,16 @@ function(_, Backbone, EditorView, templates) {
       return false;
     },
 
-    onResize: function () {
+    onDeleteClick: function(e) {
+      e.stopPropagation();
+      this.model.destroy();
+    },
+
+    onDestroy: function(e) {
+      this.close();
+    },
+
+    onResize: function() {
       this.throttledResize();
     }, 
 

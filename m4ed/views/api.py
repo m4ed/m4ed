@@ -82,6 +82,44 @@ class ItemView(object):
         self.request.response.status = '200'
         return {}
 
+    @view_config(request_method='DELETE', permission='write')
+    def delete(self):
+        # try:
+        #     kwargs = self.request.json_body
+        # except ValueError:
+        #     # If we get a value error, the request didn't have a json body
+        #     # Ignore the request
+        #     return HTTPNotAcceptable()
+
+        # if not kwargs.pop('_id', None):
+        #     self.request.response.status = '503'
+        #     return {}
+
+        self.request.context.remove()
+
+        # update['listIndex'] = kwargs.pop('listIndex')
+        # update['title'] = kwargs.pop('title')
+        # update['desc'] = kwargs.pop('desc')
+        # update['tags'] = kwargs.pop('tags')
+        # update['text'] = kwargs.pop('text')
+
+        # renderer = CustomHtmlRenderer(
+        #     math_text_parser=self.request.math_text_parser,
+        #     settings=self.request.registry.settings,
+        #     mongo_db=self.request.db,
+        #     #cloud=True,
+        #     #work_queue=self.request.work_queue
+        #     )
+        # misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
+        # update['html'] = misaka_renderer.render(update['text'])
+
+        # update['answers'] = renderer.get_answers()
+
+        # update.save()
+
+        self.request.response.status = '200'
+        return {}
+
 
 @view_config(route_name='rest_item_answer', request_method='POST', permission='read', renderer='json')
 def post_item_answer(self, request):

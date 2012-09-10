@@ -21,6 +21,9 @@ function($, _, Backbone, ButtonCollection, ButtonView, templates) {
 
       this.buttons = new ButtonCollection();
       this.buttons.bind('add', this.onAdd, this);
+
+      this.dispatcher.on('closeButtons', this.onCloseButtons, this);
+
       //this.buttons.bind('reset', this.onReset, this);
       this.buttonData = options.buttons;
       var isDropdown = this.label !== undefined;
@@ -67,6 +70,15 @@ function($, _, Backbone, ButtonCollection, ButtonView, templates) {
         this.$buttons = $(wrapper);
       }
       this.$buttons.append($button);
+    },
+
+    onCloseButtons: function(e) {
+      var buttons = this.buttons;
+      while (buttons.length > 0) {
+        buttons.pop().destroy();
+      }
+      this.close();
+      console.log('Buttonlist closed.');
     }
 
   });
