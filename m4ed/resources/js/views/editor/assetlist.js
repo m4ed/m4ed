@@ -84,8 +84,8 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
     addAssetView: function(model) {
       var view = new AssetView({
             model: model,
-            index: this.assets.indexOf(model),
             custom: {
+              tabIndex: this.assets.indexOf(model) + 1,
               template: templates.asset,
               editorTemplate: templates.assetEditor,
               dispatcher: this.dispatcher,
@@ -106,7 +106,7 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       if (!this.sliderLoaded) {
         this.$el.elastislide({
           // speed   : 450,  // animation speed
-          easing    : '', // animation easing effect
+          // easing    : '', // animation easing effect
           imageW    : 106,  // the images width (90 + 16)
           margin    : 0,  // image margin right
           border    : 0  // image border

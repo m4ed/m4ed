@@ -52,6 +52,7 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
       this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
       this.globalDispatcher.on('editorClosed', this.onEditorClosed, this);  
       this.globalDispatcher.on('action:addItem', this.add, this); 
+      this.globalDispatcher.on('action:toggleDeletion', this.onToggleDeletion, this); 
 
       // Create a view for the modal upload form
       this.upload = new UploadView({
@@ -139,6 +140,10 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
       if (this.editorsOpen === 0) {
         this.$list.sortable('enable');
       }
+    },
+
+    onToggleDeletion: function() {
+      this.$list.find('.btn-remove').toggle();
     }
 
   });

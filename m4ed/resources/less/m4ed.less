@@ -37,11 +37,25 @@
   padding: 3px 8px;
 }
 
+.focusable {
+  .transition(~"border linear .2s, box-shadow linear .2s");
+
+  // Focus state
+  &:focus, &.focused {
+    border-color: rgba(82,168,236,.8);
+    outline: 0;
+    outline: thin dotted \9; /* IE6-9 */
+    .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6)");
+  }
+}
+
 // Body
 // -----------------------------------------
 
 body {
   padding-top: 40px;
+  .user-select(none);
+  background: @backgroundColor @backgroundImage repeat-x; 
 }
 
 @media (max-width: 979px) {
@@ -83,9 +97,11 @@ body {
     margin: 8px;
   }
 
-  .gradientBar(lighten(@headerColor, 5%), darken(@headerColor, 5%), inherit, none);
+  .gradientBar(lighten(@headerColor, 8%), darken(@headerColor, 8%), @black, @white);
 
   margin-top: 8px;
+
+  .box-shadow(0 0 6px rgba(0,0,0,.8));
 
 }
 
@@ -117,4 +133,13 @@ a.profile {
     padding: 0; 
     margin-top: 3px;
   }
+}
+
+// Modals
+// ------------------------------------------------
+.modal{
+  .box-shadow(0 0 24px rgba(0,0,0,.6));
+}
+.modal-backdrop, .modal-backdrop.fade.in {
+  .opacity(50);
 }

@@ -48,7 +48,7 @@
     File Upload locale temporarily here,
     until a common locale system is implemented
   -->
-  <!--<script>
+  <script>
   window.locale = {
     "fileupload": {
       "errors": {
@@ -65,6 +65,6 @@
       "destroy": "Delete"
     }
   };
-  </script>-->
+  </script>
 
 </%block>

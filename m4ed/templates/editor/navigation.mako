@@ -60,7 +60,12 @@
 
                 <li><a href="#" class="action add"><i class="icon-plus"></i> Add new</a></li>
                 <li><a href="#" class="action duplicate"><i class="icon-plus-sign"></i> Duplicate</a></li>
-                <li><a href="#" class="toggle-deletion"><i class="icon-minus-sign"></i> Deletion mode</a></li>
+                <li>
+                  <a href="#" class="action toggle-deletion">
+                    <i class="icon-remove-sign"></i>
+                    <span class="switch">Enable</span> deletion
+                  </a>
+                </li>
                 <li><a href="#" class="access-control"><i class="icon-keys"></i> Cluster access control</a></li>
                 <li><a href="#" class="action on-off"><i class="icon-off"></i> Online / Offline</a></li>
 

@@ -12,22 +12,55 @@
       <div class="span6">
       <!-- Buttons for preview -->
       <div class="btn-toolbar preview-buttons">
-        <div class="btn-group" data-toggle="buttons-radio">
-        <button type="button" class="btn"><i class="icon-size-mini"></i> Mini</button>
-        <button type="button" class="btn"><i class="icon-size-small"></i> Small</button>
-        <button type="button" class="btn"><i class="icon-size-medium"></i> Medium</button>
-        <button type="button" class="btn"><i class="icon-size-large"></i> Large</button>
+
+        <div class="btn-group">
+          <button class="btn dropdown-toggle" data-toggle="dropdown">
+            <i class="icon-size-small"></i> Small
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#"><i class="icon-size-mini"></i> Mini</a></li>
+            <li><a href="#"><i class="icon-size-medium"></i> Medium</a></li>
+            <li><a href="#"><i class="icon-size-large"></i> Large</a></li>
+          </ul>
         </div>
+
+        <div class="btn-group pull-right publish">
+          <button class="btn disabled">Publish</button>
+          <button class="btn dropdown-toggle disabled" data-toggle="dropdown">
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#"><i class="icon-undo"></i> Revert changes</a></li>
+          </ul>
+        </div>
+
+
       </div>
+
       <div class="preview"></div>
       </div>
     </div>
     
     <!-- Asset container (tabindex enables key events)-->
-    <div class="asset-container es-carousel-wrapper" tabindex="0">
+    <div class="asset-container es-carousel-wrapper focusable" tabindex="0">
       <div class="es-carousel">
-      <ul>
-      </ul>
+        <div class="es-nav">
+          <div class="es-nav-prev">
+            <div class="btn btn-inverse btn-circle">
+              <i class="icon-chevron-left icon-white"></i>
+              <span class="text">Previous</span>
+            </div>
+          </div>
+          <div class="es-nav-next">
+            <div class="btn btn-inverse btn-circle">
+              <i class="icon-chevron-right icon-white"></i>
+              <span class="text">Next</span>
+            </div>
+          </div>
+        </div>
+        <ul>
+        </ul>
       </div>
     </div>
 

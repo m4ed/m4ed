@@ -133,6 +133,7 @@ function(_, Backbone, EditorView, templates) {
     },
 
     onTagsClick: function(e) {
+      e.stopPropagation();
       if (!this.isSelected()) {
         this.select();
       }       
@@ -152,7 +153,7 @@ function(_, Backbone, EditorView, templates) {
 
     onItemClick: function(e) {
 
-      // Prevent editor toggle if title or description edit is active
+      // Prevent editor toggle if title, description or tag edit is active
       for (var key in this.editables) {
         var field = this.editables[key];
         if (field.$wrapper.hasClass('editing')){
@@ -161,6 +162,12 @@ function(_, Backbone, EditorView, templates) {
           return false;
         }
       }
+
+      if (document.activeElement == this.$tags[0]) {
+        console.log('tags match');
+        this.$tags[0].blur();
+        return false;
+      } 
 
       // Select the item if not selected already
       if (!this.isSelected()) {

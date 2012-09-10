@@ -404,14 +404,14 @@
 			;
 
 		if(lastTag.length > 0)
-			pos.left += lastTag.innerWidth();
+			pos.left += lastTag.innerWidth() + 5;
 		else
 			pos = self._originalPadding;
 
 		self._paddingBox = pos;
 
 		self.input().css({
-			paddingLeft : pos.left + 5,
+			paddingLeft : pos.left,
 			paddingTop  : pos.top
 		});
 	};

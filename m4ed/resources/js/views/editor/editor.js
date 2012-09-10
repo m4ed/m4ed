@@ -113,8 +113,12 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         this.editorInitialized = true;
         // console.log('First time change!');
         this.render();
-      } 
+      } else {
+        this.$('.publish button').removeClass('disabled');
+        this.$('.publish button').addClass('btn-success');
+      }
       this.generatePreview();
+      
     },
 
     onTextareaKeyup: _.throttle(function(e) {

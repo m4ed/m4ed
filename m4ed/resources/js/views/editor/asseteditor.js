@@ -18,6 +18,10 @@ function(_, Backbone) {
 
     className: 'asset-editor modal hide',
 
+    attributes: {
+      tabindex: 1
+    },
+
     initialize: function(options) {
 
       // Extend this object with all the custom options passed
@@ -60,10 +64,14 @@ function(_, Backbone) {
       'tagChange .tags': 'onTagChange',
       'click .next': 'onNextClick',
       'click .prev': 'onPrevClick',
-      'click .delete': 'onDeleteClick'
+      'click .delete': 'onDeleteClick',
+      'keyup.right': 'onNextClick',
+      'keyup.left': 'onPrevClick'
     },
 
     toggle: function() {
+      // Force blur to prevent unwanted keyups
+      if (this.$el.is(':visible')) this.$el.blur();
       this.$el.modal('toggle');
     },
 

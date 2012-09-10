@@ -27,7 +27,6 @@ function(_, Backbone, AssetEditorView) {
 
       this.dispatcher.on('assetSelected', this.onAssetSelected, this);
       this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
-      this.dispatcher.on('showButtons', this.onHoverEnter, this);
       this.dispatcher.on('hideButtons', this.onHoverLeave, this);
 
     },
@@ -52,6 +51,8 @@ function(_, Backbone, AssetEditorView) {
         trigger: 'manual'
       });
 
+      this.$img.attr('tabindex', this.tabIndex);
+
       return this;
     },
 
@@ -63,7 +64,8 @@ function(_, Backbone, AssetEditorView) {
       'click .btn-insert': 'onInsertClick',
       'hoverinit': 'onHoverInit',
       'hoverenter': 'onHoverEnter',
-      'hoverleave': 'onHoverLeave'
+      'hoverleave': 'onHoverLeave',
+      'keyup.return': 'onEditClick'
     },
 
     onClose: function() {
@@ -76,6 +78,7 @@ function(_, Backbone, AssetEditorView) {
     select: function() {
       this.dispatcher.trigger('assetSelected', this.model);
       this.$el.addClass('selected');
+      this.$el.focus();
     },
 
     deselect: function() {
@@ -147,6 +150,9 @@ function(_, Backbone, AssetEditorView) {
     },
 
     edit: function() {
+
+      // Hide buttons
+      this.onHoverLeave();
 
       this.select();  
 

@@ -3,7 +3,7 @@
 <%def name="hogan_assets()">
 
   <script id="asset-template" type="text/hogan">
-    <img alt="{{alt}}" src="{{src}}" />
+    <img class="focusable" alt="{{alt}}" src="{{src}}" />
     <div class="buttons" style="display:none;">
       {{#buttons}}
         <div class="btn {{classes}}">
