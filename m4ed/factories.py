@@ -13,7 +13,12 @@ from bson import ObjectId
 
 from .util.base62 import Base62
 
-from .models import Asset, Item, User
+from .models import (
+    Asset,
+    Item,
+    User,
+    Space
+    )
 
 import time
 
@@ -203,3 +208,34 @@ class UserFactory(dict):
     def __iter__(self):
         items = self.collection.find().sort('listIndex', direction=ASCENDING)
         return (User(item, name=str(item['_id']), parent=self) for item in items)
+
+
+class SpaceFactory(dict):
+    __name__ = None
+    __parent__ = RootFactory
+
+    __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS)
+    ]
+
+    def __init__(self, request):
+        self.request = request
+        self._id = request.matchdict.get('id')
+        self.collection = request.db.spaces
+
+    def __getitem__(self, _id):
+        #print 'This is trying to get invoked'
+        try:
+            query = dict(_id=ObjectId(_id))
+        except InvalidId:
+            query = dict(name=_id)
+        item = self.collection.find_one(query)
+
+        if not item:
+            raise KeyError
+
+        return Space(item, name=str(_id), parent=self)
+
+    def save(self, space):
+        _id = self.collection.insert(space, safe=True)
+        return Space(space, name=str(_id), parent=self)

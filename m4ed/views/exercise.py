@@ -5,7 +5,7 @@ from m4ed.resources import editor_less
 
 
 @view_config(route_name='exercise', renderer='home.mako')
-def getto(request):
+def get_exercise(request):
     editor_less.need()
 
     try:
