@@ -1,4 +1,5 @@
 from gridfs import GridFS
+from matplotlib.mathtext import MathTextParser
 
 
 def db(request):
@@ -19,3 +20,7 @@ def work_queue(request):
 
 def misaka(request):
     return request.registry.settings['misaka']
+
+
+def math_text_parser(request):
+    return MathTextParser('bitmap')

@@ -12,18 +12,21 @@ from pyramid.security import authenticated_userid
 
 from bson import ObjectId
 
-#import os
+from misaka import (
+    Markdown,
+    EXT_TABLES
+    )
+
+from m4ed.htmlrenderer import CustomHtmlRenderer
 
 
 @view_config(route_name='rest_asset_thumb')
 def get_asset_thumb(request):
-    #headers = [('Location', str(request.context.get('thumbnail_url')))]
     return HTTPSeeOther(location=request.context.get('thumbnail_url'))
 
 
 @view_config(route_name='rest_asset_full_image')
 def get_asset_url(request):
-    #headers = [('Location', str(request.context.get('url')))]
     return HTTPSeeOther(location=request.context.get('url'))
 
 
@@ -45,16 +48,13 @@ class ItemView(object):
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        # if not self.request.context:
-        #     self.request.response.status = '404'
-        #     return {}
         try:
             kwargs = self.request.json_body
         except ValueError:
             # If we get a value error, the request didn't have a json body
             # Ignore the request
             return HTTPNotAcceptable()
-        update = {}
+        update = self.request.context
 
         if not kwargs.pop('_id', None):
             self.request.response.status = '503'
@@ -65,25 +65,41 @@ class ItemView(object):
         update['tags'] = kwargs.pop('tags')
         update['text'] = kwargs.pop('text')
 
-        item = self.request.context
-        item.update(update)
-        _id = item.get('_id')
-        # We can't update the mongo ObjectId so pop it
-        item.pop('_id')
+        renderer = CustomHtmlRenderer(
+            math_text_parser=self.request.math_text_parser,
+            settings=self.request.registry.settings,
+            mongo_db=self.request.db,
+            #cloud=True,
+            #work_queue=self.request.work_queue
+            )
+        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
+        update['html'] = misaka_renderer.render(update['text'])
 
-        self.request.context = self.request.db.items.find_and_modify(
-            query={'_id': ObjectId(_id)},
-            update={'$set': item},
-            upsert=True,
-            safe=True
-        )
+        update['answers'] = renderer.get_answers()
+
+        update.save()
 
         self.request.response.status = '200'
         return {}
 
-    # @view_config(request_method='DELETE')
-    # def delete(self):
-    #     return {'result': 'DELETE accepted'}
+
+@view_config(route_name='rest_item_answer', request_method='POST', permission='read', renderer='json')
+def post_item_answer(self, request):
+    block_id = request.params.get('block_id')
+    answer_id = request.params.get('answer_id')
+    res = 'incorrect'
+    try:
+        block_id = block_id.split('-')[1]
+        #block_id = full_id[1]
+        #answer_id = full_id[2]
+        print block_id, answer_id
+        result = request.context.check_answer(block_id, answer_id)
+        if result == True:
+            res = 'correct'
+
+    except IndexError:
+        pass
+    return {'I': 'See what you did there', 'res': res}
 
 
 @view_defaults(route_name='rest_items', renderer='json')
