@@ -5,6 +5,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+import os
 
 def no_option_catcher(original_function):
     def catcher(*args, **kwargs):
@@ -16,7 +17,7 @@ def no_option_catcher(original_function):
     return catcher
 
 
-def parse_asset_settings(settings):
+def parse_asset_settings(settings, dev_ini_path='.'):
     config = configparser.SafeConfigParser()
     asset_resolver = AssetResolver()
     dotted_resolver = DottedNameResolver()
@@ -33,7 +34,12 @@ def parse_asset_settings(settings):
         store_locally = config.getboolean('assets', 'store_locally')
     except configparser.NoSectionError:
         try:
-            with open(asset_config) as fp:
+            if dev_ini_path != '.':
+                dev_ini_path = os.path.abspath(dev_ini_path)
+                conf_path = os.path.join('/', *dev_ini_path.split('/')[:-1])
+            else:
+                conf_path = dev_ini_path
+            with open(os.path.join(conf_path, asset_config)) as fp:
                 config.readfp(fp)
         except IOError:
             raise
