@@ -3,6 +3,9 @@ import zmq
 import pymongo
 import os
 import threading
+import logging
+from logging.handlers import RotatingFileHandler
+#from logging.config import dictConfig
 
 from bson import ObjectId
 
@@ -14,15 +17,40 @@ try:
 except ImportError:  # pragma: no cover
     import ConfigParser as configparser
 
+log = logging.getLogger(__name__)
 
-def main():
-    settings = configparser.SafeConfigParser()
-    with open(sys.argv[1]) as fp:
-        settings.readfp(fp)
-    settings = dict(settings.items('app:main'))
-    settings.update(parse_asset_settings(settings))
 
-    url_worker = 'inproc://workers'
+def test_logger(number, frame):
+    log.info('HUP Received! LOGGING IT! {} {}'.format(number, repr(frame)))
+
+
+def main(config_ini):
+    print 'Starting up main'
+    _settings = configparser.SafeConfigParser()
+    with open(config_ini) as fp:
+        _settings.readfp(fp)
+    settings = dict(_settings.items('app:main'))
+    #formatting = dict(_settings.items('formatter_generic'))
+    logger_settings = dict(_settings.items('logger_uploader'))
+    settings.update(parse_asset_settings(settings, dev_ini_path=config_ini))
+
+    fh = RotatingFileHandler(
+        logger_settings.get('filename', 'uploader.log'),
+        maxBytes=int(logger_settings.get('maxBytes', 10000)),
+        encoding='utf-8'
+        )
+
+    lvl = logger_settings.get('level', 'DEBUG').upper()
+    lvl = logging.__getattribute__(lvl)
+
+    fh.setLevel(lvl)
+    formatter = logging.Formatter('%(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s')
+    fh.setFormatter(formatter)
+
+    log.addHandler(fh)
+    log.setLevel(lvl)
+
+    url_worker = settings['zmq.worker_socket']
     url_client = settings['zmq.socket']
 
     context = zmq.Context(1)
@@ -44,7 +72,7 @@ def main():
 
     cloud = None
     if not settings['store_locally']:
-        print '\n\nInitializing cloud connection...'
+        log.info('Initializing cloud connection...')
         cloud = settings['service'](**settings)
         cloud.connect()
 
@@ -66,14 +94,14 @@ def main():
         worker.start()
 
     try:
-        print 'Starting zmq streamer'
-        print 'Now waiting for jobs...'
+        log.info('Starting zmq streamer')
+        log.info('Now waiting for jobs...')
         zmq.device(zmq.STREAMER, clients, workers)
     except KeyboardInterrupt:
         pass
 
     # We never get here... but if we do, shut down!
-    print '\n\nShutting down...\n'
+    log.info('Shutting down...')
 
     clients.close()
     workers.close()
@@ -82,8 +110,8 @@ def main():
 
 class UploadWorker(threading.Thread):
     def __init__(self, name, imager, context, worker_url, db, save_path, cloud=None):
-        super(UploadWorker, self).__init__()
-        self.name = name
+        threading.Thread.__init__(self)
+        #self.name = name
         self.imager = imager
         self.db = db
         self.cloud = cloud
@@ -96,21 +124,22 @@ class UploadWorker(threading.Thread):
 
         self.save_path = save_path
 
-        self._print('Spawned!')
+        log.info('{} spawned!'.format(self.name))
 
-    def _print(self, msg):
-        print '{} - {}'.format(self.name, msg)
+    # def _print(self, msg):
+    #     log.info('{} - {}'.format(self.name, msg))
 
     def run(self):
         while True:
             try:
                 s = self.socket.recv_string()
+                log.info('Received a job!')
             except zmq.ZMQError:
                 self.socket.close()
                 break
 
-            self._print('Handling the job...')
-            self._print(s)
+            log.info('Handling the job...')
+            log.info(s)
 
             args = s.split(':')
             getattr(self, args[0])(args[1])
@@ -156,7 +185,7 @@ class UploadWorker(threading.Thread):
             #api_url = '/api/assets/{}'.format(r.get('id'))
             #if resource_uri != '':
             resource_uri = self.save_path
-            print 'Saving the image to ' + resource_uri
+            log.info('Saving the image to ' + resource_uri)
             data['url'] = (resource_uri +
                 '/{directory}/{full}').format(
                     directory=dir_name,
@@ -181,7 +210,7 @@ class UploadWorker(threading.Thread):
         if not asset:
             return
 
-        self._print(asset)
+        log.info(asset)
         name = asset.get('name')
         directory = asset.get('id')
         _type = asset.get('type')
@@ -245,8 +274,8 @@ class UploadWorker(threading.Thread):
             remove=True,
             safe=True
             )
-        self._print('Proceeding to delete ' + str(asset))
-        if asset and asset.get('status') == 'cloud':
+        log.info('Proceeding to delete ' + str(asset))
+        if asset.get('type') == 'anim' and asset.get('status') == 'cloud':
             anim_frames = asset.get('frames')
             self._cloud_delete(asset.get('name'), anim_frames)
 
@@ -267,4 +296,4 @@ class UploadWorker(threading.Thread):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1])

@@ -2,20 +2,31 @@ from pyramid.security import Allow, Everyone, Authenticated, ALL_PERMISSIONS
 
 
 class MongoDict(dict):
+
+    reserved_names = ['__name__', '__parent__']
+
     def __init__(self, _init):
         dict.__init__(self)
         self.update(_init)
 
     def __getattr__(self, name):
+        if name in self.reserved_names:
+            return dict.__getattr__(self, name)
         try:
             return dict.__getitem__(self, name)
         except KeyError:
             raise AttributeError
 
     def __setattr__(self, name, value):
-        dict.__setitem__(self, name, value)
+        if name in self.reserved_names:
+            dict.__setattr__(self, name, value)
+        else:
+            dict.__setitem__(self, name, value)
 
     def __delattr__(self, name):
+        if name in self.reserved_names:
+            dict.__delattr__(self, name)
+            return
         try:
             dict.__delitem__(self, name)
         except KeyError:
@@ -67,11 +78,11 @@ class Item(MongoDict):
     def __init__(self, init_data, name=None, parent=None):
         #super(Item, self).__init__(self)
         #self.update(a_dict)
+        self.__name__ = name
+        self.__parent__ = parent
         MongoDict.__init__(self, init_data)
         # Make sure the ObjectId is json seriablable
         self['_id'] = str(self['_id'])
-        self.__name__ = name
-        self.__parent__ = parent
 
     def check_answer(self, block_id, answer_id):
         #print 'Checking some answers'
