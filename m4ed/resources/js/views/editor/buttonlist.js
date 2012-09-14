@@ -78,7 +78,7 @@ function($, _, Backbone, ButtonCollection, ButtonView, templates) {
         buttons.pop().destroy();
       }
       this.close();
-      console.log('Buttonlist closed.');
+      // console.log('Buttonlist closed.');
     }
 
   });
