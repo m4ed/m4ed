@@ -17,6 +17,13 @@ define([
     // Make a clone of BackBone.Events and use it as a global event dispatcher
     var dispatcher = _.clone(Backbone.Events);
 
+
+    // TODO: Move this to somewhere more clever
+    // Temp fix to deselect any selected item
+    $('body').on('click', function(e) {
+      dispatcher.trigger('itemSelected');
+    });
+
     new ItemListView({
       el: '.container', 
       custom: {

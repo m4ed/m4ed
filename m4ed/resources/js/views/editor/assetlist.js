@@ -24,14 +24,14 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       // this.globalDispatcher.bind('assetChange', this.onAssetChange, this);
 
       // Local navigation events between Assets, AssetList and AssetEditor
-      this.dispatcher.bind('assetSelected', this.onAssetSelected, this);
-      this.dispatcher.bind('assetSwitch', this.onAssetSwitch, this);
+      this.dispatcher.on('assetSelected', this.onAssetSelected, this);
+      this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
 
       this.assets = new AssetCollection();
       // Fetch will trigger the 'reset' event
-      this.assets.bind('reset', this.onReset, this);
+      this.assets.on('reset', this.onReset, this);
       // Listen to any destroy events from the models in collection
-      this.assets.bind('destroy', this.onDestroy, this);
+      this.assets.on('destroy', this.onDestroy, this);
 
       this.assets.fetch();
 
@@ -131,18 +131,8 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
 
     },
 
-    // onAssetChange: function(assetId) {
-    //   // This event gets triggered when some other editor view or asset list
-    //   // notices a change in their assests.
-    //   // Check if the asset that was changed is in our collection and handle
-    //   // refreshing it.
-    //   if (this.assets.get(assetId)) {
-    //     console.log('Some assets in my collection have changed!');
-    //     // this.assets.fetch();
-    //   }
-    // },
-
     onClick: function(e) {
+      e.stopPropagation();
       // This seems to be unnecessary (at least in Chrome)
       // if (!this.$el.hasClass('selected')) this.$el.focus();
     },
@@ -158,10 +148,9 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
     },
 
     onAssetSelected: function(model) {
-      this.assetViews[this.currentIndex].deselect();
       this.currentIndex = this.assets.indexOf(model);
       if (this.currentIndex !== -1) this.$el.elastislide('setCurrent', this.currentIndex);
-      var _id = model ? model.get('_id') : undefined; 
+      // var _id = model ? model.get('_id') : undefined; 
       // console.log('Asset selected - index: ' + this.currentIndex + ' id: ' + _id);
     },
 
@@ -169,22 +158,26 @@ function($, _, Backbone, AssetCollection, AssetView, templates) {
       this.render();
     },
 
-    onDestroy: function(model) {
+    onDestroy: function(model, collection, options) {
       // console.log('Asset removed - id: ' + model.get('id'));
       this.render();
+      var nextView = this.assetViews[options.index];
+      if (nextView) {
+        nextView.$el.trigger('mouseover');
+      }
     },
 
     // This is triggered when 'next' or 'prev'
     // is clicked in asset editor
     onAssetSwitch: function (direction) {
-      var newView;
+      var view;
       if (direction === 'prev') {
-        newView = this.selectPrev();
+        view = this.selectPrev();
       } else {
-        newView = this.selectNext();
+        view = this.selectNext();
       }
-      if (newView) {
-        newView.edit();
+      if (view) {
+        view.edit();
       }
     },
 

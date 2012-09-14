@@ -6,12 +6,6 @@ define([
 ],
 function(_, Backbone) {
 
-  // key codes for keyup event
-  var keyCodes = {
-    27: 'esc',
-    13: 'enter'
-  };
-
   var AssetEditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -37,9 +31,7 @@ function(_, Backbone) {
       var m = this.model;
 
       this.$el.append(this.template.render(this.model.toJSON()));
-
       this.$tags = this.$('.tags');
-
       this.$modalTitle = this.$('.modal-header h3');
       var $title = this.$('.title');
 
@@ -89,12 +81,7 @@ function(_, Backbone) {
                     '<span class="text-label" />'+
                     '<button type="button" class="text-remove close">×</button>'+
                   '</span>'
-          }   
-          // ajax : {
-          //     url : '/manual/examples/data.json',
-          //     dataType : 'json',
-          //     cacheResults : true
-          // }
+          } 
         });
         this.isShown = true;
       }

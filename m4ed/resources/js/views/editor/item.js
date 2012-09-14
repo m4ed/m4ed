@@ -60,10 +60,18 @@ function(_, Backbone, EditorView, templates) {
         }
       };
 
+      // Set title and index to model so that fetch isnt needed on duplicate and add
+      this.model.set({
+        'title': this.editables.title.$view.text(),
+        'listIndex': this.$el.data('index')
+      });
+
       this.globalDispatcher.on('sortUpdated', this.onSortUpdated, this);
       this.globalDispatcher.on('itemSelected', this.onItemSelected, this);
+      this.globalDispatcher.on('action:toggleDeletion', this.onToggleDeletion, this);
 
-      var tags = this.$item.data('tags');
+
+      var tags = this.model.has('tags') ? this.model.get('tags') : this.$item.data('tags');
 
       this.$tags.textext({
         plugins : 'tags',
@@ -191,13 +199,22 @@ function(_, Backbone, EditorView, templates) {
       return false;
     },
 
+    onToggleDeletion: function(e) {
+      this.$('.btn-remove').toggle();
+    },
+
     onDeleteClick: function(e) {
       e.stopPropagation();
       this.model.destroy();
     },
 
     onDestroy: function(e) {
+      if (this.isSelected()) this.globalDispatcher.trigger('itemSelected', undefined);
       this.close();
+    },
+
+    onClose: function(e) {
+      this.globalDispatcher.trigger('refreshSortable');
     },
 
     onResize: function() {
@@ -297,20 +314,23 @@ function(_, Backbone, EditorView, templates) {
       var currentIndex = this.model.get('listIndex');
       var newIndex = order.indexOf(_id);
       if (newIndex !== currentIndex) {
-        var callback = _.bind(this.saveIndex, {'index': newIndex});
-        if (!this.model.has('title')) {
+        if (!this.model.has('text')) {
           this.model.fetch({
-            success: callback
+            success: _.bind(function(model, response) {
+              this.onSortUpdatedCallback(model, newIndex);
+            }, this)
           });
         } else {
-          callback(this.model);
+          this.onSortUpdatedCallback(this.model, newIndex);
         }
       }
 
     },
 
-    saveIndex: function(model, response) {
-      model.save({'listIndex': this.index});
+    onSortUpdatedCallback: function(model, index) {
+      // console.log('model', model);
+      model.save({'listIndex': index});
+      console.log('Index updated.');
     },
 
     closeEdit: function(save, target) {

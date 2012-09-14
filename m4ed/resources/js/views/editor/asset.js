@@ -72,7 +72,6 @@ function(_, Backbone, AssetEditorView) {
       // console.log('AssetView closed!');
       this.$img.tooltip('destroy');
       if (this.editor) this.editor.close();
-      this.remove();
     },
 
     select: function() {
@@ -89,11 +88,11 @@ function(_, Backbone, AssetEditorView) {
       return this.$el.hasClass('selected');
     },
 
-    // onAssetSelected: function (model) {
-    //   if (this.isSelected() && !model || model.id !== this.model.id) {
-    //     this.deselect();
-    //   } 
-    // },
+    onAssetSelected: function (model) {
+      if (this.isSelected() && !model || model.id !== this.model.id) {
+        this.deselect();
+      } 
+    },
 
     onInsertClick: function(e) {
       // Trigger the insertAsset
@@ -104,6 +103,7 @@ function(_, Backbone, AssetEditorView) {
     },
 
     onClick: function(e) {
+      e.stopPropagation();
       if (!this.isSelected()) {
         this.select();
       } 
@@ -136,7 +136,8 @@ function(_, Backbone, AssetEditorView) {
 
     onDeleteClick: function(e) {
       e.stopPropagation();
-      this.model.destroy();
+      var index = this.model.collection.indexOf(this.model);
+      this.model.destroy({index: index});
     },
 
     onDestroy: function(e) {

@@ -5,9 +5,15 @@ class MongoDict(dict):
 
     reserved_names = ['__name__', '__parent__']
 
-    def __init__(self, _init):
+    def __init__(self, init_data, name=None, parent=None):
+
         dict.__init__(self)
-        self.update(_init)
+        self.update(init_data)
+
+        # Make sure the ObjectId is json seriablable
+        self['_id'] = str(self['_id'])
+        self.__name__ = name
+        self.__parent__ = parent
 
     def __getattr__(self, name):
         if name in self.reserved_names:
@@ -74,15 +80,6 @@ class Item(MongoDict):
         return [
             (Allow, Authenticated, ALL_PERMISSIONS)
         ]
-
-    def __init__(self, init_data, name=None, parent=None):
-        #super(Item, self).__init__(self)
-        #self.update(a_dict)
-        self.__name__ = name
-        self.__parent__ = parent
-        MongoDict.__init__(self, init_data)
-        # Make sure the ObjectId is json seriablable
-        self['_id'] = str(self['_id'])
 
     def check_answer(self, block_id, answer_id):
         #print 'Checking some answers'

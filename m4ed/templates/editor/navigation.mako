@@ -41,7 +41,7 @@
               </a>
               <ul class="dropdown-menu">
 
-                <li>
+                <li class="disabled">
                   <a href="#" class="profile">
                     <div class="avatar">
                     </div>
@@ -59,15 +59,15 @@
                 <li class="divider"></li>
 
                 <li><a href="#" class="action add"><i class="icon-plus"></i> Add new</a></li>
-                <li><a href="#" class="action duplicate"><i class="icon-plus-sign"></i> Duplicate</a></li>
+                <li class="disabled"><a href="#" class="action duplicate"><i class="icon-plus-sign"></i> Duplicate</a></li>
                 <li>
                   <a href="#" class="action toggle-deletion">
                     <i class="icon-remove-sign"></i>
-                    <span class="switch">Enable</span> deletion
+                    <span class="effect">Enable</span> deletion
                   </a>
                 </li>
-                <li><a href="#" class="access-control"><i class="icon-keys"></i> Cluster access control</a></li>
-                <li><a href="#" class="action on-off"><i class="icon-off"></i> Online / Offline</a></li>
+                <li class="disabled"><a href="#" class="access-control"><i class="icon-keys"></i> Cluster access control</a></li>
+                <li class="disabled"><a href="#" class="action on-off"><i class="icon-off"></i> Offline</a></li>
 
               </ul>
             </li>
