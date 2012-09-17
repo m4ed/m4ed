@@ -317,7 +317,7 @@ class UserFactory(BaseFactory):
         except KeyError:
             return None
         # Query for the user from the database
-        user = self.get({'name': name}, None)
+        user = self.get(name, None)
         if not user:
             return None
         # Compare provided password with user's password
