@@ -1,4 +1,20 @@
-from pyramid.security import Allow, Everyone, Authenticated, ALL_PERMISSIONS
+from pyramid.security import (
+    Allow,
+    Everyone,
+    Authenticated,
+    ALL_PERMISSIONS,
+    DENY_ALL
+    )
+
+# #from schemas.space_schema import get_validator
+# from valideer import Validator
+
+
+# def get_validator():
+#     return Validator.parse({
+#         '+title': 'string',
+#         '+description': 'string'
+#     })
 
 
 class MongoDict(dict):
@@ -6,12 +22,8 @@ class MongoDict(dict):
     reserved_names = ['__name__', '__parent__']
 
     def __init__(self, init_data, name=None, parent=None):
-
         dict.__init__(self)
         self.update(init_data)
-
-        # Make sure the ObjectId is json seriablable
-        self['_id'] = str(self['_id'])
         self.__name__ = name
         self.__parent__ = parent
 
@@ -21,7 +33,7 @@ class MongoDict(dict):
         try:
             return dict.__getitem__(self, name)
         except KeyError:
-            raise AttributeError
+            raise AttributeError('The item has no attribute {}'.format(name))
 
     def __setattr__(self, name, value):
         if name in self.reserved_names:
@@ -36,9 +48,11 @@ class MongoDict(dict):
         try:
             dict.__delitem__(self, name)
         except KeyError:
-            raise AttributeError
+            raise AttributeError('The item has no attribute "{}"'.format(name))
 
     def save(self):
+        if not self.is_valid():
+            return
         self.__parent__.save(self)
 
     def remove(self):
@@ -78,8 +92,20 @@ class Item(MongoDict):
     @property
     def __acl__(self):
         return [
-            (Allow, Authenticated, ALL_PERMISSIONS)
+            #(Allow, Authenticated, ALL_PERMISSIONS),
+            #(Allow, Authenticated, 'answer')
         ]
+
+    def __init__(self, init_data, name=None, parent=None):
+        #super(Item, self).__init__(self)
+        #self.update(a_dict)
+        MongoDict.__init__(self, init_data, name, parent)
+        # Make sure the ObjectId is json seriablable
+        self._id = str(self._id)
+        self.cluster_id = str(self.cluster_id)
+
+    def save(self):
+        self.__parent__.save(self)
 
     def check_answer(self, block_id, answer_id):
         #print 'Checking some answers'
@@ -136,3 +162,23 @@ class Space(MongoDict):
 
     def __init__(self, init_data, name=None, parent=None):
         MongoDict.__init__(self, init_data)
+
+    def is_valid(self):
+        #validator = get_validator()
+        #return validator.is_valid(self)
+        return True
+
+
+class Cluster(MongoDict):
+    @property
+    def __acl__(self):
+        res = []
+        for g in self.get('groups_read', []):
+            res.append((Allow, 'g:{}'.format(g), 'read'))
+        for g in self.get('groups_write', []):
+            res.append((Allow, 'g:{}'.format(g), 'write'))
+        return res
+
+    def __init__(self, init_data, name=None, parent=None):
+        MongoDict.__init__(self, init_data, name, parent)
+        self.space_id = str(self.space_id)

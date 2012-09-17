@@ -16,3 +16,8 @@ def _force_unicode(text):
 
 def force_utf8(text):
     return str(_force_unicode(text).encode('utf8'))
+
+
+class UTF8(unicode):
+    def __init__(self, val):
+        super(UTF8, self).__init__(force_utf8(val))

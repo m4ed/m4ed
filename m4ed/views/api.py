@@ -121,7 +121,12 @@ class ItemView(object):
         return {}
 
 
-@view_config(route_name='rest_item_answer', request_method='POST', permission='read', renderer='json')
+@view_config(
+    route_name='rest_item_answer',
+    request_method='POST',
+    permission='answer',
+    renderer='json'
+    )
 def post_item_answer(self, request):
     block_id = request.params.get('block_id')
     answer_id = request.params.get('answer_id')
@@ -156,13 +161,8 @@ class ItemsView(object):
     @view_config(request_method='POST')
     def post(self):
 
-        # self.request.response.status = '200'
-        # return {'context': self.request.context}
-
-        # if not self.request.context:
-        #     self.request.response.status = '404'
-        #     return {}
         try:
+            # This fails if the post is some sort of form instead of json
             kwargs = self.request.json_body
         except ValueError:
             # If we get a value error, the request didn't have a json body
