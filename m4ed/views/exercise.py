@@ -4,7 +4,8 @@ from pyramid.view import view_config
 from m4ed.resources import editor_less
 
 
-@view_config(route_name='exercise', renderer='home.mako')
+@view_config(route_name='exercise_mini', renderer='mini/exercise.mako', permission='read')
+@view_config(route_name='exercise', renderer='medium/exercise.mako', permission='read')
 def get_exercise(request):
     editor_less.need()
 

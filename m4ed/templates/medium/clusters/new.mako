@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<head>
-  <%block name="head">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="">
-  <meta name="author" content="">
-  <title>m4ed - New Learning Space</title>
-</head>
-<body>
+<%inherit file="/medium/base.mako"/>
+
+<%block name="title">m4ed - New Cluster</%block>
+
+<%block name="content">
   <div>
     <div>
       ${message}
@@ -21,5 +16,4 @@
       <input type="submit" name="form.submitted" value="Create"/>
     </form>
   </div>
-</body>
 </%block>

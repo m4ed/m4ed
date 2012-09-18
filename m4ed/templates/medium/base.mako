@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <head>
-  <%block name="head">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="">
   <meta name="author" content="">
-  <title>m4ed - New Learning Space</title>
+  <title><%block name="title">Testing</%block></title>
+  <%block name="require"></%block>
 </head>
 <body>
-  <div>
-    <p>Name: ${space.title}</p>
-    <p>description: ${space.description}</p>
+  <div class="container">
+    <%block name="content">
+    </%block>
   </div>
+
+  <%block name="scripts">
+  </%block>
 </body>
-</%block>

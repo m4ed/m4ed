@@ -1,5 +1,5 @@
 import string
-import copy
+#import copy
 
 BASE_LIST = string.digits + string.letters
 BASE_DICT = dict((c, i) for i, c in enumerate(BASE_LIST))
@@ -16,14 +16,15 @@ class Base62(object):
             self.val = "0"
         elif (isinstance(val, int)):
             self.base10_val = val
-            self.val = self._encode(val)
+            self.val = self.encode(val)
         elif (isinstance(val, str)):
-            self.base10_val = self._decode(val)
+            self.base10_val = self.decode(val)
             self.val = val
         else:
             raise TypeError('Valid input types are string or int')
 
-    def _decode(self, strng, reverse_base=BASE_DICT):
+    @staticmethod
+    def decode(strng, reverse_base=BASE_DICT):
         length = len(reverse_base)
         res = 0
         for i, c in enumerate(strng[::-1]):
@@ -31,7 +32,8 @@ class Base62(object):
 
         return res
 
-    def _encode(self, integer, base=BASE_LIST):
+    @staticmethod
+    def encode(integer, base=BASE_LIST):
         length = len(base)
         res = ''
         while integer != 0:
@@ -46,27 +48,27 @@ class Base62(object):
         if isinstance(val, int):
             pass
         elif isinstance(val, str):
-            val = self._decode(val)
+            val = self.decode(val)
         elif isinstance(val, type(self)):
             val = int(val)
         else:
             raise TypeError('Invalid type')
-        c = copy.deepcopy(self)
-        c.base10_val += val
-        c.val = self._encode(c.base10_val)
-        return c
+        #c = copy.deepcopy(self)
+        #c.base10_val += val
+        #c.val = self.encode(c.base10_val)
+        return Base62(self.base10_val + val)
 
     def __iadd__(self, val):
         if isinstance(val, int):
             pass
         elif isinstance(val, str):
-            val = self._decode(val)
+            val = self.decode(val)
         elif isinstance(val, type(self)):
             val = val.base10_val
         else:
             raise TypeError('Invalid type')
         self.base10_val += val
-        self.val = self._encode(self.base10_val)
+        self.val = self.encode(self.base10_val)
         return self
 
     def __int__(self):

@@ -10,11 +10,12 @@ from misaka import (
     )
 
 
-# This should have permission='read'
-@view_config(route_name='editor', renderer='editor/editor.mako')
+# This should have permission='read' or probably 'write'
+@view_config(
+    route_name='editor',
+    renderer='editor/editor.mako',
+    permission='write')
 def get_editor(request):
-    # Include .less
-    #request.session['wakalaka'] = 'yep'
     editor_less.need()
 
     return {
@@ -23,7 +24,11 @@ def get_editor(request):
     }
 
 
-@view_config(route_name='misaka', renderer='json', request_method='POST')
+@view_config(
+    route_name='misaka',
+    renderer='json',
+    request_method='POST')
+    #permission='write')
 def post_preview(request):
     if not authenticated_userid(request):
         request.response.status = 403
