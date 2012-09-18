@@ -12,7 +12,7 @@ function(_, Backbone, EditorView, templates) {
 
   var INPUT_SPACE = 15; // Add some space to the auto-resizing input
 
-  var itemView = Backbone.View.extend({
+  var listItemView = Backbone.View.extend({
 
     tagName: 'li',
 
@@ -28,11 +28,7 @@ function(_, Backbone, EditorView, templates) {
       this.editor = null;
       this.editorInitialized = false;
 
-      this.throttledResize = _.throttle( function (e) {
-        // Refresh TextExt input
-        var textExt = this.$tags.textext()[0];
-        if (textExt) textExt.invalidateBounds();
-      }, 500 );
+      this.throttledResize = _.throttle(_.bind(this.onResize, this), 500 );
 
       if (!options.el) {
         this.render();
@@ -62,7 +58,7 @@ function(_, Backbone, EditorView, templates) {
         }
       };
 
-      // Set title and index to model so that fetch isnt needed on duplicate and add
+      // Set title and index to model so that fetch isnt needed on add
       this.model.set({
         'title': this.editables.title.$view.text(),
         'listIndex': this.$el.data('index')
@@ -105,7 +101,7 @@ function(_, Backbone, EditorView, templates) {
       'click .edit': 'onEditClick',
       'click .item': 'onItemClick',
       'click .btn-remove': 'onDeleteClick',
-      'resize': 'onResize',
+      'resize': 'throttledResize',
       'blur .edit': 'onEditBlur',
       'keyup.esc .edit': 'onEditKeyupEsc',
       'keyup.return .edit': 'onEditKeyupReturn',
@@ -221,7 +217,9 @@ function(_, Backbone, EditorView, templates) {
     },
 
     onResize: function() {
-      this.throttledResize();
+      // Refresh TextExt input
+      var textExt = this.$tags.textext()[0];
+      if (textExt) textExt.invalidateBounds();
     }, 
 
     scrollTop: function() {
@@ -375,5 +373,5 @@ function(_, Backbone, EditorView, templates) {
     }
 
   });
-  return itemView;
+  return listItemView;
 });
