@@ -58,4 +58,5 @@ def csrf_validation_event(event):
         # If for some reason the crsf token provided and the one contained
         # in session don't match, generate a new token and raise 401
         request.session.new_csrf_token()
+        request.response.set_cookie('csrf_token', value=None)
         raise HTTPUnauthorized

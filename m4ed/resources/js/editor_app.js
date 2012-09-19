@@ -49,7 +49,7 @@ define([
       crossDomain: false, // obviates need for sameOrigin test
       beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type)) {
-            var csrftoken = $.cookie('csrftoken');
+            var csrftoken = $.cookie('csrf_token');
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
       }
