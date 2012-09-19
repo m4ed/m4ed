@@ -1,0 +1,86 @@
+[app:main]
+use = egg:m4ed
+full_stack = [[full_stack]]
+
+pyramid.reload_templates = [[pyramid_reload_templates]]
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes = [[pyramid_includes]]
+debugtoolbar.hosts = [[debugtoolbar_hosts]]
+
+fanstatic.bottom = [[fanstatic_bottom]]
+fanstatic.debug = [[fanstatic_debug]]
+
+mako.directories = [[mako_directories]]
+
+# Preview path and cache time in seconds
+preview.img_cache_route = [[img_cache_route]]
+preview.img_cache_time = [[img_cache_time]]
+
+# Mongo configuration from mongo_conf
+db.mongo.host = [[mongo_host]]
+db.mongo.port = [[mongo_port]]
+db.mongo.collection_name = [[mongo_collection_name]]
+
+# Redis configuration from redis_conf
+db.redis.host = [[redis_host]]
+db.redis.port = [[redis_port]]
+db.redis.db_num = [[redis_db_num]]
+
+# ZeroMQ configuration
+zmq.socket = [[zmq_socket]]
+zmq.worker_socket = [[zmq_worker_socket]]
+zmq.workers = [[zmq_workers]]
+
+assets.config = [[m4ed_assets_conf_path]]
+
+# Beaker sessions
+session.type = [[beaker_session_type]]
+session.url = [[beaker_session_url_redis_internal]]
+session.key = [[beaker_session_key]]
+
+bcrypt_log_rounds = [[bcrypt_log_rounds]]
+
+[server:main]
+use = [[m4ed_server]]
+host = [[m4ed_host]]
+port = [[m4ed_port]]
+
+# Begin logging configuration
+
+[loggers]
+keys = root, m4ed
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_m4ed]
+level = DEBUG
+handlers =
+qualname = m4ed
+
+[logger_uploader]
+level = [[worker_log_level]]
+filename = [[worker_log_path]][[worker_log_name]]
+maxBytes = [[worker_log_size]]
+backupCount = [[worker_log_count]]
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

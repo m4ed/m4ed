@@ -1,0 +1,16 @@
+# Finnish apt sources
+deb http://ftp.fi.debian.org/debian/ squeeze main contrib non-free
+deb-src http://ftp.fi.debian.org/debian/ squeeze main contrib non-free
+
+deb http://ftp.fi.debian.org/debian/ testing main contrib non-free
+deb-src http://ftp.fi.debian.org/debian/ testing main contrib non-free
+
+deb http://security.debian.org/ squeeze/updates main contrib non-free
+deb-src http://security.debian.org/ squeeze/updates main contrib non-free
+
+# squeeze updates, previously known as "volatile"
+deb http://ftp.fi.debian.org/debian/ squeeze-updates main contrib non-free
+deb-src http://ftp.fi.debian.org/debian/ squeeze-updates main contrib non-free
+
+# mongoDB
+deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen

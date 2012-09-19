@@ -1,0 +1,21 @@
+/* 
+   rename this to _newname to prevent it entering git 
+   then include it when you run fabric either from menu
+   or from command line:
+
+   fab -Hhost --set userconfigs="userconfig1, userconfig2"
+*/
+
+{
+
+"m4ed_asset_worker": {
+
+     // rackspacecloud cloudfiles settings
+     "cloud_service": "m4ed.util.cloud:CloudFiles",
+     "cloud_container_name": "",
+     "cloud_username": "",
+     "cloud_api_key": ""
+
+   }
+
+}

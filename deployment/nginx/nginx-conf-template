@@ -1,0 +1,489 @@
+# ----------------------------------------------------------------------------
+#
+# M4ED FABRIC SCRIPT - BASE TEMPLATE FOR nginx.conf
+# do not modify unless you're adding variables to baseconfig.json too
+#
+# ----------------------------------------------------------------------------
+
+# MAIN SECTION CORE MODULE
+##############################################################################
+#
+
+ # By default, nginx wipes all its environment variables except TZ variable.
+ # "env NAME" allows to keep NAME variable value got from parent process.
+ # "env NAME=val" sets NAME variable value.
+#env NAME;
+#env NAME=value;
+
+ # There are some assertion points inside nginx that allow to stop nginx to
+ # attach the debugger, or to abort and to create the core file.
+#debug_points [stop|abort];
+
+ # error_log pecifies the file where server (and fastcgi) errors are logged.
+ # Default values for the error level:
+ # in the main section - error
+ # in the HTTP section - crit
+ # in the server section - crit
+ # Nginx supports separate error logging per virtual host. This is a
+ # unique feature, which lighttpd refuses to implement. For an
+ # example of separate error logging per server, see
+ # http://wiki.nginx.org/SeparateErrorLoggingPerVirtualHost
+ # and http://thread.gmane.org/gmane.comp.web.nginx.english/9097/focus=9099
+ #
+ # If you've built Nginx with --with-debug, you may also use:
+ # error_log LOGFILE [debug_core | debug_alloc | debug_mutex | debug_event |
+ #                    debug_http | debug_imap];
+ #
+ # Note that error_log off does not disable logging - the log will be written
+ # to a file named "off". To disable logging, you may use:
+ # error_log /dev/null crit;
+ # Also note that as of version 0.7.53, nginx will use a compiled-in default
+ # error log location until it has read the config file. If the user running
+ # nginx doesn't have write permission to this log location, nginx will
+ # raise an alert like this:
+ # could not open error log file: open() "path" failed (13: Permission denied)
+ #
+ # error_log file | stderr [ debug | info | notice | warn | error | crit
+ #                | alert | emerg ]
+error_log [[core_error_log]];
+
+#include file | mask
+#lock_file file
+#pcre_jit on | off
+
+ # The pid-file. It can be used for the kill-command to send signals to nginx,
+ # eg: to reload the config: kill -HUP `cat /var/log/nginx.pid`
+pid [[pid]];
+
+#ssl_engine
+#timer_resolution
+
+ # If the master process is run as root, then nginx will setuid()/setgid()
+ # to USER/GROUP. If GROUP is not specified, then nginx uses the same name
+ # as USER. By default it's nobody user and nobody or nogroup group or the
+ # --user=USER and --group=GROUP from the ./configure script.
+ # Example: user www users;
+user [[nginx_user]];
+
+ # Linux only.
+ # With this option you can bind the worker process to a CPU,
+ # it calls sched_setaffinity().
+ # For example,
+ # worker_processes     4;
+ # worker_cpu_affinity 0001 0010 0100 1000;
+ # Bind each worker process to one CPU only.
+ #
+ # worker_processes     2;
+ # worker_cpu_affinity 0101 1010;
+ # Bind the first worker to CPU0/CPU2, bind the second worker to
+ # CPU1/CPU3. This is suitable for HTT.
+#worker_cpu_affinity [[worker_cpu_affinity]];
+
+ # With this option you can give to all worker processes the priority (nice)
+ # you need/wish, it calls setpriority().
+#worker_priority [[worker_priority]];
+
+ # A worker process is a single-threaded process.
+ # If Nginx is doing CPU-intensive work such as SSL or gzipping and you
+ # have 2 or more CPUs/cores, then you may set worker_processes to be equal
+ # to the number of CPUs or cores.
+ #
+ # If you are serving a lot of static files and the total size of the files
+ # is bigger than the available memory, then you may increase worker_processes
+ # to fully utilize disk bandwidth.
+ #
+ # Your OS may schedule all workers on single CPU/core this can be avoided
+ # using worker_cpu_affinity.
+ #
+ # Nginx has the ability to use more than one worker process for several reasons:
+ # * to use SMP
+ # * to decrease latency when workers blockend on disk I/O
+ # * to limit number of connections per process when select()/poll() is used
+ # * The worker_processes and worker_connections from the event sections
+ #   allows you to calculate maxclients value:
+ #   max_clients = worker_processes * worker_connections
+worker_processes [[worker_processes]];
+
+#worker_rlimit_core ;
+#worker_rlimit_nodile;
+#worker_rlimit_sigpending;
+#working_directory;
+
+# EVENTS MODULE
+##############################################################################
+# Controls how Nginx deals with connections.
+events {
+
+  # [on] accept mutex is used to serialize accept() syscalls
+ accept_mutex [[accept_mutex]];
+
+
+  # [500ms] If a worker process does not have accept mutex it will try
+  # to aquire it at least after this delay.
+ accept_mutex_delay [[accept_mutex_delay]];
+
+
+  # [none] writes debug log only for given clients having ip or net.
+ #debug_connection ip|CIDR;
+
+
+  # devpoll: [32], others: [512]. These directives specify how many events
+  # may be passed to/from kernel, using appropriate method.
+ #devpoll_changes [[devpoll_changes]];
+ #devpoll_events [[devpoll_events]];
+ #kqueue_changes [[kqueue_changes]];
+ #kqueue_events [[kqueue_events]];
+ #epoll_events [[epoll_events]];
+
+
+  # [off] multi_accept tries to accept() as many connections as possible after
+  # nginx gets notification about a new connection.
+ multi_accept [[multi_accept]];
+
+
+  # [40] nginx uses two signals when the rtsig method is used. The directive
+  # specifies the first signal number. The second is plus 1.
+  # By default rtsig_signo is SIGRTMIN+10 (40).
+ #rtsig_signo [[rtsig_signo]];
+
+
+  # [16] Specifies the number of events to be passed via poll().
+ #rtsig_overflow_events [[rtsig_overflow_events]];
+
+
+  # [32] Specifies after which number of events handled by poll() nginx will
+  # drains rtsig queue.
+ #rtsig_overflow_test [[rtsig_overflow_test]];
+
+
+  # [10] The rtsig_overflow_threshold works in Linux 2.4.x only. Before to
+  # drain rtsig queue nginx looks in a kernel how the queue is filled up.
+  # value means 1/value, the default is 1/10.
+ #rtsig_overflow_threshold [[rtsig_overflow_threshold]];
+
+
+  # If you have more than one event-model specified at the compilation time,
+  # then you can tell nginx which one do you want to use. By default nginx
+  # looks for the most suitable method for your OS at ./configure time.
+  # You can see the available event-models and how you can activate it at
+  # the compilation time here: http://wiki.nginx.org/NginxOptimizations
+  #
+ #use [kqueue | rtsig | epoll | /dev/poll | select | poll | eventport];
+
+
+  # The worker_connections and worker_processes from the main section allows
+  # you to calculate max clients you can handle:
+  # max clients = worker_processes * worker_connections
+  #
+  # In a reverse proxy situation, max clients becomes
+  # max clients = worker_processes * worker_connections/4
+  #
+  # Since a browser opens 2 connections by default to a server and nginx uses
+  # the fds (file descriptors) from the same pool to connect to the upstream
+  # backend.
+ worker_connections [[worker_connections]];
+
+}
+
+# HTTP MODULE
+##############################################################################
+#
+
+http {
+
+  # fills the types module with the default standard MIME map
+ include [[include_mimetypes]];
+
+  # assigns the default MIME-type to be used for files where the standard
+  # MIME map doesn't specify anything.
+ default_type [[default_type]];
+
+  # sendfile() copies data between one file descriptor and another.
+  # Because this copying is done within the kernel, sendfile() is more
+  # efficient than the combination of read(2) and write(2), which would
+  # require transferring data to and from user space.
+ sendfile [[sendfile]];
+
+  # This directive permits or forbids the use of the socket options TCP_NOPUSH
+  # on FreeBSD or TCP_CORK on Linux. This option is only available when using
+  # sendfile. Setting this option causes nginx to attempt to send it's HTTP
+  # response headers in one packet on Linux and FreeBSD 4.x
+  # You can read more about the TCP_NOPUSH and TCP_CORK socket options:
+  # http://wiki.nginx.org/ReadMoreAboutTcpNopush
+ tcp_nopush [[tcp_nopush]];
+
+  # This directive allows or forbids the use of the socket option TCP_NODELAY.
+  # Only included in keep-alive connections.
+  # You can read more about the TCP_NODELAY socket option:
+  # http://wiki.nginx.org/ReadMoreAboutTcpNodelay
+ tcp_nodelay [[tcp_nodelay]];
+
+  # The first parameter assigns the timeout for keep-alive connections with
+  # the client. The server will close connections after this time.
+  # The optional second parameter assigns the time value in the header
+  # Keep-Alive: timeout=time of the response. This header can convince
+  # some browsers to close the connection, so that the server does not have
+  # to. Without this parameter, nginx does not send a Keep-Alive header
+  # (though this is not what makes a connection "keep-alive").
+  # The parameters can differ from each other.
+  # Notes on how browsers handle the Keep-Alive header:
+  # MSIE and Opera ignore the "Keep-Alive: timeout=<N>" header.
+  # MSIE keeps the connection alive for about 60-65 seconds, then sends a TCP RST.
+  # Opera keeps the connection alive for a long time.
+  # Mozilla keeps the connection alive for N plus about 1-10 seconds.
+  # Konqueror keeps the connection alive for about N seconds.
+ keepalive_timeout [[keepalive_timeout]];
+
+  # Sets the maximum size of the types hash tables.
+  # Details of setting up hash tables are provided here:
+  # http://nginx.org/en/docs/hash.html
+ types_hash_max_size [[types_hash_max_size]];
+
+
+  #
+  # HttpLogModule
+  # ---------------------------------------------------------------------------
+
+  # The log_format directive describes the format of a log entry. You can
+  # use general variables in the format, as well as variables which
+  # exist only at the moment of writing into the log:
+  # $body_bytes_sent, the number of bytes, transmitted to client minus the
+  # response headers. This variable is compatible with the %B parameter
+  # of Apache's mod_log_config (this was called $apache_bytes_sent, before
+  # version 0.3.10)
+  # $bytes_sent, the number of bytes transmitted to client
+  # $connection, the number of connection
+  # $msec, the current time at the moment of writing the log entry (microsecond accuracy)
+  # $pipe, "p" if request was pipelined
+  # $request_length, the length of the body of the request
+  # $request_time, the time it took nginx to work on the request, in seconds
+  # with millisecond precision (just seconds for versions older than 0.5.19)
+  # $status, status of answer
+  # $time_iso8601, time in ISO 8601 format, e. g. 2011-03-21T18:52:25+03:00 (added in 0.9.6)
+  # $time_local, local time into common log format.
+  # The headers, transmitted to client, begin from the prefix
+  # "sent_http_", for example, $sent_http_content_range.
+  # Note that variables produced by other modules can also be logged.
+  # For example you can log upstream response headers with the prefix
+  # "upstream_http_", see: http://wiki.nginx.org/NginxHttpUpstreamModule
+  # There is a predefined log format called "combined":
+  # log_format combined '$remote_addr - $remote_user [$time_local]  '
+  #                     '"$request" $status $body_bytes_sent '
+  #                     '"$http_referer" "$http_user_agent"';
+ log_format [[http_log_format]];
+
+  # The access_log directive sets the path, format and buffer size for the
+  # access log file. Using "off" as the only parameter clears all access_log
+  # directives for the current level. If the format is not indicated,
+  # it defaults to "combined". The size of buffer must not exceed the
+  # size of the atomic record for writing into the disk file. This size is
+  # not limited for FreeBSD 3.0-6.0. The log file path can contain variables
+  # (version >=0.7.4) but such logs have some limitations:
+  # * worker user must have permission to create files in;
+  # * buffering does not work;
+  # * for each log entry, the file is opened and immediately closed after
+  #   writing the record. However, descriptors of frequently used files may
+  #   be stored in open_log_file_cache . Regarding log rotation, it must be
+  #   kept in mind that over time (which is set by the parameter valid of
+  #   directive open_log_file_cache), logging can be still continue to the
+  #   old file.
+  # Nginx supports powerful access log separation per location. Accesses
+  # can also be output to more than one log at the same time. For more
+  # details, see the Multiple access_log directives in different contexts
+  # thread on the mailing list:
+  # http://thread.gmane.org/gmane.comp.web.nginx.english/9277
+ access_log [[http_access_log]];
+ error_log [[http_error_log]];
+
+  # The directive sets the cache, which stores file descriptors of
+  # frequently used logs with variable in path.
+  # Directive options:
+  # max - maximal number of descriptors in the cache, with overflow Least
+  #       Recently Used is removed (LRU);
+  # inactive - sets the time after which descriptor without hits during
+  #            this time are removed; default is 10 seconds;
+  # min_uses - sets the minimum number of file usage within the time specified
+  #            in parameter inactive, after which the file descriptor will
+  #            be put in the cache; default is 1;
+  # valid - sets the time until it will be checked if file still exists
+  #         under same name; default is 60 seconds;
+  # off - disables the cache.
+  #
+  # Example:
+  # open_log_file_cache max=1000 inactive=20s min_uses=2 valid=1m;
+ open_log_file_cache [[open_log_file_cache]];
+
+
+  #
+  # HttpGzipModule
+  # ---------------------------------------------------------------------------
+
+  # Enables or disables gzip compression. on | off
+ gzip [[gzip]];
+
+  # Assigns the number and the size of the buffers into which to store the
+  # compressed response. If unset, the size of one buffer is equal to the
+  # size of page, depending on platform this either 4K or 8K.
+  # default: 32 4k/16 8k
+ #gzip_buffers [[gzip_buffers]]
+
+  # The compression level, between 1 and 9, where 1 is the least
+  # compression (fastest) and 9 is the most (slowest).
+ gzip_comp_level [[gzip_comp_level]];
+
+  # Disable gzip compression for User-Agents matching the given regular
+  # expression. Requires PCRE library. Introduced in Nginx 0.6.23.
+  # You can use "msie6" to disable gzip for Internet Explorer 5.5 and
+  # Internet Explorer 6. "SV1" (Service Pack 2) will be ignored
+  # since Nginx 0.7.63.
+ gzip_disable [[gzip_disable]];
+
+  # Turns gzip compression on or off depending on the HTTP request version.
+  # When HTTP version 1.0 is used, the Vary: Accept-Encoding header is not
+  # set. As this can lead to proxy cache corruption, consider adding it
+  # with add_header . Also note that the Content-Length header is not set
+  # when using either version. Keepalives will therefore be impossible
+  # with version 1.0, while for 1.1 it is handled by chunked transfers.
+ gzip_http_version [[gzip_http_version]];
+
+  # Sets the minimum length, in bytes, of the response that will be
+  # compressed. Responses shorter than this byte-length will not be
+  # compressed. Length is determined from the "Content-Length" header.
+ gzip_min_length [[gzip_min_length]];
+
+  # It allows or disallows the compression of the response for the proxy
+  # request in the dependence on the request and the response. The fact
+  # that, request proxy, is determined on the basis of line "Via" in
+  # the headers of request. In the directive it is possible to indicate
+  # simultaneously several parameters:
+  #
+  # off - disables compression for all proxied requests
+  # expired - enables compression, if the "Expires" header prevents caching
+  # no-cache - enables compression if "Cache-Control" hdr is set to "no-cache"
+  # no-store - enables compression if "Cache-Control" hdr is set to "no-store"
+  # private - enables compression if "Cache-Control" hdr is set to "private"
+  # no_last_modified - enables compression if "Last-Modified" isn't set
+  # no_etag - enables compression if there is no "ETag" header
+  # auth - enables compression if there is an "Authorization" header
+  # any - enables compression for all requests
+ gzip_proxied [[gzip_proxied]];
+
+  # Enables compression for additional MIME-types besides "text/html".
+  # "text/html" is always compressed.
+ gzip_types [[gzip_types]];
+
+
+  # Enables response header of "Vary: Accept-Encoding". Note that this header
+  # causes IE 4-6 not to cache the content due to a bug
+  # see: http://marc.info/?l=apache-modgzip&m=103921021108395&w=2
+ gzip_vary [[gzip_vary]];
+
+
+  #
+  # HttpUploadProgressModule
+  # --------------------------------------------------------------------------
+ upload_progress [[upload_progress]];
+
+
+  #
+  # userconfigs
+  # --------------------------------------------------------------------------
+
+
+  # Include userconfigs here
+ include [[init_conf_imports]]*.[[init_conf_extension]];
+
+
+
+
+
+#  server {
+#        server_name _;
+#        return 444;
+#    }
+
+
+## PASTER SERVER CONFIG
+
+# upstream paster-site {
+#     server 127.0.0.1:5000;
+# }
+
+# server {
+#     server_name paster.com;
+#     location / {
+#         proxy_set_header        Host $host;
+#         proxy_set_header        X-Real-IP $remote_addr;
+#         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header        X-Forwarded-Proto $scheme;
+
+#         client_max_body_size    10m;
+#         client_body_buffer_size 128k;
+#         proxy_connect_timeout   60s;
+#         proxy_send_timeout      90s;
+#         proxy_read_timeout      90s;
+#         proxy_buffering         off;
+#         proxy_temp_file_write_size 64k;
+#         proxy_pass http://paster-site;
+#         proxy_redirect          off;
+#     }
+
+# }
+
+
+# ## UWSGI SERVER CONFIG
+
+# upstream uwsgi-site {
+#     server unix:/home/ptoimine/dev/uwsgi.sock;
+# }
+
+# server {
+#     server_name mexico.com;
+#     location / {
+#         access_log  /home/ptoimine/dev/logs/mexico/access.log;
+#     error_log   /home/ptoimine/dev/logs/mexico/error.log;
+#     include uwsgi_params;
+#     uwsgi_pass uwsgi-site;
+
+#     }
+
+#     location /static {
+#     root        /home/ptoimine/dev/mexico/mongotest/mongotest;
+#     expires     30d;
+#     add_header  Cache-Control public;
+#     access_log  off;
+#     }
+
+# }
+
+## GEVENT SERVER CONFIG
+## btw $host $http_host argit saattaa toimii komentorivilt
+## samaten try_files $uri @proxy; on joku mielenkiintoinen
+
+# upstream gevent-site {
+#     server unix:/home/ptoimine/dev/gevent.sock;
+# }
+
+# server {
+#     server_name gevent.com;
+#     location / {
+#         proxy_set_header        Host $host;
+#         proxy_set_header        X-Real-IP $remote_addr;
+#         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header        X-Forwarded-Proto $scheme;
+
+#         client_max_body_size    10m;
+#         client_body_buffer_size 128k;
+#         proxy_connect_timeout   60s;
+#         proxy_send_timeout      90s;
+#         proxy_read_timeout      90s;
+#         proxy_buffering         off;
+#         proxy_temp_file_write_size 64k;
+#         proxy_pass http://gevent-site;
+#         proxy_redirect          off;
+#     }
+# }
+
+
+# THIS } TERMINATES THE HTTP CONF SECTION
+}

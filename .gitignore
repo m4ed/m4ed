@@ -7,7 +7,14 @@
 *~
 *.sublime-*
 *.min.css
+*DS_Store
 
+deployment/fabconfigs/_*
+deployment/nginx/_*
+deployment/nginx/configs/_*
+deployment/m4ed/_*
+deployment/redis/_*
+deployment/mongo/_*
 development.ini
 assets.ini
 server_config.ini

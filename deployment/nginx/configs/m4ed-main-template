@@ -1,0 +1,93 @@
+server {
+
+  listen [[listen]];
+  server_name [[server_name]];
+  proxy_set_header Host $host:[[listen]];
+
+  client_max_body_size [[client_max_body_size]];
+  charset [[charset]];
+  access_log [[access_log]];
+  error_log [[error_log]];
+
+ location / {
+   proxy_pass [[m4ed_pass]];
+ }
+
+ location ^~ /progress {
+   upload_progress_json_output;
+   report_uploads proxied;
+ }
+
+ location ^~ /cache {
+   set $redis_key $arg_key;
+   default_type   image/png;
+   redis_pass     [[redis_pass]];
+   error_page     404 = /404.html;
+ }
+
+ location ^~ /static {
+   autoindex on;
+   root [[static_root]];
+ }
+
+ location ^~ /api/assets {
+   location ~ ^/api/assets/[a-zA-Z0-9]+ {
+     proxy_pass [[m4ed_pass]];
+   }
+
+   location = /api/assets/ {
+     rewrite /api/assets/ /api/assets;
+   }
+
+   location = /api/assets {
+     upload_pass @test;
+
+     # Limit this location to POST requests only
+     # If the request is GET, proxy it to port 8081
+     limit_except POST {
+       proxy_pass [[m4ed_pass]];
+     }
+
+     upload_store [[upload_store]] [[upload_hash]];
+     upload_store_access group:rw;
+
+     # 10kb/s = 10 000
+     # 100kb/s = 100 000
+     # 1mb/s = 1 000 000
+     upload_limit_rate [[upload_limit_rate]];
+
+     upload_pass_args on;
+
+     # Set specified fields in request body
+     upload_set_form_field name "$upload_file_name";
+     upload_set_form_field content_type "$upload_content_type";
+     upload_set_form_field path "$upload_tmp_path";
+
+     # Inform backend about hash and size of a file
+     upload_aggregate_form_field "md5" "$upload_file_md5";
+     upload_aggregate_form_field "size" "$upload_file_size";
+
+     upload_pass_form_field "^submit$|^description$";
+
+     upload_cleanup 400 404 499 500-505;
+     track_uploads [[track_uploads]];
+
+    }
+}
+
+location @test {
+    proxy_pass [[m4ed_pass]];
+}
+
+#error_page  404              /404.html;
+
+# redirect server error pages to the static page /50x.html
+#
+
+## TODO: TAKE THESE INTO CONFIG AS WELL
+##error_page   500 502 503 504  /50x.html;
+##location = /50x.html {
+##    root   html;
+##}
+
+}

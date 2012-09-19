@@ -1,0 +1,490 @@
+{
+    // baseconfig.json - override this with userconfigs!!
+
+    /*
+      The fabfile reads first baseconfig.json and then updates it with
+      userconfigs that can be specified in command line using:
+
+          fab -Hhost --set userconfigs="userconfig1, userconfig2"
+
+      and userconfigs are read from the fabconfigs subdirectory.
+      You can also select what userconfigs are used for the active
+      session from a menu when fabfile's default task is run.
+
+      A userconfig file must contain otherwise a valid JSON dictionary,
+      but c-style single-line comments and multiline comments are allowed.
+
+      Config values are applied using following rules:
+
+      - new key-value pairs from userconfigs are added to baseconfig
+
+      - existing key-value pair is updated with new value from matching
+        key in userconfig
+
+      - the order in which userconfigs are read matters, as latter
+        overrides previous ones
+
+      - if 1st level value is a dictionary, and userconfig has same
+        dictionary on 1st level:
+
+          - existing baseconfig dictionary values are left untouched
+            if no matching key is in userconfig dictionary
+
+          - existing baseconfig dictionary values are updated
+            if matching key is found in userconfig dictionary
+
+          - new key-value pairs from userconfig are added to the
+            baseconfig dictionary
+
+      - all 2nd, 3rd etc. level dictionaries are replaced,
+        not updated with userconfig values
+
+      - lists are never appended, they're always overridden
+
+    */
+
+
+    /* m4ed git settings */
+    "_m4ed_git_https": "https://github.com/m4ed/m4ed.git",
+    "_m4ed_git_repository": "m4ed",
+    "_m4ed_git_source_branch": "origin/master",
+    "_m4ed_git_checkout_branch": "master",
+
+
+    /* m4ed content server settings */
+    "m4ed": {
+
+      // pserve-fanstatic, pserve TODO: uWSGI
+      "m4ed_server_type": "pserve-fanstatic",
+      "reload": "--reload",
+
+      // development defaults to development.ini, production to production.ini
+      "conf_type": "development",
+
+      // target where to move the m4ed server config
+      // if you leave this empty, it'll reside in virtualenv as development.ini
+      "conf_path": "",
+
+
+      "conf_template": "m4ed/development-ini-template",
+      "init_template": "m4ed/m4ed-init-template",
+      "init_script_name": "/etc/init.d/m4ed",
+      "init_script_link": "/etc/init.d/m4ed",
+      "init_pid_path": "/var/run/m4ed.pid",
+      "init_name": "m4ed_content_server",
+      "init_desc": "m4ed_content_server",
+
+      "m4ed_user": "m4ed",
+      "create_user": false,
+
+      // m4ed content server upstream behind nginx
+      "m4ed_server": "egg:waitress#main",
+      "m4ed_host": "0.0.0.0",
+      "m4ed_port": "8080",
+
+      // zeromq settings reside under m4ed_worker
+
+      "full_stack": "true",
+      "pyramid_reload_templates": "true",
+      "pyramid_debug_authorization": "false",
+      "pyramid_debug_notfound": "false",
+      "pyramid_debug_routematch": "false",
+      "pyramid_default_locale_name": "en",
+      //"pyramid_includes": "pyramid_debugtoolbar",
+      "pyramid_includes": "",
+      //"debugtoolbar_hosts": "0.0.0.0/0"
+      "debugtoolbar_hosts": "",
+
+      "fanstatic_bottom": "true",
+      "fanstatic_debug": "false",
+      "mako_directories": "m4ed:templates",
+
+      "redis_host": "localhost",
+      //"img_cache_route": "http://demo.m4ed.com/cache?key=",
+      "img_cache_route": "cache?key=",
+      "img_cache_time": "60",
+
+      "beaker_session_type": "redis",
+
+      // redis address - internal access from m4ed server
+      "beaker_session_url_redis_internal": "127.0.0.1:6379",
+      "beaker_session_key": "m4ed",
+      "bcrypt_log_rounds": "12"
+
+    },
+
+
+    /* m4ed asset worker related settings */
+    "m4ed_asset_worker": {
+
+      "worker_user": "m4ed",
+      "create_user": false,
+
+      "worker_init_template": "m4ed/worker-init-template",
+      "worker_script": "uploader.py",
+      "init_name": "m4ed_worker",                     // daemon name
+      "init_script_name":"/etc/init.d/m4ed_worker",   // save path of init script
+      "init_script_link":"/etc/init.d/m4ed_worker",   // links the init script to another location if needed
+
+      // if you leave init_sbin_path empty, the worker script will reside in
+      // virtualenv:base_path:name:git_repository:worker_script
+      // ccurrently this MUST be done this way as it won't find m4ed-imports otherwise
+      //"init_sbin_path": "/usr/sbin/m4ed_worker.py",   // where worker script is moved
+      "init_sbin_path": "",
+      "init_pid_path": "/var/run/m4ed_worker.pid",    // location of the pidfile for worker daemon
+
+      // zeromq settings for worker
+      "zmq_socket": "ipc:///var/tmp/zmq.upload.queue",
+      "zmq_worker_socket": "inproc:///var/tmp/zmq.workers",
+      "zmq_workers": "3",
+
+      // worker logs a rotating log file
+      "worker_log_level": "DEBUG",
+      "worker_log_path": "/var/log/m4ed_worker/",
+      "worker_log_name": "worker.log",
+      "worker_log_size": "1000000",
+      "worker_log_count": "5",
+
+      // assets config
+      "asset_template": "m4ed/assets-ini-template",
+
+      // by default will reside in virtualenv as assets.ini
+      "assets_conf": "",
+      //"assets_conf": "/etc/m4ed/assets.conf",
+
+      // when true, files are stored locally instead of cloud
+      "use_local_storage": "false",
+
+      // if this is not set, we use nginx_conf:upload_store value
+      // this applies only to the upload worker settings
+      // maybe this shouldn't even be here at all...
+      //"upload_store": "/tmp/nginx/uploads",
+
+      // local storage settings
+      "save_path": "m4ed:static/tmp",
+      "resource_uri": "/static/tmp/",
+
+      // rackspacecloud cloudfiles settings
+      // import values from git-hidden userconfigs (start with "_") _confname.json
+      "cloud_service": "m4ed.util.cloud:CloudFiles",
+      "cloud_container_name": "",
+      "cloud_username": "",
+      "cloud_api_key": ""
+
+    },
+
+
+    /* virtualenv settings and dependencies */
+    "virtualenv": {
+
+      // location of virtualenv.py script so that we have always latest
+      "script_tmp": "/tmp",
+      "script_src": "https://raw.github.com/pypa/virtualenv/master/virtualenv.py",
+
+      // determines if new virtualenv creation triggers "pip_installs"
+      "on_new_install_pips": true,
+
+      // determines if new virtualenv creation triggers "aptitude_installs"
+      "on_new_install_apts": true,
+
+      // user that owns the virtualenv and runs stuff in it + checks out git m4ed
+      "user": "m4ed",
+
+      // base path for virtualenvs
+      "base_path": "/usr/share/virtualenvs/",
+
+      // name of the virtualenv to use by default when installing and running
+      //"name": "m4ed_devel",
+      "name": "m4ed",
+
+      /* The following are installed through pip */
+      "pip_upgrade": true,
+      "pip_installs": [
+
+          "pyramid",
+          "waitress",
+          "pyzmq",
+          "pymongo",
+          "numpy",
+          "matplotlib",
+          "redis",
+          "gevent-socketio",
+          "gunicorn",
+          "misaka",
+          "pil",
+          "git+git://github.com/didip/beaker_extensions.git",
+          "nose",
+          "WebTest",
+          "py-bcrypt",
+          "supervisor",
+          "python-cloudfiles",
+          "pyramid_beaker",
+          "valideer"
+
+      ],
+
+      /* The following dependencies are installed through aptitude */
+      "aptitude_installs": [
+
+          "libzmq-dev",          // Zeromq
+          "libfreetype6-dev",    // libfreetype for Matplotlib
+          "libpng12-dev",        // libpng for Matplotlib and PIL
+          "libjpeg8-dev"         // libjpeg for PIL
+
+      ]
+
+    }, // end virtualenv
+
+
+    /* default settings for the nginx.conf, override with userconfigs */
+    "nginx_conf": {
+
+      // core module
+      "core_error_log": "/var/log/nginx/error.log",
+      "pid": "/var/run/nginx.pid",
+      "worker_processes": "1",
+      //"worker_processes": "4",
+      //"worker_cpu_affinity": "0001 0010 0100 1000",
+      //"worker_priority": "0",
+
+      // events module
+      "accept_mutex": "on",
+      "accept_mutex_delay": "500ms",
+      //"devpoll_changes": "32",
+      //"devpoll_events": "32",
+      //"kqueue_changes": "512",
+      //"kqueue_events": "512",
+      //"epoll_events": "512",
+      "multi_accept": "off",
+      //"rtsig_signo": "40",
+      //"rtsig_overflow_events": "16",
+      //"rtsig_overflow_test": "32",
+      //"rtsig_overflow_threshold": "10",
+      "worker_connections": "1024",
+
+
+      // http module
+      "include_mimetypes": "/etc/nginx/mime.types",  // by default this is found from init_conf_path
+
+      // -- HttpCoreModule
+      "default_type": "application/octet-stream",
+      "sendfile": "on",
+      "tcp_nopush": "on",
+      "tcp_nodelay": "on",
+      "keepalive_timeout": "65 65",
+      "types_hash_max_size": "2048",
+
+      // -- HttpLogModule
+      "http_log_format": "zipped '$remote_addr - $remote_user [$time_local]  '
+                          '\"$request\" $status $bytes_sent '
+                          '\"$http_referer\" \"$http_user_agent\" \"$gzip_ratio\"'",
+      "http_access_log": "/var/log/nginx/access.log zipped",
+      "http_error_log": "/var/log/nginx/error.log",
+      "open_log_file_cache": "off",
+
+      // -- HttpGzipModule
+      "gzip": "on",
+      //"gzip_buffers": "32 4k",
+      "gzip_comp_level": "1",
+      "gzip_disable": "\"msie6\"",
+      "gzip_http_version": "1.1",
+      "gzip_min_length": "20",
+      "gzip_proxied": "off",
+      "gzip_types": "application/xhtml+xml",
+      "gzip_vary": "off",
+
+
+      // -- HttpUploadProgressModule
+      "upload_progress": "proxied 1m",
+
+      // Controls upload directory creation
+      "upload_store": "/tmp_nginx/uploads",
+      "upload_hash": "1",
+      "nginx_create_upload_dirs": true   // true: tmp directories are created
+
+    }, // end nginx_conf
+
+    "nginx_m4ed_main": {
+      "conf_template": "nginx/configs/m4ed-main-template",
+      "target_name": "m4ed-main",
+
+      "listen": "80",
+      "server_name": "demo.m4ed.com",
+      "client_max_body_size": "100m",
+      "charset": "utf-8",
+      "access_log": "/var/log/nginx/access.log",
+      "error_log": "/var/log/nginx/error.log",
+
+      "m4ed_pass": "http://127.0.0.1:8080",
+      "redis_pass": "127.0.0.1:6379",
+      "static_root": "/usr/share/virtualenvs/m4ed/m4ed",
+
+      "upload_store": "/tmp_nginx/uploads",
+      "upload_hash": "1",   // 1 equals to 0...9
+      "create_dirs": true,  // when true, the tmp directories are created
+
+      "upload_limit_rate": "1000000",
+      "track_uploads": "proxied 30s"
+
+    },
+
+    "nginx_m4ed_redirect": {
+      "conf_template": "nginx/configs/m4ed-redirect-template",
+      "target_name": "m4ed-redirect",
+
+      "listen": "80",
+      "server_name": "code.m4ed.com",
+      "charset": "utf-8",
+      "access_log": "/var/log/nginx/access.log",
+      "error_log": "/var/log/nginx/error.log",
+      "rewrite": "^ http://m4ed.github.com/m4ed/ permanent"
+    },
+
+
+    /* almost all values here relate to compile time options/config paths for nginx */
+    "nginx": {
+
+      // what configs are imported
+      "imported_configs": ["nginx_m4ed_main", "nginx_m4ed_redirect"],
+
+      // nginx system user settings, NOTE! nginx_user is inherited to conf-files
+      "nginx_user": "nginx",
+      "create_user": true,
+
+      // nginx version and source
+      "nginx_package": "http://nginx.org/download/nginx-1.2.2.tar.gz",
+
+      // nginx ssl support
+      "with_ssl_module": true,
+
+      // nginx pcre support, comment to disable
+      "pcre_path": "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.31.tar.gz",
+
+      // nginx additional modules
+      "with_modules": [
+          "http://people.freebsd.org/~osa/ngx_http_redis-0.3.6.tar.gz",
+          "http://www.grid.net.ru/nginx/download/nginx_upload_module-2.2.0.tar.gz",
+          "git://github.com/masterzen/nginx-upload-progress-module.git"
+      ],
+
+      // userconf file targets and created extensions
+      "init_conf_imports": "/etc/nginx/configs/",     // where imported configs are created
+      "init_conf_extension": "conf",                  // creates .extension to all configs
+
+      // nginx init script parameters and compilation options
+      "init_template": "nginx/nginx-init-template",   // location of the init (start/stop script) template
+      "main_conf_template": "nginx/nginx-conf-template", // location of the main nginx conf template
+      "init_name": "nginx",                           // daemon name
+      "init_script_name":"/etc/init.d/nginx",         // save path of init script
+      "init_script_link":"/etc/init.d/nginx",         // links the init script to another location if needed
+      "init_sbin_path": "/usr/sbin/nginx",            // where compiled nginx binary is moved
+      "init_conf_path": "/etc/nginx/nginx.conf",      // where the newly created main config is stored
+      "init_pid_path": "/var/run/nginx.pid",          // location of the pidfile for nginx daemon
+
+
+      "http_logs": "/var/log/nginx/access.log",  // access log files
+      "error_logs": "/var/log/nginx/error.log",  // error log files
+
+      // ngins temporary files locations
+      "create_tmp_http_dirs": true,
+      "tmp_http_client": "/tmp_nginx/http_client",
+      "tmp_http_proxy": "/tmp_nginx/http_proxy",
+      "tmp_http_fastcgi": "/tmp_nginx/http_fastcgi",
+      "tmp_http_uwsgi": "/tmp_nginx/http_uwsgi",
+      "tmp_http_scgi": "/tmp_nginx/http_scgi",
+
+      // this is how you can add more params to nginx compile
+      // e.g. "--without-http_gzip_module --with-select_module"
+      "auxiliary_options": ""
+
+    },  // end nginx
+
+
+    /* redis is used for storing latex-math images temporarily */
+    "redis": {
+
+      // redis system user settings
+      "redis_user": "redis",
+      "create_user": true,
+
+      // redis version and source
+      "redis_package": "http://redis.googlecode.com/files/redis-2.4.16.tar.gz",
+
+      // redis init script parameters and compilation options
+
+      "init_template": "redis/redis-init-template",  // location of the init (start/stop script) template
+      "main_conf_template": "redis/redis-conf-template",  // location of the main redis conf template
+      "init_name": "redis-server",                   // daemon name
+      "init_script_name":"/etc/init.d/redis",        // save path of init script
+      "init_script_link":"/etc/init.d/redis",        // links the init script to another location if needed
+      "init_conf_path": "/etc/redis.conf",           // where the newly created redis config is stored
+      "init_pid_path": "/var/run/redis.pid",         // location of the pidfile for redis daemon
+
+      "init_sbin_path": "/usr/sbin/",                // target for redis server binaries END WITH SLASH!
+      "redis_sbin_targets": ["redis-server"],        // binaries that are moved to sbin
+
+      "init_usrbin_path": "/usr/bin/",               // target for redis client binaries END WITH SLASH!
+      "redis_usrbin_targets": [                      // binaries that are moved to usrbin
+                               "redis-cli",
+                               "redis-check-aof",
+                               "redis-check-dump",
+                               "redis-benchmark"
+                              ],
+
+      "log_dir": "/var/log/redis/",                  // directory to store redis logfiles
+      "log_file": "redis.log",                       // redis requires logfilename!
+      "dump_dir": "/usr/share/redisdump",            // directory for redis dumpfiles
+
+      /* redis.conf related */
+      "redis_port": "6379",
+      "redis_bind": "127.0.0.1",
+      "redis_databases": "5",
+      "redis_log_level": "verbose",
+
+      // m4ed related, what database to use
+      "redis_db_num": "0"
+
+    },  // end redis_conf
+
+
+    /* nodejs is installed with sudo, and is used only to compile less scripts */
+    "nodejs": {
+
+      // nodejs version and source
+      "nodejs_package": "https://github.com/joyent/node.git",
+      "npm_installs": [
+                       "requirejs",
+                       "less",
+                       "jshint",     // required by less
+                       "recess",     // required by less
+                       "uglify-js"   // required by less
+                       ]
+
+    },  // end nodejs
+
+
+    /* This is going to be implemented later */
+    "mongo": {
+        // database init!?!?
+        "init_script_name":"/etc/init.d/mongodb",  // save path of init script
+        "init_script_link":"/etc/init.d/mongodb",  // links the init script to another location if needed
+
+        // mongodb system user settings
+        "mongo_user": "mongo",
+        "create_user": true,
+
+        // mongo version and source
+        "mongo_package": "git://github.com/mongodb/mongo.git",
+        "mongo_version": "r2.2.0",
+
+        // mongodb init script parameters and compilation options
+
+        "mongo_init_template": "mongo/mongo-init-template",
+
+        /* mongodb.conf related */
+        "mongo_host": "mongodb://localhost/",
+        "mongo_port": "27017",
+        "mongo_collection_name": "m4ed"
+    }  // end mongo
+
+}

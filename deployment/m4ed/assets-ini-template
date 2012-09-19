@@ -1,0 +1,20 @@
+[assets]
+store_locally = [[use_local_storage]]
+
+# The Nginx upload module tmp path so we can find the files later
+tmp_path = [[upload_store]]
+save_path = [[save_path]]
+
+[assets:local]
+# If you want to host files locally set the resource_uri
+# to an URL where the static files can be found
+# These settings are ignored if store_locally is false
+resource_uri = [[resource_uri]]
+
+[assets:cloud]
+service = [[cloud_service]]
+container_name = [[cloud_container_name]]
+username = [[cloud_username]]
+api_key = [[cloud_api_key]]
+# Not currently required
+#authurl = cloudfiles.uk_authurl
