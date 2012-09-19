@@ -8,7 +8,7 @@
 #        --set confdir="path"
 #
 # menu is the default task
-# 
+#
 
 
 import re
@@ -691,7 +691,7 @@ def _install_m4ed_server(warn_only=True):
             lesscfile = "/usr/local/bin/lessc"
             origfile = "/usr/local/lib/node_modules/less/bin/lessc"
             sudo("sed -i 's/usr\/bin\/env node/usr\/local\/bin\/node/g' %s" % \
-                 lesscfile)
+                 origfile)
             sudo("rm -f %s" % lesscfile)
             sudo("ln -s  %s %s" % (origfile, lesscfile))
 
