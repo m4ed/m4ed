@@ -2,81 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 # USAGE: fab -uUser -Hhost1,host2 task1 task2
+#
+#        --set userconfigs="file1.json file2.json"
+#        --set baseconfname="baseconfig.json"
+#        --set confdir="path"
+#
 # menu is the default task
-#
-# CREATE TMP DIRECTORY TO m4ed/resources/tmp
-#
-# git-core, fabric, python2.7, wget, build-essential, scons?
-#
-# git hakujen taskit:
-#  - production = git clone, version, install, start
-#  - quick production = fetch tarball, install, restart nginx
-#  - debug pull = git pull, restart nginx
-#  - just fetch / pull
-#
-#
-#
-# DEVELOPER MENUS (VIRTUAL MACHINE)
-# assume working environment and coding is underway
-# - compile less
-# - waitress start/stop/restart
-# - nginx start/stop/restart
-# - all non-destructive operations
-#
-# DEVELOPER MENUS (DEV SERVERS)
-# assume working environment
-# - fetch from github
-#
-# INSTALL MENUS
-#
-# - nginx configs
-# STAGING MENUS
-# DEPLOYMENT MENUS
-#
-# Development tasks vs Staging tasks vs Install tasks
-#
-# Currently manual configs!
-#
-# m4ed: development.ini
-#
-# mongodb: host, port, collection name
-# redis: host, port
-# nginx: preview image cache route
-#
-## Databases
-#
-#   redis port: /etc/redis.conf
-#   mongodb port: /etc/mongodb.conf
-#
-## nginx upstreams
-#
-# m4ed main 33000 --> paster m4ed 8083
-#   configured in: /etc/nginx/available-sites/m4ed_main.conf
-#   configured in: m4ed/server_config.ini
-#
-# uploadserver 32000 --> paster uploadserver 8082
-#   configured in: /etc/nginx/available-sites/m4ed_uploadserver.conf
-#   configured in: uploadserver/development.ini
-#
-# redis http 31000 --> redis 8081
-#   configured in: /etc/nginx/available-sites/m4ed_redis.conf
-#   configured in: m4ed/development.ini
-#
-## directories and access rights
-#
-# create /tmp/0 -- /tmp/9 directories
-# nginx config must have the group:rw there
-# upload_store_access group:rw;
-# user who runs pserve must belong to nginx group
-# /tmp/0 -- /tmp/9 directories have 775 for nginx nginx
-# usermod -g nginx USER_WHO_RUNS_PSERVE
-# MAKE IT POSSIBLE TO SET THE AMOUNT OF FOLDERS!!!
-#
-# /upload must be contentserver's route
-#
-# copy the worker script to daemon path
-# TODO: OTHER SIMILAR PARTS IN THIS SCRIPT DON'T HAVE THIS MKDIR!!
-#sudo("mkdir -p %s" % worker["init_sbin_path"].rsplit("/", 1)[0]
+# 
 
 
 import re
