@@ -33,4 +33,6 @@ def math_text_parser(request):
 def user(request):
     userid = unauthenticated_userid(request)
     if userid is not None:
-        return User(request.db.users.find_one({'username': userid}))
+        user = request.db.users.find_one({'username': userid})
+        if user is not None:
+            return User(user)

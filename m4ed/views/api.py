@@ -8,16 +8,9 @@ from pyramid.httpexceptions import (
     HTTPNotAcceptable
     )
 
-from pyramid.security import authenticated_userid
+#from pyramid.security import authenticated_userid
 
-from bson import ObjectId
-
-from misaka import (
-    Markdown,
-    EXT_TABLES
-    )
-
-from m4ed.htmlrenderer import CustomHtmlRenderer
+#from bson import ObjectId
 
 
 @view_config(route_name='rest_asset_thumb')
@@ -41,44 +34,13 @@ class ItemView(object):
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        print 'v' * 100
-        print 'Item PUT'
-        print self.request.context
-        print '^' * 100
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable()
-        update = self.request.context
-
-        if not kwargs.pop('_id', None):
-            self.request.response.status = '503'
-            return {}
-        update['listIndex'] = kwargs.pop('listIndex')
-        update['title'] = kwargs.pop('title')
-        update['desc'] = kwargs.pop('desc')
-        update['tags'] = kwargs.pop('tags')
-        update['text'] = kwargs.pop('text')
-        update['cluster_id'] = "5052f3a038d57a26a6000000"
-
-        renderer = CustomHtmlRenderer(
-            math_text_parser=self.request.math_text_parser,
-            settings=self.request.registry.settings,
-            mongo_db=self.request.db,
-            #cloud=True,
-            #work_queue=self.request.work_queue
-            )
-        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
-        update['html'] = misaka_renderer.render(update['text'])
-
-        update['answers'] = renderer.get_answers()
-
-        # Save changes to mongo
-        update.save()
-
-        self.request.response.status = '200'
+        
+        # Request context should be m4ed.models.Item
+        res = self.request.context.update_item()
+        if res['err'] is not None:
+            self.request.response.status = '500'
+        else:
+            self.request.response.status = '200'
         return {}
 
     @view_config(request_method='DELETE', permission='write')
@@ -95,20 +57,11 @@ class ItemView(object):
     renderer='json'
     )
 def post_item_answer(self, request):
-    block_id = request.params.get('block_id')
-    answer_id = request.params.get('answer_id')
     res = 'incorrect'
-    try:
-        # The block id has namespace infront of it
-        # ex. m4ed-1 so split it out
-        block_id = block_id.split('-')[1]
-        print block_id, answer_id
-        result = request.context.check_answer(block_id, answer_id)
-        if result == True:
-            res = 'correct'
+    result = request.context.check_answer()
+    if result['err'] is not None and result['is_correct']:
+        res = 'correct'
 
-    except IndexError:
-        pass
     return {'I': 'See what you did there', 'res': res}
 
 
@@ -127,35 +80,8 @@ class ItemsView(object):
 
     @view_config(request_method='POST')
     def post(self):
-        print 'v' * 100
-        print 'New item context'
-        print self.request.context
-        print '^' * 100
-        try:
-            # This fails if the post is some sort of form instead of json
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable()
-
-        item = {}
-
-        item['title'] = kwargs.pop('title', 'Click to add a title')
-        item['desc'] = kwargs.pop('desc', 'Click to add a description')
-        item['text'] = kwargs.pop('text', '')
-        item['tags'] = kwargs.pop('tags', [])
-        item['listIndex'] = kwargs.pop('listIndex', 0)
-        item['cluster_id'] = "5052f3a038d57a26a6000000"
-
-        item_id = self.request.db.items.insert(item, safe=True)
-        item_id = str(item_id)
-
-        item['_id'] = item_id
-
-        print 'POST: Item added witd id ' + item_id
-        self.request.response.status = '200'
-        return item
+        # m4ed.factories.ItemFactory
+        return self.request.context.create_item()
 
     @view_config(request_method='PUT')
     def put(self):
@@ -188,40 +114,8 @@ class AssetView(object):
 
     @view_config(request_method='PUT')
     def put(self):
-        # if not self.request.context:
-        #     self.request.status = '404'
-        #     return {}
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable('Send JSON.')
-        update = {}
-
-        if not kwargs.pop('_id', None):
-            # Internal Server Error
-            self.request.response.status = '500'
-            return {}
-        update['title'] = kwargs.pop('title')
-        update['tags'] = kwargs.pop('tags')
-
-        asset = self.request.context
-        asset.update(update)
-        _id = asset.get('_id')
-        # We can't update the mongo ObjectId so pop it
-        asset.pop('_id')
-        asset.pop('id')
-
-        self.request.context = self.request.db.assets.find_and_modify(
-            query={'_id': ObjectId(_id)},
-            update={'$set': asset},
-            upsert=True,
-            safe=True
-        )
-
-        self.request.response.status = '200'
-        return {}
+        # m4ed.models.Asset
+        return self.request.context.update_asset()
 
     @view_config(request_method='DELETE')
     def delete(self):

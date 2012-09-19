@@ -9,6 +9,10 @@ from pyramid.security import (
     ALL_PERMISSIONS,
     DENY_ALL
     )
+from pyramid.httpexceptions import (
+    HTTPSeeOther,
+    HTTPNotAcceptable
+    )
 
 from pymongo import ASCENDING
 from pymongo.errors import InvalidId
@@ -20,16 +24,22 @@ from m4ed.util.base62 import Base62
 #from .util import filters
 from m4ed.util import validators
 from m4ed.util import constant_time_compare
-
-import bcrypt
-
-from .models import (
+from m4ed.models import (
     Asset,
     Item,
     User,
     Space,
     Cluster
     )
+
+import bcrypt
+
+from misaka import (
+    Markdown,
+    EXT_TABLES
+    )
+
+from m4ed.htmlrenderer import CustomHtmlRenderer
 
 import time
 
@@ -152,6 +162,39 @@ class AssetFactory(BaseFactory):
 
         return Asset(a, name=str(_id), parent=self)
 
+    def update_asset(self, asset):
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return HTTPNotAcceptable('Send JSON.')
+        update = {}
+
+        if not kwargs.pop('_id', None):
+            # Internal Server Error
+            self.request.response.status = '500'
+            return {}
+        update['title'] = kwargs.pop('title')
+        update['tags'] = kwargs.pop('tags')
+
+        asset = self.request.context
+        asset.update(update)
+        _id = asset.get('_id')
+        # We can't update the mongo ObjectId so pop it
+        asset.pop('_id')
+        asset.pop('id')
+
+        self.request.db.assets.find_and_modify(
+            query={'_id': ObjectId(_id)},
+            update={'$set': asset},
+            upsert=True,
+            safe=True
+        )
+
+        self.request.response.status = '200'
+        return {}
+
 
 class ItemFactory(BaseFactory):
 
@@ -196,6 +239,9 @@ class ItemFactory(BaseFactory):
     def save(self, item):
         item = self.validate(item)
         if not item:
+            print '\n\n\n'
+            print 'The item did not validate'
+            print '\n\n\n'
             return None
 
         _id = item.pop('_id', None)
@@ -203,7 +249,7 @@ class ItemFactory(BaseFactory):
         # These 2 should never be in the item?
         # item.pop('__name__', None)
         # item.pop('__parent__', None)
-        self.collection.update(
+        res = self.collection.update(
             {'_id': _id},
             {'$set': item},
             upsert=True,
@@ -217,6 +263,77 @@ class ItemFactory(BaseFactory):
             upsert=True,
             safe=True
         )
+
+        print '\n\n\n'
+        print 'EVERYTHING WENT BETTER THAN EXCEPTATIONS!'
+        print '\n\n\n'
+
+        return res
+
+    def create_item(self):
+        try:
+            # This fails if the post is some sort of form instead of json
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return HTTPNotAcceptable()
+
+        item = dict(
+            title=kwargs.pop('title', 'Click to add a title'),
+            desc=kwargs.pop('desc', 'Click to add a description'),
+            text=kwargs.pop('text', ''),
+            tags=kwargs.pop('tags', []),
+            listIndex=kwargs.pop('listIndex', 0),
+            cluster_id="5052f3a038d57a26a6000000"
+        )
+
+        self.save(item)
+        self.request.response.status = '200'
+        return item
+
+    def update_item(self, item):
+        print 'v' * 100
+        print 'Item PUT'
+        print item
+        print '^' * 100
+
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request with 406 - Not Acceptable error
+            self.request.response.status = '406'
+            return {'err': True}
+        if not kwargs.pop('_id', None):
+            # This should never ever happen but if it does, just respond with
+            # 503 - Service Unavailable error
+            self.request.response.status = '503'
+            return {'err': True}
+
+        item['listIndex'] = kwargs.pop('listIndex')
+        item['title'] = kwargs.pop('title')
+        item['desc'] = kwargs.pop('desc')
+        item['tags'] = kwargs.pop('tags')
+        item['text'] = kwargs.pop('text')
+        # TODO: Fix this to actually assign itself to a valid cluster
+        item['cluster_id'] = "5052f3a038d57a26a6000000"
+        # kwargs.pop('cluster_id')
+
+        renderer = CustomHtmlRenderer(
+            math_text_parser=self.request.math_text_parser,
+            settings=self.request.registry.settings,
+            mongo_db=self.request.db,
+            #cloud=True,
+            #work_queue=self.request.work_queue
+            )
+        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
+        item['html'] = misaka_renderer.render(item['text'])
+
+        item['answers'] = renderer.get_answers()
+
+        # Save changes to mongo
+        return item.save()
 
     def remove(self, item):
         # Pop the item ID since we can't update it
@@ -236,6 +353,38 @@ class ItemFactory(BaseFactory):
             {'itemId': _id},
             safe=True
         )
+
+    def check_answer(self, item):
+        params = self.request.params
+        block_id = params.get('block_id')
+        answer_id = params.get('answer_id')
+
+        is_correct = False
+        # The block id has namespace infront of it
+        # ex. m4ed-1 so split it out
+        try:
+            block_id = block_id.split('-')[1]
+        except IndexError:
+            return {'err': True, 'is_correct': is_correct}
+
+        answers = self.get('answers', None)
+        if answers is None:
+            return {'err': False, 'is_correct': is_correct}
+
+        block_answers = answers.get(block_id, None)
+        if block_answers is None:
+            return {'err': False, 'is_correct': is_correct}
+
+        if isinstance(block_answers, list):
+            if answer_id in block_answers:
+                is_correct = True
+        else:
+            print 'WE DONT KNOW WHAT TO DO NEXT'
+            return {'err': False, 'is_correct': is_correct}
+
+        item.mark_answer(is_correct, block_id, answer_id)
+
+        return {'err': False, 'is_correct': is_correct}
 
     def mark_answer(self, item, is_correct, block_id, answer_id):
         if not self.user_id:

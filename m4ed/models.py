@@ -71,11 +71,10 @@ class Asset(MongoDict):
         self.__name__ = name
         self.__parent__ = parent
 
-    def __getattr__(self, name):
-        attr = self.get(name, None)
-        if attr is None:
-            raise AttributeError(name)
-        return attr
+    def update_asset(self):
+        return self.__parent__.update_asset(self)
+
+
 
 
 class Item(MongoDict):
@@ -95,30 +94,18 @@ class Item(MongoDict):
         self.cluster_id = str(self.cluster_id)
 
     def save(self):
-        self.__parent__.save(self)
+        return self.__parent__.save(self)
 
-    def check_answer(self, block_id, answer_id):
-        #print 'Checking some answers'
-        #print self
-        answers = self.get('answers', None)
-        is_correct = False
-        if answers:
-            block_answers = answers.get(block_id, None)
-            if not block_answers:
-                pass
-            elif isinstance(block_answers, list):
-                if answer_id in block_answers:
-                    is_correct = True
-            else:
-                print 'WE DONT KNOW WHAT TO DO NEXT'
-        self.mark_answer(is_correct, block_id, answer_id)
-        return is_correct
-        #(block_id, answer_id)
+    def update_item(self):
+        return self.__parent__.update_item(self)
+
+    def check_answer(self):
+        return self.__parent__.check_answer(self)
 
     def mark_answer(self, is_correct, block_id, answer_id):
         print 'Marking some answers'
         print is_correct, block_id, answer_id
-        self.__parent__.mark_answer(self, is_correct, block_id, answer_id)
+        return self.__parent__.mark_answer(self, is_correct, block_id, answer_id)
 
 
 class User(MongoDict):
