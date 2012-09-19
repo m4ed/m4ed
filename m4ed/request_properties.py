@@ -1,6 +1,10 @@
 from gridfs import GridFS
 from matplotlib.mathtext import MathTextParser
 
+from pyramid.security import unauthenticated_userid
+
+from m4ed.models import User
+
 
 def db(request):
     settings = request.registry.settings
@@ -24,3 +28,9 @@ def misaka(request):
 
 def math_text_parser(request):
     return MathTextParser('bitmap')
+
+
+def user(request):
+    userid = unauthenticated_userid(request)
+    if userid is not None:
+        return User(request.db.users.find_one({'username': userid}))

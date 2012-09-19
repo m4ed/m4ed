@@ -297,7 +297,7 @@ class UserFactory(BaseFactory):
         try:
             query = dict(_id=ObjectId(_id))
         except InvalidId:
-            query = dict(name=_id)
+            query = dict(username=_id)
 
         item = self.collection.find_one(query)
 
@@ -310,14 +310,15 @@ class UserFactory(BaseFactory):
         self.save(user)
 
     def login(self):
+        params = self.request.POST
         # Try to extract the login data
         try:
-            name = self.request.params['name']
-            password = self.request.params['password']
+            username = params['username']
+            password = params['password']
         except KeyError:
             return None
         # Query for the user from the database
-        user = self.get(name, None)
+        user = self.get(username, None)
         if not user:
             return None
         # Compare provided password with user's password
@@ -339,26 +340,28 @@ class UserFactory(BaseFactory):
         salt = bcrypt.gensalt(log_rounds=log_rounds)
         return bcrypt.hashpw(password, salt)
 
-    def create(self):
+    def create_user(self):
         request = self.request
-        params = request.params
+        params = request.POST
         settings = request.registry.settings
         validator = validators.get_user_registration_form_validator()
         try:
             data = dict(
-                name=params['name'],
+                username=params['username'],
                 pw1=params['pw1'],
                 pw2=params['pw2'],
-                email=params.get('email', '')
-            )
+                email=params.get('email', None)
+                )
+            #if data['email'] == '':
+            #    data['email'] = None
             data = validator.validate(data)
         except (KeyError):
             return {'success': False, 'message': 'Invalid form'}
         except (ValidationError), e:
             print e
-            return {'success': False, 'data': data, 'message': 'Invalid data'}
+            return {'success': False, 'data': data, 'message': str(e)}
 
-        if self.get(data['name']):
+        if self.get(data['username']):
             return {'success': False, 'data': data, 'message': 'Username alread taken'}
         if data['pw1'] != data['pw2']:
             return {'success': False, 'data': data, 'message': 'Passwords did not match'}
@@ -366,9 +369,10 @@ class UserFactory(BaseFactory):
         work_factor = settings.get('bcrypt_log_rounds', '12')
         password = self.bcrypt_password(data['pw1'], work_factor)
         new_user = self.save({
-           'name': data['name'],
+           'username': data['username'],
            'password': password,
-           'email': data['email']
+           'email': data['email'],
+           'groups': []
            })
 
         return {'success': True, 'user': new_user}
@@ -420,8 +424,8 @@ class SpaceFactory(BaseFactory):
 
         return self.model(s, name=str(_id), parent=self)
 
-    def create(self):
-        params = self.request.params
+    def create_space(self):
+        params = self.request.POST
         try:
             return self.save(dict(
                 title=params['title'],
@@ -429,6 +433,10 @@ class SpaceFactory(BaseFactory):
                 ))
         except KeyError:
             return None
+
+    def create_cluster(self):
+        cluster_factory = ClusterFactory(self.request)
+        return cluster_factory.create()
 
 
 class ClusterFactory(BaseFactory):
@@ -446,7 +454,7 @@ class ClusterFactory(BaseFactory):
             validator=validators.get_cluster_validator()
             )
         self.__parent__ = SpaceFactory
-        self.children = ItemFactory(request)
+        self._children = ItemFactory
 
     def __getitem__(self, _id):
         # Try first to convert the given _id.
@@ -462,7 +470,15 @@ class ClusterFactory(BaseFactory):
             raise KeyError
 
         items = list()
-        for child in self.children:
+
+        children = self._children
+        # Try to determine if the factory has been initialized before
+        if isinstance(children, object.__class__):
+            children = children(self.request)
+            # if not isinstance(children, self._children):
+            #     raise TypeError(('"children" should be an instance of ',
+            #         '"ItemFactory", not "{}"'.format(type(children))))
+        for child in children:
             if has_permission('read', child, self.request):
                 items.append(child)
 
@@ -471,11 +487,13 @@ class ClusterFactory(BaseFactory):
         return self.model(s, name=str(_id), parent=self)
 
     def create(self):
+        # In case you wonder: All the parameters for create should
+        # be passed through POST/GET or matchdict parameters
         try:
             return self.save({
                 'space_id': self.request.matchdict['space_id'],
-                'title': self.request.params['title'],
-                'desc': self.request.params['desc'],
+                'title': self.request.POST['title'],
+                'desc': self.request.POST['desc'],
                 'groups_read': [authenticated_userid(self.request)],
                 'groups_write': [authenticated_userid(self.request)]
             })

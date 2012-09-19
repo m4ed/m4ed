@@ -5,8 +5,6 @@ from pyramid.view import (
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
-from m4ed.factories import ClusterFactory
-#from m4ed.util import filters
 
 
 def valid_cluster(request):
@@ -14,8 +12,8 @@ def valid_cluster(request):
     cluster = None
     message = 'Invalid cluster data'
 
-    cluster_factory = ClusterFactory(request)
-    cluster = cluster_factory.create()
+    # The request context at this point should be m4ed.models.Space
+    cluster = request.context.create_cluster()
     if cluster is not None:
         message = ''
         valid = True

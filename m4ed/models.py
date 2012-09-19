@@ -49,7 +49,7 @@ class MongoDict(dict):
         self.__parent__.remove(self)
 
 
-class Asset(dict):
+class Asset(MongoDict):
     @property
     def __acl__(self):
         res = [(Allow, Authenticated, ALL_PERMISSIONS)]
@@ -129,7 +129,7 @@ class User(MongoDict):
         ]
 
     def __init__(self, init_data, name=None, parent=None):
-        MongoDict.__init__(self, init_data)
+        MongoDict.__init__(self, init_data, name, parent)
         self.__name__ = name
         self.__parent__ = parent
 
@@ -151,12 +151,15 @@ class Space(MongoDict):
         ]
 
     def __init__(self, init_data, name=None, parent=None):
-        MongoDict.__init__(self, init_data)
+        MongoDict.__init__(self, init_data, name, parent)
 
     def is_valid(self):
         #validator = get_validator()
         #return validator.is_valid(self)
         return True
+
+    def create_cluster(self):
+        return self.__parent__.create_cluster()
 
 
 class Cluster(MongoDict):

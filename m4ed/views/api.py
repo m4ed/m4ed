@@ -37,17 +37,14 @@ class ItemView(object):
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        # if not self.request.context:
-        #     self.request.response.status = '404'
-        #     return {}
         return self.request.context
-
-    # @view_config(request_method='POST', permission='write')
-    # def post(self):
-    #     return {'result': 'POST accepted'}
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
+        print 'v' * 100
+        print 'Item PUT'
+        print self.request.context
+        print '^' * 100
         try:
             kwargs = self.request.json_body
         except ValueError:
@@ -64,6 +61,7 @@ class ItemView(object):
         update['desc'] = kwargs.pop('desc')
         update['tags'] = kwargs.pop('tags')
         update['text'] = kwargs.pop('text')
+        update['cluster_id'] = "5052f3a038d57a26a6000000"
 
         renderer = CustomHtmlRenderer(
             math_text_parser=self.request.math_text_parser,
@@ -77,6 +75,7 @@ class ItemView(object):
 
         update['answers'] = renderer.get_answers()
 
+        # Save changes to mongo
         update.save()
 
         self.request.response.status = '200'
@@ -84,39 +83,7 @@ class ItemView(object):
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        # try:
-        #     kwargs = self.request.json_body
-        # except ValueError:
-        #     # If we get a value error, the request didn't have a json body
-        #     # Ignore the request
-        #     return HTTPNotAcceptable()
-
-        # if not kwargs.pop('_id', None):
-        #     self.request.response.status = '503'
-        #     return {}
-
         self.request.context.remove()
-
-        # update['listIndex'] = kwargs.pop('listIndex')
-        # update['title'] = kwargs.pop('title')
-        # update['desc'] = kwargs.pop('desc')
-        # update['tags'] = kwargs.pop('tags')
-        # update['text'] = kwargs.pop('text')
-
-        # renderer = CustomHtmlRenderer(
-        #     math_text_parser=self.request.math_text_parser,
-        #     settings=self.request.registry.settings,
-        #     mongo_db=self.request.db,
-        #     #cloud=True,
-        #     #work_queue=self.request.work_queue
-        #     )
-        # misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
-        # update['html'] = misaka_renderer.render(update['text'])
-
-        # update['answers'] = renderer.get_answers()
-
-        # update.save()
-
         self.request.response.status = '200'
         return {}
 
@@ -132,9 +99,9 @@ def post_item_answer(self, request):
     answer_id = request.params.get('answer_id')
     res = 'incorrect'
     try:
+        # The block id has namespace infront of it
+        # ex. m4ed-1 so split it out
         block_id = block_id.split('-')[1]
-        #block_id = full_id[1]
-        #answer_id = full_id[2]
         print block_id, answer_id
         result = request.context.check_answer(block_id, answer_id)
         if result == True:
@@ -160,7 +127,10 @@ class ItemsView(object):
 
     @view_config(request_method='POST')
     def post(self):
-
+        print 'v' * 100
+        print 'New item context'
+        print self.request.context
+        print '^' * 100
         try:
             # This fails if the post is some sort of form instead of json
             kwargs = self.request.json_body
@@ -176,6 +146,7 @@ class ItemsView(object):
         item['text'] = kwargs.pop('text', '')
         item['tags'] = kwargs.pop('tags', [])
         item['listIndex'] = kwargs.pop('listIndex', 0)
+        item['cluster_id'] = "5052f3a038d57a26a6000000"
 
         item_id = self.request.db.items.insert(item, safe=True)
         item_id = str(item_id)
@@ -275,8 +246,8 @@ class AssetsView(object):
     def post(self):
         request = self.request
         #print request.session
-        if not authenticated_userid(request):
-            return {'result': 'error', 'why': 'diaf'}
+        # if not authenticated_userid(request):
+        #     return {'result': 'error', 'why': 'diaf'}
 
         post_param = dict(request.POST)
         print post_param
@@ -290,3 +261,20 @@ class AssetsView(object):
 
         #del data['_id']
         return [dict(result='saa')]
+
+
+# @view_defaults(route_name='rest_clusters', renderer='json')
+# class ClustersView(object):
+#     def __init__(self, request):
+#         self.request = request
+
+#     @view_config(request_method='GET', permission='read')
+#     def get(self):
+#         res = []
+#         for cluster in self.request.context:
+#             res.append(cluster)
+#         return res
+
+#     @view_config(request_method='POST', permission='write')
+#     def post(self):
+#         factory = ClusterFactory(request)

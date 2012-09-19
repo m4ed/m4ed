@@ -5,7 +5,7 @@ from pyramid.view import (
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
-from m4ed.factories import SpaceFactory
+#from m4ed.factories import SpaceFactory
 
 
 def valid_space(request):
@@ -13,8 +13,10 @@ def valid_space(request):
     space = None
     message = 'Invalid form data'
 
-    space_factory = SpaceFactory(request)
-    space = space_factory.create()
+    #space_factory = SpaceFactory(request)
+    # The context at this point should be m4ed.factories.SpaceFactory
+    print type(request.context)
+    space = request.context.create_space()
 
     if space is not None:
         valid = True
@@ -41,7 +43,11 @@ def new_space(request):
             return HTTPFound(location=next)
         message = res['message']
 
-    return {'url': '', 'message': message}
+    return {
+        'url': '',
+        'message': message,
+        'csrf_token': request.session.get_csrf_token()
+        }
 
 
 @view_config(route_name='show_space', renderer='medium/spaces/show.mako', permission='read')

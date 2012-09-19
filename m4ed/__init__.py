@@ -53,7 +53,10 @@ def main(global_config, **settings):
 
     # Set up the shared math text parser
     config.set_request_property('m4ed.request_properties:math_text_parser',
-                                  name='math_text_parser', reify=True)
+                                name='math_text_parser', reify=True)
+
+    config.set_request_property('m4ed.request_properties:user',
+                                name='user', reify=True)
 
     # For debugging matplotlib
     # from matplotlib import verbose

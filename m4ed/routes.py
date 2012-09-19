@@ -4,7 +4,7 @@ def includeme(config):
     config.add_route('index', '/', factory='m4ed.factories:SpaceFactory')
     config.add_route('editor', '/editor', factory='m4ed.factories:ItemFactory')
     config.add_route('misaka', '/misaka')
-    config.add_route('login', '/login')
+    config.add_route('login', '/login', factory='m4ed.factories:UserFactory')
     config.add_route('logout', '/logout')
     config.add_route('register', '/register')
     config.include(api, route_prefix='/api')
