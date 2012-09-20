@@ -95,6 +95,25 @@ class BaseFactory(object):
         items = self.collection.find()
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
 
+    def _read_params(self):
+        if self.request.is_xhr:
+            try:
+                params = self.request.json_body
+            except ValueError:
+                # If we get a value error, the request didn't have a json body
+                # Ignore the request with 406 - Not Acceptable error
+                self.request.response.status = '406'
+                return {'err': True}
+            if not params.pop('_id', None):
+                # This should never ever happen but if it does, just respond with
+                # 503 - Service Unavailable error
+                self.request.response.status = '503'
+                return {'err': True}
+        else:
+            params = self.request.POST
+
+        return params
+
     def get(self, name, default=None):
         try:
             return self.__getitem__(name)
@@ -118,7 +137,10 @@ class BaseFactory(object):
         #    data[key] = filters.force_utf8(value)
         return self.validator.is_valid(data)
 
-    def save(self, data):
+    def commit(self, data):
+        # This check needs to be done before validating
+        # since valideer converts data to normal dictionary
+        is_model = isinstance(data, self.model)
         # At this point data is ensured to be in correct format
         # if this validation passes
         data = self.validate(data)
@@ -126,7 +148,20 @@ class BaseFactory(object):
             return None
         # Ensure that the _id gets removed before insert
         # since mongo does not allow rewriting _id
-        data.pop('_id', None)
+        _id = data.pop('_id', None)
+        # Check if this is a new item or just an update
+        if is_model:
+            if _id is None:
+                raise TypeError(('Invalid model type did not contain'
+                                'required attr \'_id\''))
+            return self.collection.find_and_modify(
+                query={'_id': _id},
+                update={'$set': data},
+                upsert=True,
+                safe=True,
+                new=True
+            )
+
         _id = self.collection.insert(data, safe=True)
         return self.model(data, name=str(_id), parent=self)
 
@@ -162,35 +197,15 @@ class AssetFactory(BaseFactory):
 
         return Asset(a, name=str(_id), parent=self)
 
-    def update_asset(self, asset):
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable('Send JSON.')
-        update = {}
+    def save_asset(self, asset):
+        params = self._read_params()
+        if params.get('err') is True:
+            return params
 
-        if not kwargs.pop('_id', None):
-            # Internal Server Error
-            self.request.response.status = '500'
-            return {}
-        update['title'] = kwargs.pop('title')
-        update['tags'] = kwargs.pop('tags')
+        asset.maybe_set('title', params)
+        asset.maybe_set('tags', params)
 
-        asset = self.request.context
-        asset.update(update)
-        _id = asset.get('_id')
-        # We can't update the mongo ObjectId so pop it
-        asset.pop('_id')
-        asset.pop('id')
-
-        self.request.db.assets.find_and_modify(
-            query={'_id': ObjectId(_id)},
-            update={'$set': asset},
-            upsert=True,
-            safe=True
-        )
+        asset.commit()
 
         self.request.response.status = '200'
         return {}
@@ -236,39 +251,56 @@ class ItemFactory(BaseFactory):
         items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
 
-    def save(self, item):
+    def _get_renderers(self):
+        renderer = CustomHtmlRenderer(
+            math_text_parser=self.request.math_text_parser,
+            settings=self.request.registry.settings,
+            mongo_db=self.request.db,
+            )
+        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
+        return (renderer, misaka_renderer)
+
+    def commit(self, item):
+        is_model = isinstance(item, self.model)
+        # NOTE: Validation WILL convert the item to a dictionary
         item = self.validate(item)
         if not item:
-            print '\n\n\n'
-            print 'The item did not validate'
-            print '\n\n\n'
             return None
 
         _id = item.pop('_id', None)
 
-        # These 2 should never be in the item?
-        # item.pop('__name__', None)
-        # item.pop('__parent__', None)
-        res = self.collection.update(
-            {'_id': _id},
-            {'$set': item},
-            upsert=True,
-            safe=True
-        )
+        if is_model:
+            res = self.collection.find_and_modify(
+                {'_id': _id},
+                {'$set': item},
+                upsert=True,
+                safe=True,
+                new=True
+            )
+
+            # Reset the progress on this item
+            self.progress_collection.update(
+                {'itemId': _id},
+                {'$set': {
+                    'passed': False,
+                    'unanswered': item['answers'].keys()
+                    }
+                },
+                upsert=True,
+                safe=True
+            )
+
+            return res
+
+        _id = self.collection.insert(item, safe=True)
 
         # Reset the progress on this item
-        self.progress_collection.update(
-            {'itemId': _id},
-            {'$set': {'passed': False, 'unanswered': item['answers'].keys()}},
-            upsert=True,
+        self.progress_collection.insert(
+            {'passed': False, 'unanswered': item['answers'].keys()},
             safe=True
         )
 
-        print '\n\n\n'
-        print 'EVERYTHING WENT BETTER THAN EXCEPTATIONS!'
-        print '\n\n\n'
-
-        return res
+        return self.model(item, name=str(_id), parent=self)
 
     def create_item(self):
         try:
@@ -288,54 +320,31 @@ class ItemFactory(BaseFactory):
             cluster_id="5052f3a038d57a26a6000000"
         )
 
-        self.save(item)
-        self.request.response.status = '200'
-        return item
+        # self.request.response.status = '200'
+        return self.commit(item)
 
-    def update_item(self, item):
-        print 'v' * 100
-        print 'Item PUT'
-        print item
-        print '^' * 100
+    def save_item(self, item):
+        params = self._read_params()
+        if params.get('err') is True:
+            return params
 
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request with 406 - Not Acceptable error
-            self.request.response.status = '406'
-            return {'err': True}
-        if not kwargs.pop('_id', None):
-            # This should never ever happen but if it does, just respond with
-            # 503 - Service Unavailable error
-            self.request.response.status = '503'
-            return {'err': True}
-
-        item['listIndex'] = kwargs.pop('listIndex')
-        item['title'] = kwargs.pop('title')
-        item['desc'] = kwargs.pop('desc')
-        item['tags'] = kwargs.pop('tags')
-        item['text'] = kwargs.pop('text')
+        # Update only the parameters that were posted
+        item.maybe_set('listIndex', params)
+        item.maybe_set('title', params)
+        item.maybe_set('desc', params)
+        item.maybe_set('tags', params)
+        item.maybe_set('text', params)
         # TODO: Fix this to actually assign itself to a valid cluster
         item['cluster_id'] = "5052f3a038d57a26a6000000"
-        # kwargs.pop('cluster_id')
 
-        renderer = CustomHtmlRenderer(
-            math_text_parser=self.request.math_text_parser,
-            settings=self.request.registry.settings,
-            mongo_db=self.request.db,
-            #cloud=True,
-            #work_queue=self.request.work_queue
-            )
-        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
+        renderer, misaka_renderer = self._get_renderers()
         item['html'] = misaka_renderer.render(item['text'])
-
         item['answers'] = renderer.get_answers()
 
         # Save changes to mongo
-        return item.save()
+        return item.commit()
 
-    def remove(self, item):
+    def remove_item(self, item):
         # Pop the item ID since we can't update it
         _id = item.pop('_id', None)
         if not _id:
@@ -392,6 +401,7 @@ class ItemFactory(BaseFactory):
         item_progress = self.progress_collection.find_one(
             query={'itemId': ObjectId(item._id), 'userId': self.user_id}
         )
+        # Check if we found an existing progress entry for this item
         if item_progress:
             unanswered = item_progress['unanswered']
             # If the block id is not unanswered, don't bother to
@@ -412,6 +422,7 @@ class ItemFactory(BaseFactory):
                 {'itemId': ObjectId(item._id), 'userId': self.user_id},
                 update
             )
+        # No existing progress found, create a new entry
         else:
             unanswered = item.get('answers', {}).keys()
             if not unanswered:
@@ -456,7 +467,7 @@ class UserFactory(BaseFactory):
         return self.model(item, name=str(_id), parent=self)
 
     def __setitem__(self, user):
-        self.save(user)
+        self.commit(user)
 
     def login(self):
         params = self.request.POST
@@ -501,8 +512,6 @@ class UserFactory(BaseFactory):
                 pw2=params['pw2'],
                 email=params.get('email', None)
                 )
-            #if data['email'] == '':
-            #    data['email'] = None
             data = validator.validate(data)
         except (KeyError):
             return {'success': False, 'message': 'Invalid form'}
@@ -510,23 +519,27 @@ class UserFactory(BaseFactory):
             print e
             return {'success': False, 'data': data, 'message': str(e)}
 
-        if self.get(data['username']):
+        # Check if we can find a user with this username already in our database
+        if self.get(data['username']) is not None:
             return {'success': False, 'data': data, 'message': 'Username alread taken'}
+        # Check that the two passwords match
         if data['pw1'] != data['pw2']:
             return {'success': False, 'data': data, 'message': 'Passwords did not match'}
 
         work_factor = settings.get('bcrypt_log_rounds', '12')
         password = self.bcrypt_password(data['pw1'], work_factor)
-        new_user = self.save({
+        new_user = {
            'username': data['username'],
            'password': password,
            'email': data['email'],
            'groups': []
-           })
+           }
 
-        return {'success': True, 'user': new_user}
+        user = self.commit(new_user)
 
-    def save(self, user):
+        return {'success': True, 'user': user}
+
+    def commit(self, user):
         _id = self.collection.insert(user, safe=True)
         return self.model(user, name=str(_id), parent=self)
 
@@ -549,7 +562,15 @@ class SpaceFactory(BaseFactory):
             model=Space,
             validator=validators.get_space_validator()
             )
-        self.children = ClusterFactory(request)
+        self._children = ClusterFactory
+
+    @property
+    def _cluster_factory(self):
+        children = self._children
+        # Try to determine if the factory has been initialized before
+        if isinstance(children, object.__class__):
+            children = children(self.request)
+        return children
 
     def __getitem__(self, _id):
         # Try first to convert the given _id.
@@ -565,7 +586,8 @@ class SpaceFactory(BaseFactory):
             raise KeyError
 
         clusters = list()
-        for child in self.children:
+
+        for child in self._cluster_factory:
             if has_permission('read', child, self.request):
                 clusters.append(child)
 
@@ -576,7 +598,7 @@ class SpaceFactory(BaseFactory):
     def create_space(self):
         params = self.request.POST
         try:
-            return self.save(dict(
+            return self.commit(dict(
                 title=params['title'],
                 desc=params['desc']
                 ))
@@ -584,8 +606,8 @@ class SpaceFactory(BaseFactory):
             return None
 
     def create_cluster(self):
-        cluster_factory = ClusterFactory(self.request)
-        return cluster_factory.create()
+        # cluster_factory = ClusterFactory(self.request)
+        return self._cluster_factory.create_cluster()
 
 
 class ClusterFactory(BaseFactory):
@@ -605,6 +627,14 @@ class ClusterFactory(BaseFactory):
         self.__parent__ = SpaceFactory
         self._children = ItemFactory
 
+    @property
+    def _item_factory(self):
+        children = self._children
+        # Try to determine if the factory has been initialized before
+        if isinstance(children, object.__class__):
+            children = children(self.request)
+        return children
+
     def __getitem__(self, _id):
         # Try first to convert the given _id.
         # If this fails just raise KeyError to
@@ -620,14 +650,7 @@ class ClusterFactory(BaseFactory):
 
         items = list()
 
-        children = self._children
-        # Try to determine if the factory has been initialized before
-        if isinstance(children, object.__class__):
-            children = children(self.request)
-            # if not isinstance(children, self._children):
-            #     raise TypeError(('"children" should be an instance of ',
-            #         '"ItemFactory", not "{}"'.format(type(children))))
-        for child in children:
+        for child in self._item_factory:
             if has_permission('read', child, self.request):
                 items.append(child)
 
@@ -635,11 +658,11 @@ class ClusterFactory(BaseFactory):
 
         return self.model(s, name=str(_id), parent=self)
 
-    def create(self):
+    def create_cluster(self):
         # In case you wonder: All the parameters for create should
         # be passed through POST/GET or matchdict parameters
         try:
-            return self.save({
+            return self.commit({
                 'space_id': self.request.matchdict['space_id'],
                 'title': self.request.POST['title'],
                 'desc': self.request.POST['desc'],
@@ -651,18 +674,11 @@ class ClusterFactory(BaseFactory):
             # all the parameters
             return None
 
-    # def save(self, data):
-    #     if not self.is_valid(data):
-    #         return None
-    #     #space_id = data.get('space_id', None)
-    #     #if space_id and not isinstance(space_id, ObjectId):
-    #     # Validation should ensure that the space_id at this point
-    #     # is a string
-    #     #try:
-    #     #    data['space_id'] = ObjectId(data['space_id'])
-    #     #except InvalidId:
-    #     _id = self.collection.insert(data, safe=True)
-    #     return self.model(data, name=str(_id), parent=self)
+    def save_cluster(self, cluster):
+        raise NotImplementedError('Really it is not')
+
+    def create_item(self):
+        return self._item_factory.create_item()
 
     def __iter__(self):
         # Check if the request has space_id in the matchdict which

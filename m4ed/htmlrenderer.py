@@ -102,8 +102,7 @@ class CustomHtmlRenderer(HtmlRenderer):
         self.answers = dict()
 
     @property
-    @staticmethod
-    def _404_img():
+    def _404_img(self):
         return (
             'https://a9e01ec7324d40fdae33-8c4723fa6cef88b6ec249366d018b063'
             '.ssl.cf1.rackcdn.com/notfound.png'

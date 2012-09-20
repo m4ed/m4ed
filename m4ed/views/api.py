@@ -27,17 +27,18 @@ def get_asset_url(request):
 class ItemView(object):
     def __init__(self, request):
         self.request = request
+        self.item = request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        return self.request.context
+        return self.item
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
         
         # Request context should be m4ed.models.Item
-        res = self.request.context.update_item()
-        if res['err'] is not None:
+        res = self.item.save()
+        if res is None:
             self.request.response.status = '500'
         else:
             self.request.response.status = '200'
@@ -45,7 +46,7 @@ class ItemView(object):
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        self.request.context.remove()
+        self.item.remove()
         self.request.response.status = '200'
         return {}
 
@@ -70,56 +71,39 @@ class ItemsView(object):
 
     def __init__(self, request):
         self.request = request
+        self.item_factory = request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
         res = []
-        for item in self.request.context:
+        for item in self.item_factory:
             res.append(item)
         return res
 
     @view_config(request_method='POST')
     def post(self):
         # m4ed.factories.ItemFactory
-        return self.request.context.create_item()
-
-    @view_config(request_method='PUT')
-    def put(self):
-        return {'result': 'PUT accepted'}
-
-    @view_config(request_method='DELETE')
-    def delete(self):
-        return {'result': 'DELETE accepted'}
-
-
-# @view_defaults(route_name='rest_folders', renderer='json')
-# class RESTFoldersView(object):
-#     def __init__(self, request):
-#         self.request = request
-
-#     @view_config(request_method='GET')
-#     def get(self):
-#         return self.request.context
+        return self.item_factory.create_item()
 
 
 @view_defaults(route_name='rest_asset', renderer='json')
 class AssetView(object):
     def __init__(self, request):
         self.request = request
+        self.asset = request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        #print 'We don\'t get here'
-        return self.request.context
+        return self.asset
 
     @view_config(request_method='PUT')
     def put(self):
         # m4ed.models.Asset
-        return self.request.context.update_asset()
+        return self.asset.save()
 
     @view_config(request_method='DELETE')
     def delete(self):
-        _id = self.request.context.get('_id')
+        _id = self.asset.get('_id')
         self.request.work_queue.send('delete:' + str(_id))
         return {'result': 'done'}
 
@@ -128,11 +112,12 @@ class AssetView(object):
 class AssetsView(object):
     def __init__(self, request):
         self.request = request
+        self.asset_factory = self.request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
         res = []
-        for asset in self.request.context:
+        for asset in self.asset_factory:
             res.append(asset)
         return res
 
@@ -157,18 +142,53 @@ class AssetsView(object):
         return [dict(result='saa')]
 
 
-# @view_defaults(route_name='rest_clusters', renderer='json')
-# class ClustersView(object):
-#     def __init__(self, request):
-#         self.request = request
+@view_defaults(route_name='rest_clusters', renderer='json')
+class ClustersView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space_factory = request.context
 
-#     @view_config(request_method='GET', permission='read')
-#     def get(self):
-#         res = []
-#         for cluster in self.request.context:
-#             res.append(cluster)
-#         return res
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        res = []
+        for cluster in self.space_factory:
+            res.append(cluster.stripped)
+        return res
 
-#     @view_config(request_method='POST', permission='write')
-#     def post(self):
-#         factory = ClusterFactory(request)
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.factories.SpaceFactory
+        res = self.space_factory.create_cluster()
+        print res
+        if res is None:
+            self.request.response.status = '500'
+            res = {'err': True}
+
+        return res
+
+@view_defaults(route_name='rest_cluster', renderer='json')
+class ClusterView(object):
+    def __init__(self, request):
+        self.request = request
+        self.cluster = request.context
+        self.api_safe_cluster = self.cluster.stripped
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.api_safe_cluster
+
+    @view_config(request_method='PUT', permission='write')
+    def put(self):
+        # Context should be m4ed.models Cluster
+        res = self.cluster.save()
+        if res['err'] is not None:
+            self.request.response.status = '500'
+        else:
+            self.request.response.status = '200'
+        return {}
+
+
+    @view_config(request_method='DELETE', permission='write')
+    def delete(self):
+        # Context should be m4ed.models Cluster
+        pass
