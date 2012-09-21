@@ -21,7 +21,7 @@ function(_, Backbone, AssetEditorView) {
       this.model.bind('destroy', this.onDestroy, this);
 
       this.markdown = this.mdTemplate.render({
-        alt: 'Alt text goes here',
+        alt: 'alt text',
         src: this.model.get('id')
       });
 
@@ -40,7 +40,7 @@ function(_, Backbone, AssetEditorView) {
         alt: m.get('alt'),
         title: m.get('name'),
         buttons: this.buttons
-      })); 
+      }));
 
       this.$buttons = this.$el.find('.buttons');
       this.$img = this.$el.children('img');
@@ -91,12 +91,12 @@ function(_, Backbone, AssetEditorView) {
     onAssetSelected: function (model) {
       if (this.isSelected() && !model || model.id !== this.model.id) {
         this.deselect();
-      } 
+      }
     },
 
     onInsertClick: function(e) {
       // Trigger the insertAsset
-      // event through our dispatcher, 
+      // event through our dispatcher,
       // which the editor view is listening to.
       this.dispatcher.trigger('insertAsset', this.markdown);
      //this.model.destroy();
@@ -106,7 +106,7 @@ function(_, Backbone, AssetEditorView) {
       e.stopPropagation();
       if (!this.isSelected()) {
         this.select();
-      } 
+      }
     },
 
     onDragstart: function(e) {
@@ -155,7 +155,7 @@ function(_, Backbone, AssetEditorView) {
       // Hide buttons
       this.onHoverLeave();
 
-      this.select();  
+      this.select();
 
       if (!this.editor) {
         this.editor = new AssetEditorView({
@@ -175,6 +175,6 @@ function(_, Backbone, AssetEditorView) {
 
 
   });
-    
+
   return AssetView;
 });

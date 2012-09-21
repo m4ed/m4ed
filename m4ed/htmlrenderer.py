@@ -114,31 +114,31 @@ class CustomHtmlRenderer(HtmlRenderer):
     def get_answers(self):
         return self.answers
 
-    def handle_image_macro(self, kwargs):
+    def handle_image_macro(self, m_args):
         # If there was anything passed with keyword 'data' render it
         # using sundown
-        default = kwargs.pop('default', None)
+        default = m_args.pop('default', None)
         if default:
             imgid = default
             data = ''
         else:
-            data = kwargs.pop('data', None)
+            data = m_args.pop('data', None)
             if data:
                 data = self.snippet_renderer.render(data)
-            imgid = kwargs.pop('id', None)
+            imgid = m_args.pop('id', None)
         return '<img alt="{alt}" src="{src}" />{data}'.format(
-            alt=kwargs.pop('alt', ''),
+            alt=m_args.pop('alt', ''),
             src=self.imgid_to_imgurl(imgid) if imgid else self._404_img,
             data=data
             )
 
-    def handle_math_macro(self, kwargs):
+    def handle_math_macro(self, m_args):
         if DEBUG:
-            print "kwargs: ", kwargs
+            print "m_args: ", m_args
         try:
-            data = kwargs.pop('data', None)
+            data = m_args.pop('data', None)
             if not data:
-                data = kwargs.pop('default', '')
+                data = m_args.pop('default', '')
         except AttributeError:
             return ''
         if DEBUG:
@@ -157,12 +157,12 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         return ''.join(res)
 
-    def handle_multiple_choice_macro(self, kwargs):
-        block_id = kwargs.pop('block_id', None)
-        if not block_id:
+    def handle_multiple_choice_macro(self, m_args):
+        block_id = m_args.pop('block_id', None)
+        if block_id is None:
             raise ValueError('block_id was undefined')
         html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
-        data = kwargs.pop('data', '')
+        data = m_args.pop('data', '')
         multi_choice_args = []
         temp_args = []
         # Init the answer list
@@ -252,98 +252,113 @@ class CustomHtmlRenderer(HtmlRenderer):
             ))
         return html_tag
 
-    def _find_tag(self, text, tag, index):
-        while (True):
-            index = text.find(tag, index)
-            if index < 0:
-                break
-            # Check that the start tag was not escaped
-            elif text[index - 1] == '\\':
-                # Slice the backslash from the text
-                text = text[:index - 1] + text[index:]
-                # Try to find the next start index
-                index += len(tag)  # block_start_tag_len
-                continue
-            else:
-                break
-        return (text, index)
+    def _find_all(self, text, sub):
+        """Finds all occurrences of sub from text, return generators"""
+        start = 0
+        while True:
+            start = text.find(sub, start)
+            if start == -1:
+                return
+            yield start
+            start += len(sub)
 
     def preprocess(self, text, debug=True):
         if debug:
-            print '------------------------- preprocessing -------------------------'
-            start = time.time()
-        #result = self.math_regex.sub(self.math_to_img, text)
+            #print 'markdown PRE ---->'
+            _mark = time.time()
 
+        starts = list(self._find_all(text, "[["))
+        ends = list(self._find_all(text, "]]"))
+
+        if len(starts) == 0:
+            # no macros to process, return original text
+            return text
+
+        # strip out escaped starts '\[['
+        # check needed for "[[macro]]\" as x-1 at the pos 0 is last char of string
+        if starts[0] != 0:
+            starts[:] = [x for x in starts if not text[x - 1] == '\\']
+        else:
+            starts[1:] = [x for x in starts[1:] if not text[x - 1] == '\\']
+
+        # strip out escaped ends '\]]'
+        ends[:] = [x for x in ends if not text[x - 1] == '\\']
+
+        stack = []
+        macros = []
+        while ends:
+            while (len(starts) > 0) and (starts[0] < ends[0]):
+                stack.append(starts.pop(0))
+            if stack:
+                macro = ((stack.pop(), ends.pop(0) + 2))
+                macros.append(macro)
+            else:
+                # handles "]][[" situation
+                ends.pop(0)
+
+        # macros are in such order that innermost ones come first so we can
+        # process them as they are. [[3. [[1.]] [[2.]]]] [[4.]]
         block_id = 0
-        block_start_index = 0
-        block_start_tag = '[['
-        block_start_tag_len = len(block_start_tag)
-        block_end_tag = ']]'
-        block_end_tag_len = len(block_end_tag)
-        while (True):
-            text, block_start_index = self._find_tag(text, block_start_tag, block_start_index)
-
-            if block_start_index < 0:
-                break
-
-            # Offset the start index by the length of start tag
-            block_start_index += block_start_tag_len
-
-            text, block_end_index = self._find_tag(text, block_end_tag, block_start_index)
-            if block_end_index < 0:
-                break
-
+        while len(macros) > 0:
+            m = macros.pop(0)
+            macro = text[m[0] + 2:m[1] - 2]
+            func = macro.split(":", 1)
+            # func name = func[0], rest is func[1]
+            # if no args, it's all in func[0]
+            if func[0].lower() not in self.funcs:
+                continue
+            if len(func) > 1:
+                f_args = {}
+                func_data = func[1].split("\n", 1)
+                func_args = self.parse_quotes(func_data[0])
+                func_args = func_args.strip().split(",")
+                for arg in func_args:
+                    arg = arg.strip().split("=")
+                    if len(arg) == 2:
+                        #[[macro: arg=val, arg=val]]
+                        f_args[arg[0].strip().lower()] = arg[1].strip()
+                    else:
+                        #[[macro: single arg]]
+                        #[[macro: key=value, single arg -> default]]
+                        #[[macro: default=val, key=val, single arg <discard]]
+                        if not f_args.get('default'):
+                            # do not override default arg if specified by user
+                            f_args['default'] = arg[0].strip()
+                f_args["data"] = func_data[1] if len(func_data) > 1 else ""
+                f_args["block_id"] = block_id
+                ret = self.funcs[func[0].lower()](f_args)
+            else:
+                ret = self.funcs[func[0].lower()]()
             block_id += 1
 
-            block = text[block_start_index:block_end_index]
-            firstline = block.find("\n")
-            if firstline < 0:
-                firstline = len(block)
+            # change is the difference between original and macro returned data
+            change = len(ret) - (m[1] - m[0])
+            if m[0] == 0:
+                text = ret + text[m[1]:]
+            else:
+                text = text[:m[0]] + ret + text[m[1]:]
 
-            func_line = block[:firstline]
-            data = block[firstline + 1:block_end_index]
+            # now we need to re-adjust indexes
+            for x, i in enumerate(macros):
+                start = i[0]
+                end = i[1]
 
-            func_end = func_line.find(":")
-            if func_end < 0:
-                func_end = len(func_line)
-            func_name = func_line[:func_end].lower()
-            if func_name not in self.funcs:
-                block_start_index = block_end_index + block_end_tag_len  # after "]]"
-                continue
-            func_args = func_line[func_end + 1:].strip()
-            # make keyword args:
-            # args are separated with ","
-            # each valid arg has arg=value
-            # print 'MY ARGUMENST WERE', func_args
-            kwargs = dict(data=data, block_id=block_id)
+                # [[this macro]] [[processed macro]] = after >> no change
+                # [[processed macro]] [[this macro]] = before >> change both
+                #                                      start += change, end += change
+                # [[this [[processed macro]] macro]] = inside >> change end += change
+                # [[processed [[this macro]] macro]] = impossible as inner macros
+                #                                      get always processed first
+                if m[1] <= i[0]:
+                    start += change
+                    end += change
+                elif i[0] < m[0] and i[1] > m[1]:
+                    end += change
 
-            func_args = self.parse_quotes(func_args)
+                macros[x] = (start, end)
 
-            func_args = func_args.strip().split(",")
-            for arg in func_args:
-                arg = arg.strip().split("=")
-                if len(arg) == 2:
-                    # valid key-val pair
-                    kwargs[arg[0].strip().lower()] = arg[1].strip()
-                else:
-                    # all is single arg
-                    if not kwargs.get('default'):
-                        # If there already is a default arg ignore the rest
-                        kwargs['default'] = arg[0].strip()
-            # if func_name not in self.funcs:
-            #     block_start_index = block_end_index + block_end_tag_len  # after "]]"
-            #     continue
-            retval = self.funcs[func_name](kwargs)
-
-            text = (
-                text[:block_start_index - block_start_tag_len] +
-                retval +
-                text[block_end_index + block_end_tag_len:]
-                )
-            block_start_index += len(retval) - block_end_tag_len
         if debug:
-            print 'It took', (time.time() - start) * 1000, 'milliseconds to preprocess the preview'
-        #return result
+            print 'misaka  preprocess /->', (time.time() - _mark) * 1000, 'ms'
         return text
 
     def parse_quotes(self, text):
@@ -392,17 +407,17 @@ class CustomHtmlRenderer(HtmlRenderer):
         return text
 
     def postprocess(self, text, debug=True):
+        """preprocess --> markdownrender --> [text] postprocess"""
         if debug:
-            print '------------------------- postprocessing -------------------------'
-            start = time.time()
-
+            #print '------------------------- postprocessing -------------------------'
+            _mark = time.time()
         for tag, block in self.post_process_blocks:
             #print tag, block
             text = text.replace(tag, block)
         #self.post_process_blocks = list()
 
         if debug:
-            print 'It took', (time.time() - start) * 1000, 'milliseconds to postprocess the preview'
+            print 'misaka postprocess \\->', (time.time() - _mark) * 1000, 'ms\n'
 
         return text
 

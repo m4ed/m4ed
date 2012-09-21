@@ -1,13 +1,13 @@
-// Filename: 
+// Filename:
 define([
   'jquery',
   'hogan'
 ],
 function($, hogan) {
-  
+
   return {
 
-    item: hogan.compile($('#item-template').html()), 
+    item: hogan.compile($('#item-template').html()),
 
     // Editor templates
     // -------------------------------------
@@ -67,11 +67,39 @@ function($, hogan) {
             "text": "header",
             "prefix": "| ",
             "suffix":         "        |         header |\n" +
-                      "|:--------------|---------------:|\n" + 
+                      "|:--------------|---------------:|\n" +
                       "| aligned left  |  aligned right |"
           }
         }
-      }]
+      },
+      {
+          "label": "Latex Math",
+          "icon": "asterisk",
+          "callback": {
+            "action": "span",
+            "data": {
+              "prefix": "[[",
+              "text":"math: \nlatex here\n",
+              "suffix":"]]"
+            }
+          }
+      },
+      {
+          "label": "Quiz choice",
+          "icon": "ok",
+          "callback": {
+            "action": "span",
+            "data": {
+              "prefix": "[[multi:\n",
+              "text":"A. incorrect\n: reveal after answer\n" +
+                     "B! correct\n: reveal after answer\n" +
+                     "C. incorrect\n: reveal after answer\n",
+              "suffix":"]]"
+            }
+          }
+      }
+
+      ]
     }, {
       label: "Format",
       className: "format pull-right",
@@ -181,7 +209,7 @@ function($, hogan) {
     // Asset container templates
     // -------------------------------------
 
-    imageMarkdown: hogan.compile('![{{alt}}](id={{src}})'),
+    imageMarkdown: hogan.compile('[[img: id={{src}}, alt="{{alt}}"]]'),
 
     asset: hogan.compile($('#asset-template').html()),
 
