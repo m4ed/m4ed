@@ -43,7 +43,11 @@ def new_cluster(request):
             return HTTPFound(location=next)
         message = res['message']
 
-    return {'url': '', 'message': message}
+    return {
+        'url': '',
+        'message': message,
+        'csrf_token': request.session.get_csrf_token()
+        }
 
 
 @view_config(

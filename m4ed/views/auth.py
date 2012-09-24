@@ -9,6 +9,9 @@ from pyramid.security import (
     authenticated_userid
     )
 
+import logging
+
+log = logging.getLogger(__name__)
 
 def valid_login(request):
     # Request context should be m4ed.factories.UserFactory at this point
@@ -52,6 +55,8 @@ def valid_registration(request):
 
     if result['success'] is False:
         message = result['message']
+        log.debug('{0} Failed to register: {1}'.format(
+            request.remote_addr, message))
         data = result['data']
         return (dict(
             username=data['username'],
