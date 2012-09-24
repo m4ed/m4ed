@@ -42,6 +42,9 @@ from misaka import (
 from m4ed.htmlrenderer import CustomHtmlRenderer
 
 import time
+import logging
+
+log = logging.getLogger(__name__)
 
 
 class RootFactory(object):
@@ -305,19 +308,22 @@ class ItemFactory(BaseFactory):
     def create_item(self):
         try:
             # This fails if the post is some sort of form instead of json
-            kwargs = self.request.json_body
+            params = self.request.json_body
         except ValueError:
             # If we get a value error, the request didn't have a json body
             # Ignore the request
             return HTTPNotAcceptable()
 
         item = dict(
-            title=kwargs.pop('title', 'Click to add a title'),
-            desc=kwargs.pop('desc', 'Click to add a description'),
-            text=kwargs.pop('text', ''),
-            tags=kwargs.pop('tags', []),
-            listIndex=kwargs.pop('listIndex', 0),
-            cluster_id="5052f3a038d57a26a6000000"
+            title=params.pop('title', 'Click to add a title'),
+            desc=params.pop('desc', 'Click to add a description'),
+            text=params.pop('text', ''),
+            tags=params.pop('tags', []),
+            listIndex=params.pop('listIndex', 0),
+            # TODO: Read this from the request
+            cluster_id="5052f3a038d57a26a6000000",
+            html='',
+            answers=dict(dummy=list()),
         )
 
         # self.request.response.status = '200'
@@ -388,7 +394,7 @@ class ItemFactory(BaseFactory):
             if answer_id in block_answers:
                 is_correct = True
         else:
-            print 'WE DONT KNOW WHAT TO DO NEXT'
+            log.critical('block_answers was not a list! Aborting answer handling!')
             return {'err': False, 'is_correct': is_correct}
 
         item.mark_answer(is_correct, block_id, answer_id)
@@ -544,7 +550,7 @@ class UserFactory(BaseFactory):
         return self.model(user, name=str(_id), parent=self)
 
     def __iter__(self):
-        items = self.collection.find().sort('listIndex', direction=ASCENDING)
+        items = self.collection.find()
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
 
 

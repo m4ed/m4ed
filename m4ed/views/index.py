@@ -7,6 +7,10 @@ from pyramid.security import authenticated_userid
 def get_spaces(request):
     print request.context
     return {
+        'login_url': request.route_url('login'),
+        'logout_url': request.route_url('logout'),
+        'register_url': request.route_url('register'),
+        'new_space_url': request.route_url('new_space'),
         'authenticated': authenticated_userid(request),
         'spaces': request.context
     }

@@ -133,11 +133,6 @@ class Space(MongoDict):
             (Allow, Authenticated, ALL_PERMISSIONS)
         ]
 
-    def is_valid(self):
-        #validator = get_validator()
-        #return validator.is_valid(self)
-        return True
-
     def create_cluster(self):
         return self.__parent__.create_cluster()
 

@@ -8,6 +8,9 @@ from pyramid.httpexceptions import (
     HTTPNotAcceptable
     )
 
+import logging
+log = logging.getLogger(__name__)
+
 #from pyramid.security import authenticated_userid
 
 #from bson import ObjectId
@@ -31,6 +34,7 @@ class ItemView(object):
 
     @view_config(request_method='GET', permission='read')
     def get(self):
+        log.debug(self.item)
         return self.item
 
     @view_config(request_method='PUT', permission='write')
@@ -40,6 +44,9 @@ class ItemView(object):
         res = self.item.save()
         if res is None:
             self.request.response.status = '500'
+            log.debug(('PUT request denied with {0}.'
+                'Result from self.item.save() returned was {1}'
+                ).format(self.request.response.status, res))
         else:
             self.request.response.status = '200'
         return {}

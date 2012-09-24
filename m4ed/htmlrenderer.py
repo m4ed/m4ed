@@ -1,24 +1,24 @@
+import hashlib
+import time
+import json
+import logging
+
 from misaka import (
     Markdown,
     HtmlRenderer
     )
 
 from matplotlib.mathtext import ParseFatalException
-
 # We need this to acquire a lock to prevent multi threaded apps
 # messing everything up
 from matplotlib.backends.backend_agg import RendererAgg
 
-import hashlib
 # Python 3.0 stuff, equivalent to cStringIO in 2.7
 from io import BytesIO
 from HTMLParser import HTMLParser
 from xml.sax.saxutils import quoteattr
 
 from redis.exceptions import ConnectionError
-
-import time
-import json
 
 from m4ed.util import filters
 
@@ -47,6 +47,7 @@ MULTI_CHOICE_TEMPLATE = Template((
     '</script>'
     ))
 
+log = logging.getLogger(__name__)
 
 class CustomHtmlRenderer(HtmlRenderer):
     def __new__(cls, flags=0, **kwargs):
@@ -436,7 +437,7 @@ class CustomHtmlRenderer(HtmlRenderer):
                     redis_db.expire(db_key, self.cache_time)
                     return html
                 if debug:
-                    print 'Cache miss! Generating a new img!'
+                    log.info('Cache miss! Generating a new img!')
             except ConnectionError:
                 return ''
 

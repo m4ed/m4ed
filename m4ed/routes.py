@@ -6,7 +6,7 @@ def includeme(config):
     config.add_route('misaka', '/misaka')
     config.add_route('login', '/login', factory='m4ed.factories:UserFactory')
     config.add_route('logout', '/logout')
-    config.add_route('register', '/register')
+    config.add_route('register', '/register', factory='m4ed.factories:UserFactory')
     config.include(api, route_prefix='/api')
     config.include(item, route_prefix='/i')
     config.include(learning_spaces, route_prefix='/spaces')
