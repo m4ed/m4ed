@@ -32,7 +32,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       _.extend(this, options.custom);
       this.activeXhr = null;
       this.lastContent = null;
-      
+
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
       this.model.bind('destroy', this.onDestroy, this);
@@ -67,7 +67,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         }
       });
 
-      // init buttons (reverse group list for pull-right)
+      // init buttons
       var buttonGroups = templates.buttonGroups;
       this.$editorButtons = $el.find('.editor-buttons');
       for (var i in buttonGroups) {
@@ -100,8 +100,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       // Stupid work around 
       $el.appendTo(this.parent.$el);
 
-      // this.dispatcher.trigger('editorReady');
-
       return this;
 
     },
@@ -132,6 +130,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         // console.log('First time change!');
         this.render().toggle();
       } else {
+        // "Enable" publish button on edit (no functionality yet)
         this.$('.publish button').removeClass('disabled');
         this.$('.publish button').addClass('btn-success');
       }
@@ -198,7 +197,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       if (!this.$assetList) this.$assetList = this.$('.asset-container');
       if (!this.$assetToolbar) this.$assetToolbar = this.$('.asset-toolbar');
       if (!this.$prevEl) this.$prevEl = this.parent.$('.item');
-      if (!this.$nextEl) this.$nextEl = this.parent.$el.next();
+      if (!this.$nextEl) this.$nextEl = this.parent.$el.next().children('.item');
       if (!this.$preview) this.$preview = this.$('.preview');
 
       var bodyPaddingTop = $('body').cssInt('paddingTop');
