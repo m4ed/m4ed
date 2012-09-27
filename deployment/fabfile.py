@@ -342,40 +342,40 @@ def _menu_control():
 
     #all except mongo n+r+w+4
     elif sel.lower() == "8":
-         _service_cmd("nginx", "restart")
-         _service_cmd("redis", "restart")
-         _service_cmd("m4ed_asset_worker", "restart")
-         _service_cmd("m4ed", "restart")
+        _service_cmd("nginx", "restart")
+        _service_cmd("redis", "restart")
+        _service_cmd("m4ed_asset_worker", "restart")
+        _service_cmd("m4ed", "restart")
     elif sel.lower() == "sstart":
-         _service_cmd("nginx", "start")
-         _service_cmd("redis", "start")
-         _service_cmd("m4ed_asset_worker", "start")
-         _service_cmd("m4ed", "start")
+        _service_cmd("nginx", "start")
+        _service_cmd("redis", "start")
+        _service_cmd("m4ed_asset_worker", "start")
+        _service_cmd("m4ed", "start")
     elif sel.lower() == "sstop":
-         _service_cmd("nginx", "stop")
-         _service_cmd("redis", "stop")
-         _service_cmd("m4ed_asset_worker", "stop")
-         _service_cmd("m4ed", "stop")
+        _service_cmd("nginx", "stop")
+        _service_cmd("redis", "stop")
+        _service_cmd("m4ed_asset_worker", "stop")
+        _service_cmd("m4ed", "stop")
 
     #all
     elif sel.lower() == "9":
-         _service_cmd("nginx", "restart")
-         _service_cmd("redis", "restart")
-         _service_cmd("mongo", "restart")
-         _service_cmd("m4ed_asset_worker", "restart")
-         _service_cmd("m4ed", "restart")
+        _service_cmd("nginx", "restart")
+        _service_cmd("redis", "restart")
+        _service_cmd("mongo", "restart")
+        _service_cmd("m4ed_asset_worker", "restart")
+        _service_cmd("m4ed", "restart")
     elif sel.lower() == "astart":
-         _service_cmd("nginx", "start")
-         _service_cmd("redis", "start")
-         _service_cmd("mongo", "start")
-         _service_cmd("m4ed_asset_worker", "start")
-         _service_cmd("m4ed", "start")
+        _service_cmd("nginx", "start")
+        _service_cmd("redis", "start")
+        _service_cmd("mongo", "start")
+        _service_cmd("m4ed_asset_worker", "start")
+        _service_cmd("m4ed", "start")
     elif sel.lower() == "astop":
-         _service_cmd("nginx", "stop")
-         _service_cmd("redis", "stop")
-         _service_cmd("mongo", "stop")
-         _service_cmd("m4ed_asset_worker", "stop")
-         _service_cmd("m4ed", "stop")
+        _service_cmd("nginx", "stop")
+        _service_cmd("redis", "stop")
+        _service_cmd("mongo", "stop")
+        _service_cmd("m4ed_asset_worker", "stop")
+        _service_cmd("m4ed", "stop")
 
     elif sel.startswith(":"):
         if sel[1:] == "keys":
@@ -391,6 +391,7 @@ def _menu_control():
 # ----------------------------------------------------------------------------
 # Tasks (not available on command line though)
 # ----------------------------------------------------------------------------
+
 
 def _install_m4ed_worker(warn_only=True):
     """configures and installs m4ed upload worker"""
@@ -588,7 +589,6 @@ def _configure_m4ed(warn_only=True):
         if type(v) in types.StringTypes:
             conffile = conffile.replace("[[%s]]" % k, v)
 
-
     with settings(hide('stdout', 'running', 'warnings'), warn_only=warn_only):
         sudo("rm %s" % target)
         sudo("mkdir -p %s" % target.rsplit("/", 1)[0])
@@ -646,7 +646,6 @@ def _install_m4ed_server(warn_only=True):
                             _slash(env.m4ed["_m4ed_git_repository"]) + \
                             conf["conf_type"] + ".ini"
 
-
     _mprint("m4ed server init configuration:", st="info")
     for key in sorted(conf.iterkeys()):
         _mprint("%s: %s" % (key, conf[key]), st="data", c="data")
@@ -698,7 +697,6 @@ def _install_m4ed_server(warn_only=True):
     _compile_m4ed()
 
     return True
-
 
 
 def _install_m4ed_codebase():
@@ -882,7 +880,7 @@ def _configure_nginx(warn_only=True):
     nginx_conf = env.m4ed["nginx_conf"]
     _mprint("nginx main config:", st="info")
     for key in sorted(nginx_conf.iterkeys()):
-       _mprint("%s: %s" % (key, nginx_conf[key]), st="data", c="data")
+        _mprint("%s: %s" % (key, nginx_conf[key]), st="data", c="data")
     _mprint("", lf=True)
 
     for i in nginx.get("imported_configs", []):
@@ -933,7 +931,7 @@ def _configure_nginx(warn_only=True):
         sudo("touch %s" % target)
         files.append(target, conffile, use_sudo=True)
         sudo("chmod 744 %s" % target)
-        sudo("chown %s:%s %s" %(user, user, target))
+        sudo("chown %s:%s %s" % (user, user, target))
         _mprint("installed main config to: %s" % target, st="ok", c="install")
 
     # get nginx_user from main, merge new config to that.
@@ -974,11 +972,11 @@ def _configure_nginx(warn_only=True):
             sudo("touch %s" % target)
             files.append(target, conffile, use_sudo=True)
             sudo("chmod 744 %s" % target)
-            sudo("chown %s:%s %s" %(user, user, target))
+            sudo("chown %s:%s %s" % (user, user, target))
             _mprint("installed config to: %s" % target, st="ok", c="install")
 
-
     return True
+
 
 def _make_nginx_tmp_dirs(conf):
     """Creates temporary directories required by nginx"""
@@ -1011,7 +1009,6 @@ def _make_nginx_tmp_dirs(conf):
                         c="cyan", lf=True)
                 return False
 
-
         else:
             _mprint("unsupported hash value, no directories created!",
                     st="fail", lf=True)
@@ -1024,7 +1021,7 @@ def _make_nginx_tmp_dirs(conf):
                 "tmp_http_proxy",
                 "tmp_http_fastcgi",
                 "tmp_http_uwsgi",
-                "tmp_http_scgi",]
+                "tmp_http_scgi"]
         for key in keys:
             path = conf[key]
             if files.exists(path, use_sudo=True):
@@ -1086,7 +1083,6 @@ def _install_nginx(warn_only=True):
                '--http-fastcgi-temp-path=%s' % nginx["tmp_http_fastcgi"],
                '--http-uwsgi-temp-path=%s' % nginx["tmp_http_uwsgi"],
                '--http-scgi-temp-path=%s' % nginx["tmp_http_scgi"]]
-
 
     # fetch modules and add to compile options
     with settings(warn_only=warn_only):
@@ -1294,7 +1290,7 @@ def _configure_redis(warn_only=True):
         sudo("touch %s" % target)
         files.append(target, conffile, use_sudo=True)
         sudo("chmod 744 %s" % target)
-        sudo("chown %s:%s %s" %(user, user, target))
+        sudo("chown %s:%s %s" % (user, user, target))
         _mprint("installed main config to: %s" % target, st="ok", c="install")
 
     return True
@@ -1365,13 +1361,18 @@ def _install_node(warn_only=True):
                 _mprint("current version of %s is now:" % i, c="info", st="ok")
                 _mprint("%s" % ret, c="ok", st="ok", lf=True)
 
-
     return True
 
 
 # ----------------------------------------------------------------------------
 # Internal helper functions
 # ----------------------------------------------------------------------------
+
+
+def _get_sysdate():
+    with settings(hide('warnings', 'stdout', 'running'), warn_only=True):
+        return run("date")
+
 
 def _print_all_service_leds(visible=True):
     services = (("nginx", "nginx"),
@@ -1547,8 +1548,10 @@ def _m4ed_logo():
     ret += " \033[37mhost:%s \033[0m  " % env.host
     ret += _print_all_service_leds(visible=False)
     ret += "\033[100m  \033[0m"
+    ret += "\n\n\033[90m%s\033[0m" % _get_sysdate()
 
     return ret
+
 
 def _slash(path):
     """Ensures that paths end with slash"""
@@ -1590,6 +1593,7 @@ def _vrun(cmd, ve_path="", working_dir="", user="", pty=True, silent=False):
         else:
             return sudo("source %s/%s" % (ve_path, act) + '&&' + cmd,
                          user=user, pty=pty)
+
 
 def _read_configs():
     """Reads config files and updates env.m4ed dictionary accordingly"""
@@ -1751,7 +1755,6 @@ def _mprint(message, c="white", st="", title=False, footer=False,
     if silent:
         return True
 
-
     s = {"ok":  "\033[37m[  \033[0m\033[32mOK\033[37m  ]\033[0m ",
         "info": "\033[37m[ \033[0m\033[36minfo\033[37m ]\033[0m ",
         "data": "\033[37m[ \033[0m\033[33mdata\033[37m ]\033[0m ",
@@ -1851,5 +1854,3 @@ def _json_minify(json, strip_space=True):
 
     new_str.append(json[from_index:])
     return ''.join(new_str)
-
-
