@@ -8,16 +8,12 @@ from pyramid.httpexceptions import (
     HTTPNotAcceptable
     )
 
-from pyramid.security import authenticated_userid
+import logging
+log = logging.getLogger(__name__)
 
-from bson import ObjectId
+#from pyramid.security import authenticated_userid
 
-from misaka import (
-    Markdown,
-    EXT_TABLES
-    )
-
-from m4ed.htmlrenderer import CustomHtmlRenderer
+#from bson import ObjectId
 
 
 @view_config(route_name='rest_asset_thumb')
@@ -34,89 +30,30 @@ def get_asset_url(request):
 class ItemView(object):
     def __init__(self, request):
         self.request = request
+        self.item = request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        # if not self.request.context:
-        #     self.request.response.status = '404'
-        #     return {}
-        return self.request.context
-
-    # @view_config(request_method='POST', permission='write')
-    # def post(self):
-    #     return {'result': 'POST accepted'}
+        log.debug(self.item)
+        return self.item
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable()
-        update = self.request.context
 
-        if not kwargs.pop('_id', None):
-            self.request.response.status = '503'
-            return {}
-        update['listIndex'] = kwargs.pop('listIndex')
-        update['title'] = kwargs.pop('title')
-        update['desc'] = kwargs.pop('desc')
-        update['tags'] = kwargs.pop('tags')
-        update['text'] = kwargs.pop('text')
-
-        renderer = CustomHtmlRenderer(
-            math_text_parser=self.request.math_text_parser,
-            settings=self.request.registry.settings,
-            mongo_db=self.request.db,
-            #cloud=True,
-            #work_queue=self.request.work_queue
-            )
-        misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
-        update['html'] = misaka_renderer.render(update['text'])
-
-        update['answers'] = renderer.get_answers()
-
-        update.save()
-
-        self.request.response.status = '200'
+        # Request context should be m4ed.models.Item
+        res = self.item.save()
+        if res is None:
+            self.request.response.status = '500'
+            log.debug(('PUT request denied with {0}.'
+                'Result from self.item.save() returned was {1}'
+                ).format(self.request.response.status, res))
+        else:
+            self.request.response.status = '200'
         return {}
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        # try:
-        #     kwargs = self.request.json_body
-        # except ValueError:
-        #     # If we get a value error, the request didn't have a json body
-        #     # Ignore the request
-        #     return HTTPNotAcceptable()
-
-        # if not kwargs.pop('_id', None):
-        #     self.request.response.status = '503'
-        #     return {}
-
-        self.request.context.remove()
-
-        # update['listIndex'] = kwargs.pop('listIndex')
-        # update['title'] = kwargs.pop('title')
-        # update['desc'] = kwargs.pop('desc')
-        # update['tags'] = kwargs.pop('tags')
-        # update['text'] = kwargs.pop('text')
-
-        # renderer = CustomHtmlRenderer(
-        #     math_text_parser=self.request.math_text_parser,
-        #     settings=self.request.registry.settings,
-        #     mongo_db=self.request.db,
-        #     #cloud=True,
-        #     #work_queue=self.request.work_queue
-        #     )
-        # misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
-        # update['html'] = misaka_renderer.render(update['text'])
-
-        # update['answers'] = renderer.get_answers()
-
-        # update.save()
-
+        self.item.remove()
         self.request.response.status = '200'
         return {}
 
@@ -128,133 +65,52 @@ class ItemView(object):
     renderer='json'
     )
 def post_item_answer(self, request):
-    block_id = request.params.get('block_id')
-    answer_id = request.params.get('answer_id')
     res = 'incorrect'
-    try:
-        block_id = block_id.split('-')[1]
-        #block_id = full_id[1]
-        #answer_id = full_id[2]
-        print block_id, answer_id
-        result = request.context.check_answer(block_id, answer_id)
-        if result == True:
-            res = 'correct'
+    result = request.context.check_answer()
+    if result['err'] is not None and result['is_correct']:
+        res = 'correct'
 
-    except IndexError:
-        pass
     return {'I': 'See what you did there', 'res': res}
 
 
-@view_defaults(route_name='rest_items', renderer='json')
-class ItemsView(object):
+# @view_defaults(route_name='rest_items', renderer='json')
+# class ItemsView(object):
 
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(request_method='GET', permission='read')
-    def get(self):
-        res = []
-        for item in self.request.context:
-            res.append(item)
-        return res
-
-    @view_config(request_method='POST')
-    def post(self):
-
-        try:
-            # This fails if the post is some sort of form instead of json
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable()
-
-        item = {}
-
-        item['title'] = kwargs.pop('title', 'Click to add a title')
-        item['desc'] = kwargs.pop('desc', 'Click to add a description')
-        item['text'] = kwargs.pop('text', '')
-        item['tags'] = kwargs.pop('tags', [])
-        item['listIndex'] = kwargs.pop('listIndex', 0)
-
-        item_id = self.request.db.items.insert(item, safe=True)
-        item_id = str(item_id)
-
-        item['_id'] = item_id
-
-        print 'POST: Item added witd id ' + item_id
-        self.request.response.status = '200'
-        return item
-
-    @view_config(request_method='PUT')
-    def put(self):
-        return {'result': 'PUT accepted'}
-
-    @view_config(request_method='DELETE')
-    def delete(self):
-        return {'result': 'DELETE accepted'}
-
-
-# @view_defaults(route_name='rest_folders', renderer='json')
-# class RESTFoldersView(object):
 #     def __init__(self, request):
 #         self.request = request
+#         self.item_factory = request.context
 
-#     @view_config(request_method='GET')
+#     @view_config(request_method='GET', permission='read')
 #     def get(self):
-#         return self.request.context
+#         res = []
+#         for item in self.item_factory:
+#             res.append(item)
+#         return res
+
+#     @view_config(request_method='POST')
+#     def post(self):
+#         # m4ed.factories.ItemFactory
+#         return self.item_factory.create_item()
 
 
 @view_defaults(route_name='rest_asset', renderer='json')
 class AssetView(object):
     def __init__(self, request):
         self.request = request
+        self.asset = request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        #print 'We don\'t get here'
-        return self.request.context
+        return self.asset
 
     @view_config(request_method='PUT')
     def put(self):
-        # if not self.request.context:
-        #     self.request.status = '404'
-        #     return {}
-        try:
-            kwargs = self.request.json_body
-        except ValueError:
-            # If we get a value error, the request didn't have a json body
-            # Ignore the request
-            return HTTPNotAcceptable('Send JSON.')
-        update = {}
-
-        if not kwargs.pop('_id', None):
-            # Internal Server Error
-            self.request.response.status = '500'
-            return {}
-        update['title'] = kwargs.pop('title')
-        update['tags'] = kwargs.pop('tags')
-
-        asset = self.request.context
-        asset.update(update)
-        _id = asset.get('_id')
-        # We can't update the mongo ObjectId so pop it
-        asset.pop('_id')
-        asset.pop('id')
-
-        self.request.context = self.request.db.assets.find_and_modify(
-            query={'_id': ObjectId(_id)},
-            update={'$set': asset},
-            upsert=True,
-            safe=True
-        )
-
-        self.request.response.status = '200'
-        return {}
+        # m4ed.models.Asset
+        return self.asset.save()
 
     @view_config(request_method='DELETE')
     def delete(self):
-        _id = self.request.context.get('_id')
+        _id = self.asset.get('_id')
         self.request.work_queue.send('delete:' + str(_id))
         return {'result': 'done'}
 
@@ -263,11 +119,12 @@ class AssetView(object):
 class AssetsView(object):
     def __init__(self, request):
         self.request = request
+        self.asset_factory = self.request.context
 
     @view_config(request_method='GET', permission='read')
     def get(self):
         res = []
-        for asset in self.request.context:
+        for asset in self.asset_factory:
             res.append(asset)
         return res
 
@@ -275,8 +132,8 @@ class AssetsView(object):
     def post(self):
         request = self.request
         #print request.session
-        if not authenticated_userid(request):
-            return {'result': 'error', 'why': 'diaf'}
+        # if not authenticated_userid(request):
+        #     return {'result': 'error', 'why': 'diaf'}
 
         post_param = dict(request.POST)
         print post_param
@@ -290,3 +147,149 @@ class AssetsView(object):
 
         #del data['_id']
         return [dict(result='saa')]
+
+
+@view_defaults(route_name='rest_spaces', renderer='json')
+class SpacesView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space_factory = request.context
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        res = []
+        for space in self.space_factory:
+            res.append(space)
+        return res
+
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        return self.space_factory.create_space()
+
+
+@view_defaults(route_name='rest_space', renderer='json')
+class SpaceView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space = request.context
+        # Pop items since they are available at rest_space_items
+        self.space.pop('clusters')
+        self.api_safe_space = self.space.stripped
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.api_safe_space
+
+    @view_config(request_method='PUT', permission='write')
+    def put(self):
+        # Context should be m4ed.models Cluster
+        res = self.space.save()
+        if res['err'] is not None:
+            self.request.response.status = '500'
+        else:
+            self.request.response.status = '200'
+        return {}
+
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        res = self.space.create_cluster()
+        if res is None:
+            self.request.response.status = '500'
+            res = {'err': True}
+
+        return res
+
+    @view_config(request_method='DELETE', permission='write')
+    def delete(self):
+        # Context should be m4ed.models Cluster
+        pass
+
+
+@view_defaults(route_name='rest_space_clusters', renderer='json')
+class SpaceClustersView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space = request.context
+        self.clusters = self.space.get('clusters')
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.clusters
+
+
+# @view_defaults(route_name='rest_clusters', renderer='json')
+# class ClustersView(object):
+#     def __init__(self, request):
+#         self.cluster = request
+#         self.space_factory = request.context
+
+#     @view_config(request_method='GET', permission='read')
+#     def get(self):
+#         res = []
+#         for cluster in self.space_factory:
+#             res.append(cluster.stripped)
+#         return res
+
+#     @view_config(request_method='POST', permission='write')
+#     def post(self):
+#         # Context should be m4ed.factories.SpaceFactory
+#         res = self.space_factory.create_cluster()
+#         print res
+#         if res is None:
+#             self.request.response.status = '500'
+#             res = {'err': True}
+
+#         return res
+
+
+@view_defaults(route_name='rest_cluster', renderer='json')
+class ClusterView(object):
+    def __init__(self, request):
+        self.request = request
+        self.cluster = request.context
+        # Pop items since they are available at rest_cluster_items
+        self.cluster.pop('items')
+        self.api_safe_cluster = self.cluster.stripped
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.api_safe_cluster
+
+    @view_config(request_method='PUT', permission='write')
+    def put(self):
+        # Context should be m4ed.models Cluster
+        res = self.cluster.save()
+        if res['err'] is not None:
+            self.request.response.status = '500'
+        else:
+            self.request.response.status = '200'
+        return {}
+
+    @view_config(request_method='DELETE', permission='write')
+    def delete(self):
+        # Context should be m4ed.models Cluster
+        pass
+
+
+@view_defaults(route_name='rest_cluster_items', renderer='json')
+class ClusterItemsView(object):
+    def __init__(self, request):
+        self.request = request
+        self.cluster = request.context
+        self.items = self.cluster.get('items')
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.items
+
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        res = self.cluster.create_item()
+        if res is None:
+            self.request.response.status = '500'
+            res = {'err': True}
+
+        return res

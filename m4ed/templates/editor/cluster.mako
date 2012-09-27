@@ -1,5 +1,5 @@
 <%!
-  import json
+  from m4ed.util.customjson import dumps
 %>
 
 <%inherit file="base.mako"/>
@@ -18,14 +18,15 @@
 <%block name="content">
 
   <header class="header">
-    <div class="location">Learning space / Collection</div>
+    <div class="location">Space / ${cluster.title}</div>
   </header>
 
   <!-- The list of items -->
   <ul class="ui-sortable">
-  % for item in items:
+
+  % for item in cluster['items']:
     <li id='${item._id}' data-index='${item.listIndex}'>
-      ${item_template(item.title, item.desc, '/fanstatic/m4ed/img/48x48.gif', json.dumps(item.tags))}
+      ${item_template(item.title, item.desc, '/fanstatic/m4ed/img/48x48.gif', dumps(item.tags))}
     </li>
   % endfor
   </ul>
@@ -36,6 +37,22 @@
 </%block>
 
 <%block name="scripts">
+
+  <script>
+    require(['/fanstatic/m4ed/js/config.js'], function() {
+      require(['backbone', 'models/item', 'editor_app', 'domReady!'], function(Backbone, ItemModel, App) {
+
+        var ItemCollection = Backbone.Collection.extend({
+          url: '/api/clusters/${cluster._id}/items',
+          model: ItemModel
+        });
+
+        var items = new ItemCollection(${dumps(cluster['items']) | n});
+
+        App.initialize(items);
+      });
+    });
+  </script>
 
   <!-- Hogan templates -->
   ${hogan_item()}
@@ -48,6 +65,7 @@
     File Upload locale temporarily here,
     until a common locale system is implemented
   -->
+
   <script>
   window.locale = {
     "fileupload": {

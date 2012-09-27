@@ -9,14 +9,13 @@ from pyramid.security import (
     authenticated_userid
     )
 
-from m4ed.factories import UserFactory
+import logging
 
-import bcrypt
-
+log = logging.getLogger(__name__)
 
 def valid_login(request):
-    user_factory = UserFactory(request)
-    user = user_factory.login()
+    # Request context should be m4ed.factories.UserFactory at this point
+    user = request.context.login()
     if not user:
         return False
     return user
@@ -28,21 +27,22 @@ def login(request):
     next = request.params.get('next') or request.route_url('index')
     if authenticated_userid(request):
         return HTTPFound(location=next)
-    name = ''
+    username = ''
     password = ''
     message = ''
     if 'form.submitted' in request.params:
         user = valid_login(request)
         if user:
-            headers = remember(request, user.name)
+            headers = remember(request, user.username)
             return HTTPFound(location=next, headers=headers)
         else:
             message = 'invalid password'
 
     return dict(
+        next=next,
         message=message,
-        url='/login',
-        name=name,
+        post_url=request.route_url('login'),
+        username=username,
         password=password
         )
 
@@ -50,13 +50,18 @@ def login(request):
 def valid_registration(request):
     message = ''
 
-    user_factory = UserFactory(request)
-    result = user_factory.create()
+    # Request context should be m4ed.factories.UserFactory at this point
+    result = request.context.create_user()
 
     if result['success'] is False:
         message = result['message']
+        log.debug('{0} Failed to register: {1}'.format(
+            request.remote_addr, message))
         data = result['data']
-        return (dict(name=data['name'], email=data['email']), message)
+        return (dict(
+            username=data['username'],
+            email=data['email']
+            ), message)
     else:
         user = result['user']
         return (user, message)
@@ -64,17 +69,24 @@ def valid_registration(request):
 
 @view_config(route_name='register', renderer='medium/auth/register.mako')
 def register(request):
-    next = request.params.get('next') or request.route_url('editor')
+    next = request.params.get('next') or request.route_url('index')
     if authenticated_userid(request):
         return HTTPFound(location=next)
 
     message = ''
-    name = ''
+    username = ''
     email = ''
     if 'form.submitted' in request.params:
         user, message = valid_registration(request)
         try:
-            headers = remember(request, str(user.name))
+            headers = remember(request, str(user.username))
+            #if 'csrf_token' not in request.cookies.keys():
+            # request.response.set_cookie(
+            #     'csrftoken',
+            #     value=request.session.get_csrf_token(),
+            #     overwrite=True
+            # )
+            # TODO: Ensure that this doesn't happen --v--
             #str_headers = []
             # Stupid fix to remove unicode values in header
             # that something seems to generate
@@ -90,18 +102,23 @@ def register(request):
 
             return HTTPFound(location=next, headers=headers)
         except AttributeError:
-            name = user.get('name')
+            username = user.get('username')
             email = user.get('email')
 
     return dict(
         url=request.route_url('register'),
         message=message,
-        name=name,
+        username=username,
         email=email
     )
 
 
 @view_config(route_name='logout')
 def logout(request):
+    next = request.params.get('next') or request.route_url('index')
+    if not authenticated_userid(request):
+        return HTTPFound(location=request.route_url('login'))
     headers = forget(request)
-    return HTTPFound(location='/', headers=headers)
+    response = HTTPFound(location=next, headers=headers)
+    response.set_cookie('csrf_token', value=None)
+    return response

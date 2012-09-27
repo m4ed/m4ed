@@ -8,8 +8,11 @@ import pymongo
 import redis
 import zmq
 
+from bson import ObjectId
+
 from m4ed.security import groupfinder
 from m4ed.util.settings import parse_asset_settings
+from pyramid.renderers import JSON
 
 
 def main(global_config, **settings):
@@ -53,7 +56,10 @@ def main(global_config, **settings):
 
     # Set up the shared math text parser
     config.set_request_property('m4ed.request_properties:math_text_parser',
-                                  name='math_text_parser', reify=True)
+                                name='math_text_parser', reify=True)
+
+    config.set_request_property('m4ed.request_properties:user',
+                                name='user', reify=True)
 
     # For debugging matplotlib
     # from matplotlib import verbose
@@ -69,6 +75,10 @@ def main(global_config, **settings):
     config.include('pyramid_fanstatic')
     config.include('m4ed.routes')
     config.add_static_view('static', 'static', cache_max_age=3600)
+
+    json_renderer = JSON()
+    json_renderer.add_adapter(ObjectId, lambda obj, req: str(obj))
+    config.add_renderer('json', json_renderer)
 
     config.scan()
     return config.make_wsgi_app()

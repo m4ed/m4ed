@@ -11,18 +11,53 @@ db = db_conn['m4ed']
 items = []
 child_items = []
 
+db.spaces.drop()
+print "- Spaces dropped."
+db.clusters.drop()
+print "- Clusters dropped."
+db.users.remove({"username": "m4ed"})
+print '- Removed user "m4ed"'
+
+db.users.insert({
+    "password": "$2a$12$Suow7A.rkHgi4gWqhuGmLeHLsFZ1bry5hXY9j0KzK4VHoFiFOoOq6",
+    "username": "m4ed",
+    "groups": [],
+    "email": "m4ed@m4ed.com"
+})
+print '+ Added user "m4ed" with password "12345".'
+
+space_id = db.spaces.insert({
+    "title": "Space 1",
+    "desc": "Space description",
+    "tags": [],
+    "groups_read": ["m4ed"],
+    "groups_write": ["m4ed"]
+    })
+print '+ Added Space 1.'
+
+cluster_id = db.clusters.insert({
+    "title": "Cluster 1",
+    "space_id": space_id,
+    "groups_read": ["m4ed"],
+    "groups_write": ["m4ed"],
+    "desc": "Cluster description",
+    "tags": []
+    })
+print '+ Added Cluster 1.'
+
 # Insert some lessons
 r = randint(2, 5)
 for i in range(0, r):
     items.append({
         'title': 'Lesson {}'.format(i + 1),
         'desc': 'Description for lesson {}'.format(i + 1),
-        'tags': [],
+        'cluster_id': cluster_id,
+        'tags': ['tag1', 'tag2', 'tag3'],
         'text': '## Content for lesson {}'.format(i + 1),
     })
 # Clear the collection
 db.items.drop()
-print "Items dropped."
+print "- Items dropped."
 
 item_ids = db.items.insert(items)
 
@@ -38,18 +73,19 @@ for i, item_id in enumerate(item_ids):
         db.items.insert({
             'title': 'Exercise {}.{}'.format(i, j),
             'desc': 'Description for exercise {}.{}'.format(i, j),
+            'cluster_id': cluster_id,
             'tags': [],
             'text': '## Content for exercise {}.{}'.format(i, j),
             'listIndex': listIndex
         })
         listIndex += 1
 
-    print "Added Lesson {} with {} exercises.".format(i, r)
+    print "+ Added Lesson {} with {} exercises.".format(i, r)
 
 
 # Clear the collection
 db.assets.drop()
-print "Assets dropped."
+print "- Assets dropped."
 
 r = randint(20, 50)
 
@@ -70,4 +106,4 @@ for i in range(1, r):
         'tags': [],
         'size': 150
     })
-print "Added {} images.".format(r)
+print "+ Added {} images.".format(r)

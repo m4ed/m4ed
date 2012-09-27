@@ -14,14 +14,17 @@ class UTF8(valideer.String):
 
     name = 'utf8'
 
-    def __init__(self, min_length=3, max_length=1024, must_contain=[]):
+    def __init__(self, min_length=3, max_length=1024, must_contain=[], nullable=True):
         super(UTF8, self).__init__(
             min_length=min_length,
             max_length=max_length
             )
         self.must_contain = must_contain
+        self.nullable = nullable
 
     def validate(self, value, adapt=True):
+        if value in ['', None] and self.nullable:
+            return ''
         super(UTF8, self).validate(value)
 
         for c in self.must_contain:
@@ -62,7 +65,7 @@ class BsonObjectIdValidator(valideer.String):
 
 Validator.register('username', UTF8(min_length=3))
 Validator.register('password', UTF8(min_length=5))
-Validator.register('email', UTF8(min_length=3, must_contain=[u'@']))
+Validator.register('email', UTF8(min_length=3, must_contain=[u'@'], nullable=True))
 #Validator.register('objectid', BsonObjectIdValidator())
 
 _VALIDATORS = dict(
@@ -78,20 +81,20 @@ _VALIDATORS = dict(
     item=Validator.parse({
         '?_id': AdaptTo(ObjectId),  # Every item has this except newly created ones
         '+cluster_id': AdaptTo(ObjectId),  # The cluster this item belongs to
-        '+answers': {
+        'answers': {
             'string': [
                 'string'
             ]
         },
         '+desc': valideer.String(min_length=1),
-        '+html': 'string',
+        'html': 'string',
         '+listIndex': AdaptTo(int),
         '+tags': ['string'],
-        '+text': 'string',
+        'text': 'string',
         '+title': valideer.String(min_length=1)
     }),
     user_registration_form=Validator.parse({
-        '+name': 'username',
+        '+username': 'username',
         '+pw1': 'password',
         '+pw2': 'password',
         '?email': 'email'

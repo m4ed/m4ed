@@ -10,11 +10,12 @@
 <body>
     <b>Login</b><br/>
     <span>${message}</span>
-    <form action="${url}" method="post">
-      <input type="text" name="name" value="${name}"/><br/>
+    <form action="${post_url}" method="post">
+      <input type="text" name="username" value="${username}"/><br/>
       <input type="password" name="password"
              value="${password}"/><br/>
       <input type="submit" name="form.submitted" value="Log In"/>
+      <input type="hidden" name="next" value="${next}"/>
     </form>
 </body>
 </%block>

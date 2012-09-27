@@ -12,7 +12,7 @@
     <span>${message}</span>
     <form action="${url}" method="post"/>
       <div><label for="name">Name</label></div>
-      <input type="text" name="name" value="${name}"/>
+      <input type="text" name="username" value="${username}"/>
       <div><label for="pw1">Password</label></div>
       <input type="password" name="pw1" value=""/>
       <div><label for="pw2">Confirm password</label></div>

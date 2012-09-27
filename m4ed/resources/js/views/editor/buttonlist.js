@@ -3,11 +3,11 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'collections/buttons',
+  'collections/base',
   'views/editor/button',
   'views/editor/templates'
 ],
-function($, _, Backbone, ButtonCollection, ButtonView, templates) {
+function($, _, Backbone, BaseCollection, ButtonView, templates) {
 
   var buttonListView = Backbone.View.extend({
 
@@ -19,7 +19,7 @@ function($, _, Backbone, ButtonCollection, ButtonView, templates) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.buttons = new ButtonCollection();
+      this.buttons = new BaseCollection();
       this.buttons.bind('add', this.onAdd, this);
 
       this.dispatcher.on('closeButtons', this.onCloseButtons, this);

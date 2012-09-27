@@ -7,7 +7,7 @@
     <p><a href="/">Home</a></p>
     <p>Name: ${space.title}</p>
     <p>description: ${space.desc if hasattr(space, 'desc') else space.description}</p>
-    <p><a href="${new_cluster_url}">New cluster</a></p>
+    ## <p><a href="${new_cluster_url}">New cluster</a></p>
     <p>Clusters</p>
     <ul>
     % for c in space.get('clusters', list()):
