@@ -683,7 +683,7 @@ class ClusterFactory(BaseFactory):
                 # Pop fields that aren't needed via cluster api
                 # child.pop('cluster_id')
                 child.pop('text')
-                # child.pop('html')
+                child.pop('html')
                 # child.pop('answers')
                 items.append(child)
 
