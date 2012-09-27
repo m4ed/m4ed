@@ -84,8 +84,6 @@ function($, _, Backbone, hogan, BaseCollection, ListItemModel, ItemView, EditorV
       // console.log('New item:');
       // console.log(title);
 
-      console.log(this.collection.url);
-
       this.collection.create({
         title: title
       }, options);
