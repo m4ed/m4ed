@@ -39,7 +39,7 @@ class ItemView(object):
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        
+
         # Request context should be m4ed.models.Item
         res = self.item.save()
         if res is None:
@@ -73,24 +73,24 @@ def post_item_answer(self, request):
     return {'I': 'See what you did there', 'res': res}
 
 
-@view_defaults(route_name='rest_items', renderer='json')
-class ItemsView(object):
+# @view_defaults(route_name='rest_items', renderer='json')
+# class ItemsView(object):
 
-    def __init__(self, request):
-        self.request = request
-        self.item_factory = request.context
+#     def __init__(self, request):
+#         self.request = request
+#         self.item_factory = request.context
 
-    @view_config(request_method='GET', permission='read')
-    def get(self):
-        res = []
-        for item in self.item_factory:
-            res.append(item)
-        return res
+#     @view_config(request_method='GET', permission='read')
+#     def get(self):
+#         res = []
+#         for item in self.item_factory:
+#             res.append(item)
+#         return res
 
-    @view_config(request_method='POST')
-    def post(self):
-        # m4ed.factories.ItemFactory
-        return self.item_factory.create_item()
+#     @view_config(request_method='POST')
+#     def post(self):
+#         # m4ed.factories.ItemFactory
+#         return self.item_factory.create_item()
 
 
 @view_defaults(route_name='rest_asset', renderer='json')
@@ -149,8 +149,8 @@ class AssetsView(object):
         return [dict(result='saa')]
 
 
-@view_defaults(route_name='rest_clusters', renderer='json')
-class ClustersView(object):
+@view_defaults(route_name='rest_spaces', renderer='json')
+class SpacesView(object):
     def __init__(self, request):
         self.request = request
         self.space_factory = request.context
@@ -158,26 +158,99 @@ class ClustersView(object):
     @view_config(request_method='GET', permission='read')
     def get(self):
         res = []
-        for cluster in self.space_factory:
-            res.append(cluster.stripped)
+        for space in self.space_factory:
+            res.append(space)
         return res
 
     @view_config(request_method='POST', permission='write')
     def post(self):
-        # Context should be m4ed.factories.SpaceFactory
-        res = self.space_factory.create_cluster()
-        print res
+        # Context should be m4ed.models Cluster
+        return self.space_factory.create_space()
+
+
+@view_defaults(route_name='rest_space', renderer='json')
+class SpaceView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space = request.context
+        # Pop items since they are available at rest_space_items
+        self.space.pop('clusters')
+        self.api_safe_space = self.space.stripped
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.api_safe_space
+
+    @view_config(request_method='PUT', permission='write')
+    def put(self):
+        # Context should be m4ed.models Cluster
+        res = self.space.save()
+        if res['err'] is not None:
+            self.request.response.status = '500'
+        else:
+            self.request.response.status = '200'
+        return {}
+
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        res = self.space.create_cluster()
         if res is None:
             self.request.response.status = '500'
             res = {'err': True}
 
         return res
 
+    @view_config(request_method='DELETE', permission='write')
+    def delete(self):
+        # Context should be m4ed.models Cluster
+        pass
+
+
+@view_defaults(route_name='rest_space_clusters', renderer='json')
+class SpaceClustersView(object):
+    def __init__(self, request):
+        self.request = request
+        self.space = request.context
+        self.clusters = self.space.get('clusters')
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.clusters
+
+
+# @view_defaults(route_name='rest_clusters', renderer='json')
+# class ClustersView(object):
+#     def __init__(self, request):
+#         self.cluster = request
+#         self.space_factory = request.context
+
+#     @view_config(request_method='GET', permission='read')
+#     def get(self):
+#         res = []
+#         for cluster in self.space_factory:
+#             res.append(cluster.stripped)
+#         return res
+
+#     @view_config(request_method='POST', permission='write')
+#     def post(self):
+#         # Context should be m4ed.factories.SpaceFactory
+#         res = self.space_factory.create_cluster()
+#         print res
+#         if res is None:
+#             self.request.response.status = '500'
+#             res = {'err': True}
+
+#         return res
+
+
 @view_defaults(route_name='rest_cluster', renderer='json')
 class ClusterView(object):
     def __init__(self, request):
         self.request = request
         self.cluster = request.context
+        # Pop items since they are available at rest_cluster_items
+        self.cluster.pop('items')
         self.api_safe_cluster = self.cluster.stripped
 
     @view_config(request_method='GET', permission='read')
@@ -194,8 +267,29 @@ class ClusterView(object):
             self.request.response.status = '200'
         return {}
 
-
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
         # Context should be m4ed.models Cluster
         pass
+
+
+@view_defaults(route_name='rest_cluster_items', renderer='json')
+class ClusterItemsView(object):
+    def __init__(self, request):
+        self.request = request
+        self.cluster = request.context
+        self.items = self.cluster.get('items')
+
+    @view_config(request_method='GET', permission='read')
+    def get(self):
+        return self.items
+
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        res = self.cluster.create_item()
+        if res is None:
+            self.request.response.status = '500'
+            res = {'err': True}
+
+        return res

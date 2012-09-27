@@ -3,7 +3,8 @@ define([
   'underscore',
   'backbone',
   'views/editor/templates',
-  'lib/wysiwym/textarea'
+  'lib/wysiwym/textarea',
+  'jquery.ui'
 ],
 function($, _, Backbone, templates, WysiwymTextarea) {
 /*---------------------------------------------------------------------------*
@@ -22,7 +23,12 @@ function($, _, Backbone, templates, WysiwymTextarea) {
 
     initialize: function(options) {
       _.extend(this, options.custom);
+
+      this.throttledResize = _.throttle(_.bind(this.onResize, this), 500 );
+
       this.dispatcher.on('editorButtonClick', this.onEditorButtonClick, this);
+
+      this.dispatcher.on('editorReady', this.onEditorReady, this);
 
       // True to insert blank line when exiting auto-indent ;)
       this.linebreakAfterBlank = true;
@@ -30,15 +36,49 @@ function($, _, Backbone, templates, WysiwymTextarea) {
       this.indentRegex = /^\*\s|(\d+)\.\s|\>\s|\s{3}\s+/;
 
       this.blankline = '';
+
     },
 
     render: function() {
       var $el = this.$el;
       this.textarea = new WysiwymTextarea(this.el);
+
     },
 
     events: {
-      'keydown': 'onKeydown'
+      // 'dragstop': 'onDragstop',
+      'keydown': 'onKeydown',
+      'resize': 'throttledResize'
+    },
+
+    // onMousedown: function() {
+
+    //   this.w = this.$el.outerWidth();
+    //   this.h = this.$el.outerHeight();       
+
+    //   console.log('mousedown', this.w, this.h);
+
+    // },
+
+    // onDragstop: function(){
+
+    //   console.log('mouseup');
+
+    //   var $el = this.$el;
+
+    //   var w = $el.outerWidth()
+    //     , h = $el.outerHeight();
+
+    //   if (w !== this.w || h !== this.h) {
+    //     this.w = w;
+    //     this.h = h;     
+    //     this.dispatcher.trigger('textareaResized', {w: w, h: h});
+    //   }
+
+    // },
+
+    onResize: function() {
+      this.dispatcher.trigger('textareaResized', {w: this.w, h: this.h});
     },
 
     onKeydown: function(e) {
@@ -61,6 +101,12 @@ function($, _, Backbone, templates, WysiwymTextarea) {
     onEditorButtonClick: function(callback) {
       // callback action will be either span, block or list
       this[callback.action](callback.data);
+    },
+
+    onEditorReady: function() {
+      // this.$el.resizable({
+      //   'containment': 'parent'
+      // });
     },
 
     handleIndent: function() {

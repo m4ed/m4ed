@@ -36,7 +36,7 @@
   ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
 
-  <script data-main="/fanstatic/m4ed/js/editor_main.js" src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
+  <script src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 
   <%block name="scripts">
   </%block>

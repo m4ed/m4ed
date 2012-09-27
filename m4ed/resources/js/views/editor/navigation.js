@@ -12,7 +12,7 @@ function(_, Backbone) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.globalDispatcher.on('action:toggleDeletion', this.onToggleDeletion, this);
+      this.globalDispatcher.on('list:toggleDeletion', this.onToggleDeletion, this);
 
       this.buttons = {
         '$add': this.$('.action.add').parent(),
@@ -32,12 +32,12 @@ function(_, Backbone) {
 
     onAddClick: function(e) {
       e.preventDefault();
-      this.handleAction(this.buttons.$add, 'action:addItem');
+      this.handleAction(this.buttons.$add, 'list:addNew');
     },
 
     onDuplicateClick: function(e) {
       e.preventDefault();
-      this.handleAction(this.buttons.$duplicate, 'action:duplicateItem');
+      this.handleAction(this.buttons.$duplicate, 'list:duplicate');
     },
 
     handleAction: function($button, action) {
@@ -49,7 +49,7 @@ function(_, Backbone) {
 
     onToggleDeletionClick: function(e) {
       e.preventDefault();
-      this.globalDispatcher.trigger('action:toggleDeletion');
+      this.globalDispatcher.trigger('list:toggleDeletion');
     },
 
     onToggleDeletion: function(e) {

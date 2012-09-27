@@ -1,16 +1,21 @@
-// Filename: views/editor/item.js
+// Filename: views/editor/listitem.js
+
+// NOTE: This view is extendable, not supposed to be used directly
+
 define([
   'underscore',
   'backbone',
-  'views/editor/editor',
   'views/editor/templates',
   'jquery.plugins',
   'jquery.textext.tags',
   'jquerypp/event/resize'
 ],
-function(_, Backbone, EditorView, templates) {
+function(_, Backbone, templates) {
 
   var INPUT_SPACE = 15; // Add some space to the auto-resizing input
+
+  // This view is inheritable like suggested here:
+  // http://stackoverflow.com/a/7736030
 
   var listItemView = Backbone.View.extend({
 
@@ -19,16 +24,6 @@ function(_, Backbone, EditorView, templates) {
     initialize: function(options) {
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
-
-      // Listen to changes in model
-      this.model.bind('change:title', this.onTitleChange, this);
-      this.model.bind('change:desc', this.onDescriptionChange, this);
-      this.model.bind('destroy', this.onDestroy, this);
-
-      this.editor = null;
-      this.editorInitialized = false;
-
-      this.throttledResize = _.throttle(_.bind(this.onResize, this), 500 );
 
       if (!options.el) {
         this.render();
@@ -58,18 +53,24 @@ function(_, Backbone, EditorView, templates) {
         }
       };
 
+      // Listen to changes in model
+      this.model.bind('change:title', this.onTitleChange, this);
+      this.model.bind('change:desc', this.onDescriptionChange, this);
+      this.model.bind('destroy', this.onDestroy, this);
+
+      this.throttledResize = _.throttle(_.bind(this.onResize, this), 500 );
+
       // Set title and index to model so that fetch isnt needed on add
-      this.model.set({
-        'title': this.editables.title.$view.text(),
-        'listIndex': this.$el.data('index')
-      });
+      // this.model.set({
+      //   'title': this.editables.title.$view.text(),
+      //   'listIndex': this.$el.data('index')
+      // });
 
-      this.globalDispatcher.on('sortUpdated', this.onSortUpdated, this);
-      this.globalDispatcher.on('itemSelected', this.onItemSelected, this);
-      this.globalDispatcher.on('action:toggleDeletion', this.onToggleDeletion, this);
+      this.globalDispatcher.on('list:sortUpdated', this.onSortUpdated, this);
+      this.globalDispatcher.on('list:itemSelected', this.onItemSelected, this);
+      this.globalDispatcher.on('list:toggleDeletion', this.onToggleDeletion, this);
 
-
-      var tags = this.model.has('tags') ? this.model.get('tags') : this.$item.data('tags');
+      var tags = this.model.get('tags');
 
       this.$tags.textext({
         plugins : 'tags',
@@ -87,6 +88,7 @@ function(_, Backbone, EditorView, templates) {
     },
 
     render: function() {
+      // console.log(this);
       this.$el
           .attr('id', this.model.get('_id'))
           // .data('index', this.model.get('listIndex'))
@@ -95,7 +97,6 @@ function(_, Backbone, EditorView, templates) {
     },
 
     events: {
-      'click .item-actions': 'onActionClick',
       'click .view': 'onEditableClick',
       'click .text-tags': 'onTagsClick',
       'click .edit': 'onEditClick',
@@ -103,6 +104,7 @@ function(_, Backbone, EditorView, templates) {
       'click .btn-remove': 'onDeleteClick',
       'resize': 'throttledResize',
       'blur .edit': 'onEditBlur',
+      // 'blur .tags': 'onTagsBlur',
       'keyup.esc .edit': 'onEditKeyupEsc',
       'keyup.return .edit': 'onEditKeyupReturn',
       'keyup .edit': 'onEditKeyup',
@@ -117,28 +119,33 @@ function(_, Backbone, EditorView, templates) {
       var field = $(e.currentTarget).parent().attr('class');
       if (field !== 'title' && field !== 'desc' ) return; 
 
-      function swapToInput(field) {
-        field.$edit.width(field.$view.width() + INPUT_SPACE);
-        field.$wrapper.addClass('editing');
-        field.$edit.select();
-      }
-
       field = this.editables[field];
-
-      // Sync the model if it doesn't seem to have the needed field
-      if (!this.model.has(field)) {
-        this.model.fetch({
-          success: _.bind(swapToInput, this, field)
-        });
-      } else {
-        swapToInput(field);
-      }
 
       // Select the item if not selected already
       if (!this.isSelected()) {
         this.select();
-      }      
+      }    
+
+      field.$edit.width(field.$view.width() + INPUT_SPACE);
+      field.$wrapper.addClass('editing');
+      field.$edit.select();
+
+      // Sync the model if it doesn't seem to have the needed field
+      // if (!this.model.has(field)) {
+      //   this.model.fetch({
+      //     success: _.bind(this.onEditableClickCallback, this, field)
+      //   });
+      // } else {
+      //   this.onEditableClickCallback(field);
+      // }
+  
     },
+
+    // onEditableClickCallback: function(field) {
+    //   field.$edit.width(field.$view.width() + INPUT_SPACE);
+    //   field.$wrapper.addClass('editing');
+    //   field.$edit.select();
+    // },
 
     onTagsClick: function(e) {
       e.stopPropagation();
@@ -153,20 +160,15 @@ function(_, Backbone, EditorView, templates) {
       return false;
     },
 
-    onActionClick: function(e) {
-      // This prevents clicks going through the edit input area
-      e.stopPropagation();
-      return false;
-    },
-
     onItemClick: function(e) {
+
+      e.stopPropagation();
 
       // Prevent editor toggle if title, description or tag edit is active
       for (var key in this.editables) {
         var field = this.editables[key];
         if (field.$wrapper.hasClass('editing')){
           this.closeEdit(true, field.$edit);
-          e.stopPropagation();
           return false;
         }
       }
@@ -180,21 +182,6 @@ function(_, Backbone, EditorView, templates) {
       if (!this.isSelected()) {
         this.select();
       }
-
-      // Check if we need a new editor view created
-      if (this.editorInitialized === false) {
-        this.editorInitialized = true;
-        this.editor = new EditorView({
-          model: this.model,
-          custom: {
-            globalDispatcher: this.globalDispatcher,
-            dispatcher: this.dispatcher,
-            parent: this
-          }
-        });
-      } 
-      this.editor.toggle();
-      return false;
     },
 
     onToggleDeletion: function(e) {
@@ -208,7 +195,7 @@ function(_, Backbone, EditorView, templates) {
     },
 
     onDestroy: function(e) {
-      if (this.isSelected()) this.globalDispatcher.trigger('itemSelected', undefined);
+      if (this.isSelected()) this.globalDispatcher.trigger('list:itemSelected', undefined);
       this.close();
     },
 
@@ -223,21 +210,21 @@ function(_, Backbone, EditorView, templates) {
     }, 
 
     scrollTop: function() {
-      var offset = this.$item.offset().top -
+      this.offsetTop = this.$item.offset().top -
           this.$item.cssInt('margin-top') - 
           $('body').cssInt('padding-top');
       $('html:not(:animated),body:not(:animated)').animate({
-        scrollTop: offset
+        scrollTop: this.offsetTop
       }, 200);
     },
-
+    
     select: function() {
       this.$item.addClass('selected');
       // Sync the model if it doesn't have an id
       if (!this.model.has('_id')) {
         this.model.fetch();
       }
-      this.globalDispatcher.trigger('itemSelected', this.model.get('_id'));
+      this.globalDispatcher.trigger('list:itemSelected', this.model.get('_id'));
       this.$el.trigger('resize');
     },
 
@@ -261,6 +248,10 @@ function(_, Backbone, EditorView, templates) {
       this.closeEdit(true, e.currentTarget);
       return false;
     },
+
+    // onTagsBlur: function(e) {
+    //   if (this.model.hasChanged('tags')) this.model.save();
+    // },
 
     onEditKeyup: function(e) {
       var field;
@@ -315,24 +306,30 @@ function(_, Backbone, EditorView, templates) {
       var currentIndex = this.model.get('listIndex');
       var newIndex = order.indexOf(_id);
       if (newIndex !== currentIndex) {
-        if (!this.model.has('text')) {
-          this.model.fetch({
-            success: _.bind(function(model, response) {
-              this.onSortUpdatedCallback(model, newIndex);
-            }, this)
-          });
-        } else {
-          this.onSortUpdatedCallback(this.model, newIndex);
-        }
+
+        this.model.save({'listIndex': newIndex});
+        // console.log('Index updated.');
+
+        // This used to be necessary since the api demanded the whole model
+
+        // if (!this.model.has('text')) {
+        //   this.model.fetch({
+        //     success: _.bind(function(model, response) {
+        //       this.onSortUpdatedCallback(model, newIndex);
+        //     }, this)
+        //   });
+        // } else {
+        //   this.onSortUpdatedCallback(this.model, newIndex);
+        // }
       }
 
     },
 
-    onSortUpdatedCallback: function(model, index) {
-      // console.log('model', model);
-      model.save({'listIndex': index});
-      console.log('Index updated.');
-    },
+    // onSortUpdatedCallback: function(model, index) {
+    //   // console.log('model', model);
+    //   model.save({'listIndex': index});
+    //   console.log('Index updated.');
+    // },
 
     closeEdit: function(save, target) {
       // target variable will always be an input element
@@ -355,23 +352,24 @@ function(_, Backbone, EditorView, templates) {
     },
 
     onTagChange: function(e, context) {
-      if (!this.model.has('tags')) {
-        this.model.fetch();
-      } 
-      var callback = _.bind(this.saveTags, {'tags': context.result});
-      if (!this.model.has('tags')) {
-        this.model.fetch({
-          success: callback
-        });
-      } else {
-        callback(this.model);
-      }
-    },
 
-    saveTags: function(model, response) {
-      model.save({'tags': this.tags});
+      this.model.save({'tags': context.result});
+
+      // var callback = _.bind(this.saveTags, {'tags': context.result});
+      // if (!this.model.has('tags')) {
+      //   this.model.fetch({
+      //     success: callback
+      //   });
+      // } else {
+      //   callback(this.model);
+      // }
     }
 
+    // saveTags: function(model, response) {
+    //   model.save({'tags': this.tags});
+    // }
+
   });
+
   return listItemView;
 });

@@ -1,43 +1,54 @@
-// Filename: views/items/list.js
+// Filename: views/items/sortablelist.js
+
+// NOTE: This view is extendable, not supposed to be used directly
+
 define([
   'jquery',
   'underscore',
   'backbone',
   'hogan',
-  'collections/items',
-  'views/editor/listitem',
+  'collections/base',
+  'models/listitem',
+  'views/editor/item',
   'views/editor/editor',
   'views/editor/upload',
   'jquery.ui.touch-punch'
 ],
-function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView) {
+function($, _, Backbone, hogan, BaseCollection, ListItemModel, ItemView, EditorView, UploadView) {
 
   var sortableListView = Backbone.View.extend({
 
-    events: {
-      'sortupdate': 'onSortUpdate'
-    },
-    
     initialize: function(options) {
 
       // Extend this object with all the custom options passed
       _.extend(this, options.custom);
 
-      this.items = new ItemCollection();
+      var url = options ? options.url : undefined;
+      if (!this.collection) {
+        this.collection = new BaseCollection({
+          url: url,
+          model: ListItemModel
+        });
+      } 
 
-      this.items.on('add', this.onAdd, this);
+      this.collection.on('add', this.onAdd, this);
 
-      var items = this.items;
+      var collection = this.collection;
 
       this.$list = this.$el.find('.ui-sortable');
 
-      // Init items from rendered content
-      this.$list.children('li').each(function(index) {
-        var $li = $(this);
-        items.add({_id: $li.attr('id')}, {$el: $li});
-      });
+      // Init views
+      this.collection.each(function (model){
+        this.createItemView(model, {$el: this.$('#' + model.get('_id'))});
+      }, this);
 
-      // Make items sortable 
+      // Init collection from rendered content
+      // this.$list.children('li').each(function(index) {
+      //   var $li = $(this);
+      //   collection.add({_id: $li.attr('id')}, {$el: $li});
+      // });
+
+      // Make list sortable 
       if ($.support.touch) {
         // Show a handle for touch devices
         $('.item .handle').show();
@@ -46,89 +57,78 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
         this.$list.sortable({ distance: 20 });
       }
 
-      // Keep count of open editors
-      this.editorsOpen = 0;
-
       // Bind global events
-      this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
-      this.globalDispatcher.on('editorClosed', this.onEditorClosed, this); 
-      this.globalDispatcher.on('itemSelected', this.onItemSelected, this); 
-      this.globalDispatcher.on('refreshSortable', this.refreshSortable, this); 
-      this.globalDispatcher.on('action:addItem', this.add, this); 
-      this.globalDispatcher.on('action:duplicateItem', this.duplicate, this); 
-      this.globalDispatcher.on('action:toggleDeletion', this.onToggleDeletion, this); 
-
-      // Create a view for the modal upload form
-      this.upload = new UploadView({
-        el: '#fileupload',
-        custom: {
-          globalDispatcher: this.globalDispatcher,
-          parent: this
-        }
-      });
+      this.globalDispatcher.on('list:itemSelected', this.onItemSelected, this); 
+      this.globalDispatcher.on('list:refresh', this.refreshSortable, this); 
+      this.globalDispatcher.on('list:addNew', this.addNew, this); 
+      this.globalDispatcher.on('list:duplicate', this.duplicate, this); 
+      this.globalDispatcher.on('list:toggleDeletion', this.onToggleDeletion, this); 
 
       this.duplicateRE = / \((\d+)\)$/;
 
     },
 
-    add: function() {
+    events: {
+      'sortupdate': 'onSortUpdate'
+    },
+
+    addNew: function() {
 
       var title = 'Click to add a title';
 
-      title = this.fixDuplicateTitle(title, this.items, this.duplicateRE);
+      title = this.fixDuplicateTitle(title);
 
-      var options = {};
-      if (this.items.length > 0) options.at = 0;
+      var options = {wait: true};
+      if (this.collection.length > 0) options.at = 0;
 
-      this.items.add({
-        listIndex: 0,
-        title: title,
-        desc: 'Click to add a description',
-        text: '',
-        tags: []
+      // console.log('New item:');
+      // console.log(title);
+
+      console.log(this.collection.url);
+
+      this.collection.create({
+        title: title
       }, options);
+
     },
 
     duplicate: function() {
 
-      var source = this.selectedItem ? this.items.get(this.selectedItem) : undefined;
+      var source = this.selectedItem ? this.collection.get(this.selectedItem) : undefined;
 
       if (source) {
 
-        var index = source.get('listIndex') + 1;
-        var title = source.get('title').replace(this.duplicateRE, '');
+        var clone = source.toJSON();
 
-        title = this.fixDuplicateTitle(title, this.items, this.duplicateRE);
+        var title = clone.title.replace(this.duplicateRE, '');
+        title = this.fixDuplicateTitle(title);
+        clone.title = title;
 
-        var tags = source.get('tags');
+        delete clone._id;
 
+        if (clone.listIndex !== undefined) clone.listIndex++;
 
+        // console.log('Duplicate:');
+        // console.log(clone);
 
-        console.log(typeof tags);
-
-        this.items.add({
-          listIndex: index,
-          title: title,
-          desc: source.get('desc'),
-          text: source.get('text'),
-          tags: source.get('tags')
-        }, {
-          at: index
+        this.collection.create(clone, {
+          at: clone.listIndex,
+          wait: true
         });
 
       }
     },
 
-    fixDuplicateTitle: function(title, items, expression) {
+    fixDuplicateTitle: function(title) {
 
       var context = {
         title: title,
         lastN: 0,
-        re: expression
+        re: this.duplicateRE
       };
 
-      // Check if the list already contains items with same title
-      items.each(function(item) {
+      // Loop the list for duplicate titles
+      this.collection.each(function(item) {
         var title = item.get('title');
         var baseTitle = title.replace(this.re, '');
         if (baseTitle === this.title) {
@@ -152,110 +152,87 @@ function($, _, Backbone, hogan, ItemCollection, ItemView, EditorView, UploadView
 
     },
 
-    onAdd: function(item, items, options) {
+    onAdd: function(model, collection, options) {
 
-      if (this.deletionMode) this.globalDispatcher.trigger('action:toggleDeletion');
+      // The function 'createItemView' must be implemented
+      // in inheriting views and the function 'addItemToDOM'
+      // should be called afterwards if needed
+
+      if (this.deletionMode) this.globalDispatcher.trigger('list:toggleDeletion');
 
       // In case of a new item sync the model and add the view to the list
-      if(!options.$el) {
-        console.log('Saving new item...');
+      // if(!options.$el) {
+      //   console.log('Saving model...');
 
-        _.extend(this, {options: options});
+      //   _.extend(this, {options: options});
 
-        item.save({}, {
-          success: _.bind(function(model, response){
-            console.log('Save successful.');
-            this.onAddCallback(model, this.options);
-          }, this),
-          error: function(){
-            console.log("Error: couldn't save item.");
-          }
-        });
-      } else {
-        this.onAddCallback(item, options); 
-      }
+      //   model.save({}, {
+      //     success: _.bind(function(model, response){
+      //       console.log('Save successful.');
+      //       this.createItemView(model, this.options);
+      //     }, this),
+      //     error: function(){
+      //       console.log("Error: couldn't save model.");
+      //     }
+      //   });
+      // } else {
+        this.createItemView(model, options); 
+      // }
 
     },
 
-    onAddCallback: function(model, options) {
+    addItemToDOM: function(model, options) {
 
-      var el = options ? options.$el : undefined;
+      // The view should be passed from inheriting listview
+      if (options.view) {
 
-      var itemView = new ItemView({
-        model: model,
-        el: el,
-        custom: {
-          dispatcher: _.clone(Backbone.Events),
-          globalDispatcher: this.globalDispatcher,
-          parent: this,
-          templates: this.templates
-        }
-      })
-        , $item = itemView.$el;
+        var $el = options.view.$el;
 
-      // Update sortable and indexes if necessary
-      if (!el) {
-        // var index = this.items.indexOf(model);
         var index = options.index;
+        
         var $children = this.$list.children('li');
         if ($children.length === 0) {
-          this.$list.append($item);
+          this.$list.append($el);
         } else {
           if (index === $children.length) {
-            this.$list.append($item);
+            this.$list.append($el);
           } else if (index === 0) {
-            this.$list.prepend($item);
+            this.$list.prepend($el);
           } else {
             var $li = $children.eq(index);
-            $li.before($item);
+            $li.before($el);
           }
         }
-        this.globalDispatcher.trigger('refreshSortable');
-        // Scroll to item
-        itemView.scrollTop();
-        // Select the new item
-        itemView.select();
 
+        this.globalDispatcher.trigger('list:refresh');
+
+        options.view.scrollTop();
+        options.view.select();
+
+        // Enable the buttons in context menu
         this.globalDispatcher.trigger('nav:toggleButton', 'add', 'on');
         this.globalDispatcher.trigger('nav:toggleButton', 'duplicate', 'on');
-
-      } else {
-        // This block is for initial add
-        this.$list.append($item);
-      }
+      } 
 
     },
 
     onItemSelected: function(_id) {
+      var lastState = this.selectedItem ? 'on' : 'off';
       this.selectedItem = _id ? _id : undefined;
       var state = _id ? 'on' : 'off';
-      this.globalDispatcher.trigger('nav:toggleButton', 'duplicate', state);
-      console.log('Item selected: ' + _id);
+      if (state !== lastState) this.globalDispatcher.trigger('nav:toggleButton', 'duplicate', state);
+      // console.log('List item selected: ' + _id);
     },
 
     onSortUpdate: function(e, ui) {
       var order = this.$list.sortable('toArray');
       console.log('Sort updated.');
-      this.globalDispatcher.trigger('sortUpdated', order);
+      this.globalDispatcher.trigger('list:sortUpdated', order);
     },
 
     refreshSortable: function() {
       var order = this.$list.sortable('refresh').sortable('toArray');
-      this.globalDispatcher.trigger('sortUpdated', order);
-    },
-
-    onEditorOpened: function() {
-      if (this.editorsOpen === 0) {
-        this.$list.sortable('disable');
-      }
-      this.editorsOpen++;
-    },
-
-    onEditorClosed: function() {
-      this.editorsOpen--;
-      if (this.editorsOpen === 0) {
-        this.$list.sortable('enable');
-      }
+      this.globalDispatcher.trigger('list:sortUpdated', order);
     },
 
     onToggleDeletion: function() {
