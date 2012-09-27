@@ -11,9 +11,6 @@ function(_, Backbone, ListItemView, EditorView) {
 
     initialize: function(options) {
       ListItemView.prototype.initialize.apply(this, arguments);
-
-      this.dispatcher.on('editorReady', this.onEditorReady, this);
-
     },
 
     onItemClick: function(e) {
@@ -35,10 +32,6 @@ function(_, Backbone, ListItemView, EditorView) {
 
       return false;
 
-    },
-
-    onEditorReady: function(e) {
-      this.editor.toggle();
     }
 
   });

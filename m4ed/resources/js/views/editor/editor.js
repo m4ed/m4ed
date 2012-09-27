@@ -32,7 +32,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       _.extend(this, options.custom);
       this.activeXhr = null;
       this.lastContent = null;
-      this.editorInitialized = false;
 
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
@@ -41,15 +40,15 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       this.dispatcher.on('insertAsset', this.onInsertAsset, this);
       this.dispatcher.on('textareaResized', this.onTextareaResize, this);
 
-      // console.log('Editor initialized.');
-
-      // If the model already has text, assume it has been initialized
-      // somewhere else and render it
-      if (this.model.has('text')) {
-        this.editorInitialized = true;
-      } else {
+      if (!this.model.has('text')) {
         this.model.fetch();
+      } else {
+        if (!this.editorInitialized) this.editorInitialized = true;
+        this.render().toggle();
       }
+
+      return this;
+
     },
 
     render: function() {
@@ -68,7 +67,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         }
       });
 
-      // init buttons (reverse group list for pull-right)
+      // init buttons
       var buttonGroups = templates.buttonGroups;
       this.$editorButtons = $el.find('.editor-buttons');
       for (var i in buttonGroups) {
@@ -101,8 +100,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       // Stupid work around 
       $el.appendTo(this.parent.$el);
 
-      this.dispatcher.trigger('editorReady');
-
       return this;
 
     },
@@ -131,8 +128,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       if (!this.editorInitialized) {
         this.editorInitialized = true;
         // console.log('First time change!');
-        this.render();
+        this.render().toggle();
       } else {
+        // "Enable" publish button on edit (no functionality yet)
         this.$('.publish button').removeClass('disabled');
         this.$('.publish button').addClass('btn-success');
       }
@@ -199,7 +197,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       if (!this.$assetList) this.$assetList = this.$('.asset-container');
       if (!this.$assetToolbar) this.$assetToolbar = this.$('.asset-toolbar');
       if (!this.$prevEl) this.$prevEl = this.parent.$('.item');
-      if (!this.$nextEl) this.$nextEl = this.parent.$el.next();
+      if (!this.$nextEl) this.$nextEl = this.parent.$el.next().children('.item');
       if (!this.$preview) this.$preview = this.$('.preview');
 
       var bodyPaddingTop = $('body').cssInt('paddingTop');
