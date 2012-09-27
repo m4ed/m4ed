@@ -15,7 +15,7 @@
     <![endif]-->
 
     <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="/fanstatic/m4ed/bootstrap/ico/favicon.ico">
+    <link rel="shortcut icon" href="/fanstatic/m4ed/img/favicon.ico">
     <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-144-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-114-precomposed.png">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-72-precomposed.png">
@@ -36,7 +36,7 @@
   ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
 
-  <script data-main="/fanstatic/m4ed/js/editor_main.js" src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
+  <script src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 
   <%block name="scripts">
   </%block>

@@ -10,9 +10,10 @@
     <p>${cluster.desc if hasattr(cluster, 'desc') else cluster.description}</p>
     <p>Items</p>
     <ul>
-    % for c in cluster.get('items', list()):
-      <li><a href="/i/${str(c._id)}" >${c.title}</a></li>
+    % for i in cluster.get('items', list()):
+      <li><a href="/i/${str(i._id)}" >${i.title}</a></li>
     % endfor
     </ul>
+    <a href="/c/${str(cluster._id)}/edit">Editor</a>
   </div>
 </%block>

@@ -12,6 +12,7 @@ _API_BLACK_LIST = (
     'groups_write'
 )
 
+
 class MongoDict(dict):
 
     def __init__(self, init_data, name=None, parent=None):
@@ -69,6 +70,7 @@ class MongoDict(dict):
 
         return _json
 
+
 class Asset(MongoDict):
     @property
     def __acl__(self):
@@ -83,10 +85,8 @@ class Asset(MongoDict):
         #     res.append((Allow, 'g:{}'.format(g), 'write'))
         return res
 
-    def save(self):
-        return self.__parent__.save_asset(self)
-
-
+    def update_asset(self):
+        return self.__parent__.update_asset(self)
 
 
 class Item(MongoDict):

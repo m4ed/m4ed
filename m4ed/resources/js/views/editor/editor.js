@@ -12,6 +12,9 @@ define([
   'jquery.plugins'
 ],
 function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates, util) {
+
+  var TEXTAREA_MIN_HEIGHT = 200;
+
   var EditorView = Backbone.View.extend({
 
     tagName: 'div',
@@ -29,24 +32,23 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       _.extend(this, options.custom);
       this.activeXhr = null;
       this.lastContent = null;
-      this.editorInitialized = false;
 
       //this.model.bind('change', this.onChange, this);
       this.model.bind('change:text', this.onTextChange, this);
       this.model.bind('destroy', this.onDestroy, this);
 
       this.dispatcher.on('insertAsset', this.onInsertAsset, this);
+      this.dispatcher.on('textareaResized', this.onTextareaResize, this);
 
-      // console.log('Editor initialized.');
-
-      // If the model already has text, assume it has been initialized
-      // somewhere else and render it
-      if (this.model.has('text')) {
-        this.editorInitialized = true;
-        this.render();
-      } else {
+      if (!this.model.has('text')) {
         this.model.fetch();
+      } else {
+        if (!this.editorInitialized) this.editorInitialized = true;
+        this.render().toggle();
       }
+
+      return this;
+
     },
 
     render: function() {
@@ -65,9 +67,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         }
       });
 
-      // init buttons (reverse group list for pull-right)
+      // init buttons
       var buttonGroups = templates.buttonGroups;
-      var $buttonBar = $el.find('.editor-buttons');
+      this.$editorButtons = $el.find('.editor-buttons');
       for (var i in buttonGroups) {
         var group = buttonGroups[i];
         var buttonList = new ButtonListView({
@@ -80,7 +82,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
             hideLabels: group.hideLabels
           }
         });
-        $buttonBar.append(buttonList.render().el);
+        this.$editorButtons.append(buttonList.render().el);
       }
 
 
@@ -126,13 +128,19 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       if (!this.editorInitialized) {
         this.editorInitialized = true;
         // console.log('First time change!');
-        this.render();
+        this.render().toggle();
       } else {
+        // "Enable" publish button on edit (no functionality yet)
         this.$('.publish button').removeClass('disabled');
         this.$('.publish button').addClass('btn-success');
       }
       this.generatePreview();
       
+    },
+
+    onTextareaResize: function (size) {
+      if (!this.$preview) this.$preview = this.$('.preview');
+      this.$preview.height(size.h - 8);
     },
 
     onTextareaKeyup: _.throttle(function(e) {
@@ -178,10 +186,70 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       this.$('.preview').html(html);
     },
 
+    updateDimensions: function() {
+
+      var h = $(window).height();
+
+      // console.log('Window height: ' + h);
+
+      if (!this.$editorButtons) this.$editorButtons = this.$('.editor-buttons');
+      if (!this.$textarea) this.$textarea = this.$('.editor-textarea');
+      if (!this.$assetList) this.$assetList = this.$('.asset-container');
+      if (!this.$assetToolbar) this.$assetToolbar = this.$('.asset-toolbar');
+      if (!this.$prevEl) this.$prevEl = this.parent.$('.item');
+      if (!this.$nextEl) this.$nextEl = this.parent.$el.next().children('.item');
+      if (!this.$preview) this.$preview = this.$('.preview');
+
+      var bodyPaddingTop = $('body').cssInt('paddingTop');
+
+      var textareaVPad = this.$textarea.outerHeight(true) - this.$textarea.height();
+      var editorVPad = this.$el.outerHeight(true) - this.$el.height();
+
+      // console.log('*****************************************');
+      // console.log('Editor buttons height: ' + this.$editorButtons.outerHeight(true));
+      // console.log('Asset container height: ' + this.$assetList.outerHeight(true));
+      // console.log('Asset buttons height: ' + this.$assetToolbar.outerHeight(true));
+      // console.log('Prev elem height: ' + this.$prevEl.outerHeight(true));
+      // console.log('Next elem height: ' + this.$nextEl.outerHeight(true));
+      // console.log('Body pad top: ' + this.$nextEl.outerHeight(true));
+      // console.log('Textarea vert pad: ' + textareaVPad);
+      // console.log('Editor vert pad: ' + editorVPad);
+      // console.log('*****************************************');
+
+      var reduction = this.$editorButtons.outerHeight(true) +
+          this.$assetList.outerHeight(true) +
+          this.$assetToolbar.outerHeight(true) +
+          this.$prevEl.outerHeight(true) + 
+          textareaVPad +
+          editorVPad +
+          bodyPaddingTop;
+
+
+      // Check if the next element exists
+      if (this.$nextEl[0]) reduction += this.$nextEl.outerHeight(true);
+
+      h -= reduction;
+
+      if (h < TEXTAREA_MIN_HEIGHT) h = TEXTAREA_MIN_HEIGHT;
+
+      // console.log('Textarea height: ' + h);
+
+      if (this.$textarea.height() !== h) this.$textarea.animate({
+        'height': h
+      }, 100);
+
+      if (this.$preview.height() !== h - 8) this.$preview.animate({
+        'height': h - 8
+      }, 100);
+
+    },
+
     toggle: function() {
       if (this.$el.is(':hidden')) {
-        var item = this.parent;
-        this.$el.slideDown(100, _.bind(item.scrollTop, item));
+        this.$el.slideDown(100, _.bind(function() {
+          this.updateDimensions();
+          this.parent.scrollTop();
+        }, this));
         this.globalDispatcher.trigger('editorOpened');
       } else {
         this.$el.slideUp();

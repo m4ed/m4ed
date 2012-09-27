@@ -266,8 +266,10 @@ class ItemFactory(BaseFactory):
     def commit(self, item):
         is_model = isinstance(item, self.model)
         # NOTE: Validation WILL convert the item to a dictionary
+        print item
         item = self.validate(item)
         if not item:
+            print 'Item validation failed.'
             return None
 
         _id = item.pop('_id', None)
@@ -282,66 +284,79 @@ class ItemFactory(BaseFactory):
             )
 
             # Reset the progress on this item
-            self.progress_collection.update(
-                {'itemId': _id},
-                {'$set': {
-                    'passed': False,
-                    'unanswered': item['answers'].keys()
-                    }
-                },
-                upsert=True,
-                safe=True
-            )
+            if 'answers' in item:
+                self.progress_collection.update(
+                    {'itemId': _id},
+                    {'$set': {
+                        'passed': False,
+                        'unanswered': item['answers'].keys()
+                        }
+                    },
+                    upsert=True,
+                    safe=True
+                )
 
             return res
 
         _id = self.collection.insert(item, safe=True)
 
         # Reset the progress on this item
-        self.progress_collection.insert(
-            {'passed': False, 'unanswered': item['answers'].keys()},
-            safe=True
-        )
+        if 'answers' in item:
+            self.progress_collection.insert(
+                {'passed': False, 'unanswered': item['answers'].keys()},
+                safe=True
+            )
 
         return self.model(item, name=str(_id), parent=self)
 
     def create_item(self):
         try:
             # This fails if the post is some sort of form instead of json
-            params = self.request.json_body
+            kwargs = self.request.json_body
         except ValueError:
             # If we get a value error, the request didn't have a json body
             # Ignore the request
             return HTTPNotAcceptable()
 
-        item = dict(
-            title=params.pop('title', 'Click to add a title'),
-            desc=params.pop('desc', 'Click to add a description'),
-            text=params.pop('text', ''),
-            tags=params.pop('tags', []),
-            listIndex=params.pop('listIndex', 0),
-            # TODO: Read this from the request
-            cluster_id="5052f3a038d57a26a6000000",
-            html='',
-            answers=dict(dummy=list()),
-        )
-
-        # self.request.response.status = '200'
-        return self.commit(item)
+        return self.commit({
+            'cluster_id': self.request.matchdict['cluster_id'],
+            'title': kwargs.pop('title', 'Click to add a title'),
+            'desc': kwargs.pop('desc', 'Click to add a description'),
+            'text': kwargs.pop('text', ''),
+            'tags': kwargs.pop('tags', []),
+            'listIndex': kwargs.pop('listIndex', 0)
+        })
 
     def save_item(self, item):
         params = self._read_params()
         if params.get('err') is True:
             return params
 
-        # Update only the parameters that were posted
-        item.maybe_set('listIndex', params)
-        item.maybe_set('title', params)
-        item.maybe_set('desc', params)
-        item.maybe_set('tags', params)
-        item.maybe_set('text', params)
-        # TODO: Fix this to actually assign itself to a valid cluster
-        item['cluster_id'] = "5052f3a038d57a26a6000000"
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request with 406 - Not Acceptable error
+            self.request.response.status = '406'
+            return {'err': True}
+        if not kwargs.pop('_id', None):
+            # This should never ever happen but if it does, just respond with
+            # 503 - Service Unavailable error
+            self.request.response.status = '503'
+            return {'err': True}
+
+        if 'listIndex' in kwargs:
+            item['listIndex'] = kwargs.pop('listIndex')
+        if 'title' in kwargs:
+            item['title'] = kwargs.pop('title')
+        if 'desc' in kwargs:
+            item['desc'] = kwargs.pop('desc')
+        if 'tags' in kwargs:
+            item['tags'] = kwargs.pop('tags')
+        if 'text' in kwargs:
+            item['text'] = kwargs.pop('text')
+        if 'cluster_id' in kwargs:
+            item['cluster_id'] = kwargs.pop('cluster_id')
 
         renderer, misaka_renderer = self._get_renderers()
         item['html'] = misaka_renderer.render(item['text'])
@@ -350,7 +365,7 @@ class ItemFactory(BaseFactory):
         # Save changes to mongo
         return item.commit()
 
-    def remove_item(self, item):
+    def remove(self, item):
         # Pop the item ID since we can't update it
         _id = item.pop('_id', None)
         if not _id:
@@ -557,6 +572,7 @@ class UserFactory(BaseFactory):
 class SpaceFactory(BaseFactory):
 
     __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS)
         #(Allow, Authenticated, 'read')
     ]
 
@@ -594,8 +610,13 @@ class SpaceFactory(BaseFactory):
         clusters = list()
 
         for child in self._cluster_factory:
+            print child
             if has_permission('read', child, self.request):
+                # Pop grandchildren
+                # child.pop('items')
                 clusters.append(child)
+
+        print s
 
         s['clusters'] = clusters
 
@@ -619,6 +640,7 @@ class SpaceFactory(BaseFactory):
 class ClusterFactory(BaseFactory):
 
     __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS)
         #(Allow, Authenticated, 'read')
     ]
 
@@ -658,6 +680,11 @@ class ClusterFactory(BaseFactory):
 
         for child in self._item_factory:
             if has_permission('read', child, self.request):
+                # Pop fields that aren't needed via cluster api
+                # child.pop('cluster_id')
+                child.pop('text')
+                # child.pop('html')
+                # child.pop('answers')
                 items.append(child)
 
         s['items'] = items
