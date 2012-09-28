@@ -27,6 +27,7 @@ db.users.insert({
 print '+ Added user "m4ed" with password "12345".'
 
 space_id = db.spaces.insert({
+    "listIndex": 0,
     "title": "Space 1",
     "desc": "Space description",
     "tags": [],
@@ -36,6 +37,7 @@ space_id = db.spaces.insert({
 print '+ Added Space 1.'
 
 cluster_id = db.clusters.insert({
+    "listIndex": 0,
     "title": "Cluster 1",
     "space_id": space_id,
     "groups_read": ["m4ed"],

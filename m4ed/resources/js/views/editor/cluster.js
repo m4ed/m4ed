@@ -1,85 +1,27 @@
-// Filename: views/items/itemlist.js
+// Filename: views/editor/item.js
 define([
-  'jquery',
   'underscore',
   'backbone',
-  'collections/base',
-  'models/item',
-  'views/editor/sortablelist',
-  'views/editor/item',
-  'views/editor/editor',
-  'views/editor/upload',
-  'jquery.ui.touch-punch'
+  'views/editor/listitem',
+  'views/editor/editor'
 ],
-function($, _, Backbone, BaseCollection, ItemModel, SortableListView, ItemView, EditorView, UploadView) {
+function(_, Backbone, ListItemView, EditorView) {
 
-  var clusterView = SortableListView.extend({
-    
+  var itemView = ListItemView.extend({
+
     initialize: function(options) {
-
-      // _.extend(options.custom, {
-      //   collection: new BaseCollection({
-      //     // url: this.model.url() + '/items',
-      //     url: '/api/items',
-      //     model: ItemModel
-      //   })
-      // });
-      
-      SortableListView.prototype.initialize.apply(this, arguments);
-
-      // Keep count of open editors
-      this.editorsOpen = 0;
-
-      // Bind global events
-      this.globalDispatcher.on('editorOpened', this.onEditorOpened, this);
-      this.globalDispatcher.on('editorClosed', this.onEditorClosed, this); 
-
-      // Create a view for the modal upload form
-      this.upload = new UploadView({
-        el: '#fileupload',
-        custom: {
-          globalDispatcher: this.globalDispatcher
-        }
-      });
-
+      ListItemView.prototype.initialize.apply(this, arguments);
     },
 
-    createItemView: function(model, options) {
+    onItemClick: function(e) {
+      // ListItemView.prototype.onItemClick.apply(this, arguments);
 
-      var el = options ? options.$el : undefined;
+      window.location.href = '/c/' + this.model.get('_id') + '/edit';
 
-      var view = new ItemView({
-        model: model,
-        el: el,
-        custom: {
-          dispatcher: _.clone(Backbone.Events),
-          globalDispatcher: this.globalDispatcher,
-          templates: this.templates
-        }
-      });
+      return false;
 
-      // Add the element to DOM in case it was not there already
-      if (!el) {
-        _.extend(options, {view: view});
-        SortableListView.prototype.addItemToDOM.apply(this, arguments);
-      }
-
-    },
-
-    onEditorOpened: function() {
-      if (this.editorsOpen === 0) {
-        this.$list.sortable('disable');
-      }
-      this.editorsOpen++;
-    },
-
-    onEditorClosed: function() {
-      this.editorsOpen--;
-      if (this.editorsOpen === 0) {
-        this.$list.sortable('enable');
-      }
     }
 
   });
-  return clusterView;
+  return itemView;
 });

@@ -5,15 +5,21 @@ define([
 ],
 function($, hogan) {
 
+  var $itemTemplate = $('#item-template')
+    , $editorTemplate = $('#editor-template')
+    , $editorDropdownToggle = $('#editor-dropdown-toggle')
+    , $assetTemplate = $('#asset-template')
+    , $assetEditorTemplate = $('#asset-editor');
+
   return {
 
-    item: hogan.compile($('#item-template').html()),
+    item: $itemTemplate[0] ? hogan.compile($itemTemplate.html()) : undefined,
 
     // Editor templates
     // -------------------------------------
 
-    editor: hogan.compile($('#editor-template').html()),
-    dropdownToggle: hogan.compile($('#editor-dropdown-toggle').html()),
+    editor: $editorTemplate[0] ? hogan.compile($editorTemplate.html()) : undefined,
+    dropdownToggle: $editorDropdownToggle[0] ? hogan.compile($editorDropdownToggle.html()) : undefined,
     button: hogan.compile('<i class="icon-{{icon}}"></i><span class="btn-label"> {{label}}</span>'),
 
     // TODO: THIS IS COMPLETELY MISSPLACED. RELOCATE IT ON SERVER SIDE
@@ -211,9 +217,9 @@ function($, hogan) {
 
     imageMarkdown: hogan.compile('[[img: id={{src}}, alt="{{alt}}"]]'),
 
-    asset: hogan.compile($('#asset-template').html()),
+    asset: $assetTemplate[0] ? hogan.compile($assetTemplate.html()) : undefined,
 
-    assetEditor: hogan.compile($('#asset-editor').html())
+    assetEditor: $assetEditorTemplate[0] ? hogan.compile($assetEditorTemplate.html()) : undefined
 
   };
 

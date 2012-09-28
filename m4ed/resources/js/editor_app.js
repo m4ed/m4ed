@@ -3,7 +3,6 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/cluster',
   'views/editor/navigation',
   'jquery.hotkeys',
   'jquerypp/cookie',
@@ -12,24 +11,13 @@ define([
   'bootstrap.modal',
   'bootstrap.transition',
   'bootstrap.button'
-], function($, _, Backbone, ClusterView, NavigationView) {
-  var initialize = function(items) {
-
-    // Make a clone of BackBone.Events and use it as a global event dispatcher
-    var dispatcher = _.clone(Backbone.Events);
+], function($, _, Backbone, NavigationView) {
+  var initialize = function(dispatcher) {
 
     // TODO: Move this to somewhere more clever
     // Temp fix to deselect any selected item
     $('body').on('click', function(e) {
       dispatcher.trigger('itemSelected');
-    });
-
-    new ClusterView({
-      el: '.container',
-      custom: {
-        'globalDispatcher': dispatcher,
-        'collection': items
-      }
     });
     
     new NavigationView({

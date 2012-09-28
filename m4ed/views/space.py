@@ -3,6 +3,7 @@ from pyramid.view import (
     view_defaults
     )
 
+from m4ed.resources import editor_less
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
 #from m4ed.factories import SpaceFactory
@@ -12,14 +13,23 @@ from pyramid.security import authenticated_userid
     route_name='edit_space',
     renderer='editor/space.mako',
     permission='write')
+def get_edit_space(request):
+    editor_less.need()
+    return {
+        'space': request.context.stripped
+    }
+
+
 @view_config(
     route_name='space',
     renderer='medium/spaces/show.mako',
     permission='read')
-def get_cluster(request):
+def get_space(request):
     return {
-        'space': request.context
+        'space': request.context.stripped
     }
+
+
 
 
 # def valid_space(request):

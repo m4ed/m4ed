@@ -681,10 +681,14 @@ class ClusterFactory(BaseFactory):
         for child in self._item_factory:
             if has_permission('read', child, self.request):
                 # Pop fields that aren't needed via cluster api
-                # child.pop('cluster_id')
-                child.pop('text')
-                child.pop('html')
-                # child.pop('answers')
+                # if 'cluster_id' in child:
+                #     child.pop('cluster_id')
+                if 'text' in child:
+                    child.pop('text')
+                if 'html' in child:
+                    child.pop('html')
+                if 'answers' in child:
+                    child.pop('answers')
                 items.append(child)
 
         s['items'] = items

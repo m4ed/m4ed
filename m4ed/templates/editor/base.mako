@@ -1,4 +1,4 @@
-<%namespace file="navigation.mako" import="*"/>
+<%namespace file="menus/quick.mako" import="*"/>
 
 <!DOCTYPE html>
 <head>
@@ -25,7 +25,28 @@
 </head>
 <body>
 
-  ${navigation()}
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+
+        <a class="brand" href="/">m4ed</a>
+
+        <a class="btn btn-navbar btn-large-icon" data-toggle="collapse" data-target=".nav-collapse.context-menu">
+          <i class="icon-quick large"></i> 
+        </a>
+
+        <a class="btn btn-navbar btn-large-icon" data-toggle="collapse" data-target=".nav-collapse.quick-menu">
+          <i class="icon-quick large"></i> 
+        </a>
+
+        ${quick_menu()}
+
+        <%block name="context_menu">
+        </%block>
+
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <%block name="content">

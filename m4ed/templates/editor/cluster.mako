@@ -13,7 +13,13 @@
 <%namespace file="hogan/hogan_item.mako" import="*"/>
 <%namespace file="hogan/hogan_upload.mako" import="*"/>
 
+<%namespace file="menus/context.mako" import="*"/>
+
 <%block name="title">m4ed - Content Editor</%block>
+
+<%block name="context_menu">
+  ${context_item()}
+</%block>
 
 <%block name="content">
 
@@ -40,7 +46,11 @@
 
   <script>
     require(['/fanstatic/m4ed/js/config.js'], function() {
-      require(['backbone', 'models/item', 'editor_app', 'domReady!'], function(Backbone, ItemModel, App) {
+      require(['underscore', 'backbone', 'models/listitem', 'views/editor/clusteritems', 'editor_app', 'domReady!'], function(_, Backbone, ListItemModel, ClusterItemsView, App) {
+
+        var ItemModel = ListItemModel.extend({
+          urlRoot: '/api/items'
+        });
 
         var ItemCollection = Backbone.Collection.extend({
           url: '/api/clusters/${cluster._id}/items',
@@ -49,7 +59,20 @@
 
         var items = new ItemCollection(${dumps(cluster['items']) | n});
 
-        App.initialize(items);
+
+        // Make a clone of BackBone.Events and use it as a global event dispatcher
+        var dispatcher = _.clone(Backbone.Events);
+
+        new ClusterItemsView({
+          el: '.container',
+          custom: {
+            'globalDispatcher': dispatcher,
+            'collection': items
+          }
+        });
+
+        App.initialize(dispatcher);
+
       });
     });
   </script>
