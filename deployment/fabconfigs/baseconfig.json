@@ -100,8 +100,8 @@
       "mako_directories": "m4ed:templates",
 
       "redis_host": "localhost",
-      //"img_cache_route": "http://demo.m4ed.com/cache?key=",
-      "img_cache_route": "cache?key=",
+      "img_cache_route": "http://demo.m4ed.com/cache?key=",
+      //"img_cache_route": "cache?key=",
       "img_cache_time": "60",
 
       "beaker_session_type": "redis",
