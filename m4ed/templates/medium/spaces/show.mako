@@ -14,5 +14,6 @@
       <li><a href="/c/${str(c['_id'])}" >${c['title']}</a></li>
     % endfor
     </ul>
+    <a href="/s/${str(space._id)}/edit">Edit space</a>
   </div>
 </%block>

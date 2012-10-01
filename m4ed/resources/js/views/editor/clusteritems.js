@@ -1,4 +1,4 @@
-// Filename: views/items/itemlist.js
+// Filename: views/items/clusteritems.js
 define([
   'jquery',
   'underscore',

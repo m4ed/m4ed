@@ -33,11 +33,22 @@
 
 
   &.selected {
-    .gradientBar(lighten(@selectedItemColor, 5%), darken(@selectedItemColor, 5%), @itemTextColor, @itemTextShadow);
-    border-color: rgba(82,168,236,.5);
+    color: @selectedItemTextColor;
+    .gradientBar(lighten(@selectedItemColor, 5%), darken(@selectedItemColor, 5%), @selectedItemTextColor, @itemTextShadow);
+    border-color: rgba(130,190,70,.5);
     outline: 0;
     outline: thin dotted \9; /* IE6-9 */
-    .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6)");
+    .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(130,190,70,.6)");
+
+    .item-content {
+      .desc{
+        color: lighten(@selectedItemTextColor, 15%);
+      }
+      .tags {
+        .placeholder(lighten(@selectedItemTextColor, 15%));
+      }
+
+    }
   }
 
   position: relative;
@@ -92,11 +103,18 @@
       .box-shadow(none);
       .transition(~"border linear .2s, box-shadow linear .2s, background linear .2s");
       &:focus {
-        border: 1px solid rgba(82,168,236,.5);
+        .placeholder(@grayLight);
+        border: 1px solid rgba(130,190,70,.5);
         background: @white;
         outline: 0;
         outline: thin dotted \9; /* IE6-9 */
-        .box-shadow(~"inset 1px 1px 4px rgba(0,0,0,.2), 0 0 3px rgba(255,255,255,.7)");
+        .box-shadow(~"0 0 3px rgba(255,255,255,.7)");
+      }
+    }
+
+    .text-wrap:hover {
+      .tags {
+        .placeholder(@linkColor);
       }
     }
 

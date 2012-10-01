@@ -96,6 +96,7 @@ class BaseFactory(object):
     # Override if necessary
     def __iter__(self):
         items = self.collection.find()
+        items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
 
     def _read_params(self):
@@ -327,7 +328,7 @@ class ItemFactory(BaseFactory):
             'listIndex': kwargs.pop('listIndex', 0)
         })
 
-    def save_item(self, item):
+    def save(self, item):
         params = self._read_params()
         if params.get('err') is True:
             return params
@@ -622,19 +623,108 @@ class SpaceFactory(BaseFactory):
 
         return self.model(s, name=str(_id), parent=self)
 
+    # def create_space(self):
+    #     params = self.request.POST
+    #     try:
+    #         return self.commit(dict(
+    #             title=params['title'],
+    #             desc=params['desc']
+    #             ))
+    #     except KeyError:
+    #         return None
+
     def create_space(self):
-        params = self.request.POST
         try:
-            return self.commit(dict(
-                title=params['title'],
-                desc=params['desc']
-                ))
-        except KeyError:
-            return None
+            # This fails if the post is some sort of form instead of json
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return HTTPNotAcceptable()
+
+        return self.commit({
+            'title': kwargs.pop('title', 'Click to add a title'),
+            'desc': kwargs.pop('desc', 'Click to add a description'),
+            'tags': kwargs.pop('tags', []),
+            'listIndex': kwargs.pop('listIndex', 0)
+        })
 
     def create_cluster(self):
         # cluster_factory = ClusterFactory(self.request)
         return self._cluster_factory.create_cluster()
+
+    def save(self, space):
+        params = self._read_params()
+        if params.get('err') is True:
+            return params
+
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request with 406 - Not Acceptable error
+            self.request.response.status = '406'
+            return {'err': True}
+        if not kwargs.pop('_id', None):
+            # This should never ever happen but if it does, just respond with
+            # 503 - Service Unavailable error
+            self.request.response.status = '503'
+            return {'err': True}
+
+        if 'listIndex' in kwargs:
+            space['listIndex'] = kwargs.pop('listIndex')
+        if 'title' in kwargs:
+            space['title'] = kwargs.pop('title')
+        if 'desc' in kwargs:
+            space['desc'] = kwargs.pop('desc')
+        if 'tags' in kwargs:
+            space['tags'] = kwargs.pop('tags')
+
+        # Save changes to mongo
+        return space.commit()
+
+    def commit(self, space):
+        is_model = isinstance(space, self.model)
+        # NOTE: Validation WILL convert the cluster to a dictionary
+        space = self.validate(space)
+        if not space:
+            print 'Cluster validation failed.'
+            return None
+
+        _id = space.pop('_id', None)
+
+        if is_model:
+            res = self.collection.find_and_modify(
+                {'_id': _id},
+                {'$set': space},
+                upsert=True,
+                safe=True,
+                new=True
+            )
+
+            return res
+
+        _id = self.collection.insert(space, safe=True)
+
+        return self.model(space, name=str(_id), parent=self)
+
+    def remove(self, space):
+        # Pop the item ID since we can't update it
+        _id = space.pop('_id', None)
+        if not _id:
+            return
+        elif not isinstance(_id, ObjectId):
+            _id = ObjectId(_id)
+
+        for cluster in self._cluster_factory:
+            self._cluster_factory.remove(cluster)
+
+        space.pop('__name__', None)
+        space.pop('__parent__', None)
+        self.collection.remove(
+            {'_id': _id},
+            safe=True
+        )
 
 
 class ClusterFactory(BaseFactory):
@@ -662,6 +752,14 @@ class ClusterFactory(BaseFactory):
         if isinstance(children, object.__class__):
             children = children(self.request)
         return children
+
+    @property
+    def _space_factory(self):
+        parent = self.__parent__
+        # Try to determine if the factory has been initialized before
+        if isinstance(parent, object.__class__):
+            parent = parent(self.request)
+        return parent
 
     def __getitem__(self, _id):
         # Try first to convert the given _id.
@@ -695,24 +793,116 @@ class ClusterFactory(BaseFactory):
 
         return self.model(s, name=str(_id), parent=self)
 
+    # Old create function for form POST
+    #
+    # def create_cluster(self):
+    #     # In case you wonder: All the parameters for create should
+    #     # be passed through POST/GET or matchdict parameters
+    #     try:
+    #         return self.commit({
+    #             'space_id': self.request.matchdict['space_id'],
+    #             'title': self.request.POST['title'],
+    #             'desc': self.request.POST['desc'],
+    #             'groups_read': [authenticated_userid(self.request)],
+    #             'groups_write': [authenticated_userid(self.request)]
+    #         })
+    #     except KeyError:
+    #         # Might be raised from request not containing
+    #         # all the parameters
+    #         return None
+
     def create_cluster(self):
-        # In case you wonder: All the parameters for create should
-        # be passed through POST/GET or matchdict parameters
         try:
-            return self.commit({
-                'space_id': self.request.matchdict['space_id'],
-                'title': self.request.POST['title'],
-                'desc': self.request.POST['desc'],
-                'groups_read': [authenticated_userid(self.request)],
-                'groups_write': [authenticated_userid(self.request)]
-            })
-        except KeyError:
-            # Might be raised from request not containing
-            # all the parameters
+            # This fails if the post is some sort of form instead of json
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request
+            return HTTPNotAcceptable()
+
+        return self.commit({
+            'space_id': self.request.matchdict['space_id'],
+            'title': kwargs.pop('title', 'Click to add a title'),
+            'desc': kwargs.pop('desc', 'Click to add a description'),
+            'tags': kwargs.pop('tags', []),
+            'listIndex': kwargs.pop('listIndex', 0)
+        })
+
+    def get_space_title(self, space_id):
+        return self._space_factory[space_id].title
+
+    def save(self, cluster):
+        params = self._read_params()
+        if params.get('err') is True:
+            return params
+
+        try:
+            kwargs = self.request.json_body
+        except ValueError:
+            # If we get a value error, the request didn't have a json body
+            # Ignore the request with 406 - Not Acceptable error
+            self.request.response.status = '406'
+            return {'err': True}
+        if not kwargs.pop('_id', None):
+            # This should never ever happen but if it does, just respond with
+            # 503 - Service Unavailable error
+            self.request.response.status = '503'
+            return {'err': True}
+
+        if 'listIndex' in kwargs:
+            cluster['listIndex'] = kwargs.pop('listIndex')
+        if 'title' in kwargs:
+            cluster['title'] = kwargs.pop('title')
+        if 'desc' in kwargs:
+            cluster['desc'] = kwargs.pop('desc')
+        if 'tags' in kwargs:
+            cluster['tags'] = kwargs.pop('tags')
+
+        # Save changes to mongo
+        return cluster.commit()
+
+    def commit(self, cluster):
+        is_model = isinstance(cluster, self.model)
+        # NOTE: Validation WILL convert the cluster to a dictionary
+        cluster = self.validate(cluster)
+        if not cluster:
+            print 'Cluster validation failed.'
             return None
 
-    def save_cluster(self, cluster):
-        raise NotImplementedError('Really it is not')
+        _id = cluster.pop('_id', None)
+
+        if is_model:
+            res = self.collection.find_and_modify(
+                {'_id': _id},
+                {'$set': cluster},
+                upsert=True,
+                safe=True,
+                new=True
+            )
+
+            return res
+
+        _id = self.collection.insert(cluster, safe=True)
+
+        return self.model(cluster, name=str(_id), parent=self)
+
+    def remove(self, cluster):
+        # Pop the item ID since we can't update it
+        _id = cluster.pop('_id', None)
+        if not _id:
+            return
+        elif not isinstance(_id, ObjectId):
+            _id = ObjectId(_id)
+
+        for item in self._item_factory:
+            self._item_factory.remove(item)
+
+        cluster.pop('__name__', None)
+        cluster.pop('__parent__', None)
+        self.collection.remove(
+            {'_id': _id},
+            safe=True
+        )
 
     def create_item(self):
         return self._item_factory.create_item()
@@ -726,4 +916,5 @@ class ClusterFactory(BaseFactory):
             items = self.collection.find({'space_id': ObjectId(space_id)})
         else:
             items = self.collection.find()
+        items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)

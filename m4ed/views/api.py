@@ -183,10 +183,13 @@ class SpaceView(object):
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        # Context should be m4ed.models Cluster
+        # Request context should be m4ed.models.Cluster
         res = self.space.save()
-        if res['err'] is not None:
+        if res is None:
             self.request.response.status = '500'
+            log.debug(('PUT request denied with {0}.'
+                'Result from self.space.save() returned was {1}'
+                ).format(self.request.response.status, res))
         else:
             self.request.response.status = '200'
         return {}
@@ -203,8 +206,9 @@ class SpaceView(object):
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        # Context should be m4ed.models Cluster
-        pass
+        self.space.remove()
+        self.request.response.status = '200'
+        return {}
 
 
 @view_defaults(route_name='rest_space_clusters', renderer='json')
@@ -218,6 +222,15 @@ class SpaceClustersView(object):
     def get(self):
         return self.clusters
 
+    @view_config(request_method='POST', permission='write')
+    def post(self):
+        # Context should be m4ed.models Cluster
+        res = self.space.create_cluster()
+        if res is None:
+            self.request.response.status = '500'
+            res = {'err': True}
+
+        return res
 
 # @view_defaults(route_name='rest_clusters', renderer='json')
 # class ClustersView(object):
@@ -259,18 +272,22 @@ class ClusterView(object):
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
-        # Context should be m4ed.models Cluster
+        # Request context should be m4ed.models.Cluster
         res = self.cluster.save()
-        if res['err'] is not None:
+        if res is None:
             self.request.response.status = '500'
+            log.debug(('PUT request denied with {0}.'
+                'Result from self.cluster.save() returned was {1}'
+                ).format(self.request.response.status, res))
         else:
             self.request.response.status = '200'
         return {}
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        # Context should be m4ed.models Cluster
-        pass
+        self.cluster.remove()
+        self.request.response.status = '200'
+        return {}
 
 
 @view_defaults(route_name='rest_cluster_items', renderer='json')

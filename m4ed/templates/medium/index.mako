@@ -15,6 +15,7 @@
     <li><a href="/s/${str(s._id)}" >${s.title}</a></li>
   % endfor
   </ul>
+  <a href="/edit">Edit spaces</a> <br/><br/>
 
   <a href="http://code.m4ed.com">m4ed Github</a>
 </body>

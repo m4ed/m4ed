@@ -14,6 +14,6 @@
       <li><a href="/i/${str(i._id)}" >${i.title}</a></li>
     % endfor
     </ul>
-    <a href="/c/${str(cluster._id)}/edit">Editor</a>
+    <a href="/c/${str(cluster._id)}/edit">Edit cluster</a>
   </div>
 </%block>

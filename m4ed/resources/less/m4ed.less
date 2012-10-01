@@ -82,26 +82,67 @@ body {
   padding: 0;
 }
 
-// Header
+// Breadrumb
 // -----------------------------------------
 
-.header {
+.breadcrumb {
 
   .well;
 
-  padding: 4px;
-  height: 34px;
+  height: 30px;
+  padding: 0px 8px;
+
+  .gradientBar(lighten(@breadcrumbColor, 8%), darken(@breadcrumbColor, 8%), @black, @white);
+
+  margin-top: 8px;
+
+  .box-shadow(0 0 6px rgba(0,0,0,.8));
+
+  .icon-home {
+    margin: 7px 0 7px 4px;
+    .opacity(60);
+    &:hover {
+      .opacity(100);
+    }
+  }
+
+  li {
+    color: @white;
+    font-size: @baseFontSize + 1;
+    // font-weight: bold;
+    text-shadow: @breadcrumbTextShadow;
+    a {
+      color: @breadcrumbTextColor;
+      &:hover {
+        color: @white;
+        text-decoration: none;
+      }
+    }
+
+  }
+
+  li {
+    vertical-align: middle;
+  }
+
+  .divider {
+    line-height: 0;
+    width: 14px;
+    height: 30px;
+    // display: inline;
+    // padding: 0;
+    // height: 30px;
+    // width: 14px;
+    // margin-top: -5px;
+    // margin: 0;
+    color: @white;
+    background: url('../img/bc-divider.png') no-repeat center;
+  }
 
   .location {
     font-weight: bold;
     margin: 8px;
   }
-
-  .gradientBar(lighten(@headerColor, 8%), darken(@headerColor, 8%), @black, @white);
-
-  margin-top: 8px;
-
-  .box-shadow(0 0 6px rgba(0,0,0,.8));
 
 }
 

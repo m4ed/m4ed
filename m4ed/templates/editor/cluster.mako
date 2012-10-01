@@ -23,10 +23,13 @@
 
 <%block name="content">
 
-  <header class="header">
-    <div class="location">Space / ${cluster.title}</div>
-  </header>
-
+  <ul class="breadcrumb">
+    <li><a href="/edit"><i class="icon-home icon-white"></i></a></li>
+    <li class="divider"> </li>
+    <li><a href="/s/${cluster.space_id}/edit">${space_title}</a></li>
+    <li class="divider"> </li>
+    <li>${cluster.title}</li>
+  </ul>
   <!-- The list of items -->
   <ul class="ui-sortable">
 

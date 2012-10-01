@@ -18,20 +18,19 @@
 <%block name="content">
 
 <!--   <header class="header">
-    <div class="location">${space.title}</div>
-  </header> -->
+    <div class="location">Index</div>
 
+  </header>
+ -->
   <ul class="breadcrumb">
     <li><a href="/edit"><i class="icon-home icon-white"></i></a></li>
-    <li class="divider"> </li>
-    <li>${space.title}</li>
   </ul>
 
   <!-- The list of items -->
   <ul class="ui-sortable">
-  % for cluster in space['clusters']:
-    <li id='${cluster._id}' data-index='${cluster.listIndex}'>
-      ${item_template(cluster.title, cluster.desc, '/fanstatic/m4ed/img/48x48.gif', dumps(cluster.tags))}
+  % for space in spaces:
+    <li id='${space._id}' data-index='${space.listIndex}'>
+      ${item_template(space.title, space.desc, '/fanstatic/m4ed/img/48x48.gif', dumps(space.tags))}
     </li>
   % endfor
   </ul>
@@ -42,27 +41,27 @@
 
   <script>
     require(['/fanstatic/m4ed/js/config.js'], function() {
-      require(['underscore', 'backbone', 'models/listitem', 'views/editor/spaceclusters', 'editor_app', 'domReady!'], function(_, Backbone, ListItemModel, SpaceClustersView, App) {
+      require(['underscore', 'backbone', 'models/listitem', 'views/editor/root', 'editor_app', 'domReady!'], function(_, Backbone, ListItemModel, RootView, App) {
 
-        var ClusterModel = ListItemModel.extend({
-          urlRoot: '/api/clusters'
+        var SpaceModel = ListItemModel.extend({
+          urlRoot: '/api/spaces'
         });
 
-        var ClusterCollection = Backbone.Collection.extend({
-          url: '/api/spaces/${space._id}/clusters',
-          model: ClusterModel
+        var SpaceCollection = Backbone.Collection.extend({
+          url: '/api/spaces',
+          model: SpaceModel
         });
 
-        var clusters = new ClusterCollection(${dumps(space['clusters']) | n});
+        var spaces = new SpaceCollection(${dumps(spaces_array) | n});
 
         // Make a clone of BackBone.Events and use it as a global event dispatcher
         var dispatcher = _.clone(Backbone.Events);
 
-        new SpaceClustersView({
+        new RootView({
           el: '.container',
           custom: {
             'globalDispatcher': dispatcher,
-            'collection': clusters
+            'collection': spaces
           }
         });
 

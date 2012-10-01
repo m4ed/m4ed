@@ -9,9 +9,9 @@ function(_, Backbone, ListItemView, EditorView) {
 
   var itemView = ListItemView.extend({
 
-    initialize: function(options) {
-      ListItemView.prototype.initialize.apply(this, arguments);
-    },
+    // initialize: function(options) {
+    //   ListItemView.prototype.initialize.apply(this, arguments);
+    // },
 
     onItemClick: function(e) {
       ListItemView.prototype.onItemClick.apply(this, arguments);

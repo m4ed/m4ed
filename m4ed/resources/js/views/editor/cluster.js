@@ -1,4 +1,4 @@
-// Filename: views/editor/item.js
+// Filename: views/editor/cluster.js
 define([
   'underscore',
   'backbone',
@@ -7,11 +7,11 @@ define([
 ],
 function(_, Backbone, ListItemView, EditorView) {
 
-  var itemView = ListItemView.extend({
+  var clusterView = ListItemView.extend({
 
-    initialize: function(options) {
-      ListItemView.prototype.initialize.apply(this, arguments);
-    },
+    // initialize: function(options) {
+    //   ListItemView.prototype.initialize.apply(this, arguments);
+    // },
 
     onItemClick: function(e) {
       // ListItemView.prototype.onItemClick.apply(this, arguments);
@@ -23,5 +23,5 @@ function(_, Backbone, ListItemView, EditorView) {
     }
 
   });
-  return itemView;
+  return clusterView;
 });

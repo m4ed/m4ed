@@ -47,6 +47,9 @@ class MongoDict(dict):
         except KeyError:
             raise AttributeError('The item has no attribute "{}"'.format(name))
 
+    def save(self):
+        return self.__parent__.save(self)
+
     def commit(self):
         return self.__parent__.commit(self)
 
@@ -97,9 +100,6 @@ class Item(MongoDict):
             #(Allow, Authenticated, 'answer')
         ]
 
-    def save(self):
-        return self.__parent__.save_item(self)
-
     def check_answer(self):
         return self.__parent__.check_answer(self)
 
@@ -149,3 +149,6 @@ class Cluster(MongoDict):
 
     def create_item(self):
         return self.__parent__.create_item()
+
+    def get_space_title(self):
+        return self.__parent__.get_space_title(self.space_id)

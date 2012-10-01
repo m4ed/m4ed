@@ -977,10 +977,8 @@
 		self.trigger(EVENT_PRE_INVALIDATE);
 
 		height = input.outerHeight();
-
 		input.outerWidth('100%');
 		wrap.outerWidth('100%').height(height);
-		wrap.height(height);
 		container.height(height);
 
 		self.trigger(EVENT_POST_INVALIDATE);

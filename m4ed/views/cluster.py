@@ -14,8 +14,13 @@ from pyramid.security import authenticated_userid
     permission='write')
 def get_edit_cluster(request):
     editor_less.need()
+
+    # import pdb
+    # pdb.set_trace()
+
     return {
-        'cluster': request.context.stripped
+        'cluster': request.context.stripped,
+        'space_title': request.context.get_space_title()
     }
 
 
