@@ -109,7 +109,10 @@ function(_, Backbone, templates) {
       'keyup.return .edit': 'onEditKeyupReturn',
       'keyup .edit': 'onEditKeyup',
       'tagChange .tags': 'onTagChange',
-      'keyup.tab .edit': 'onEditKeyupTab',
+      'keydown.tab .edit': 'onEditKeydownTab',
+      'keyup.tab .title .edit': 'onEditTitleKeyupTab',
+      'keyup.tab .desc .edit': 'onEditDescKeyupTab',
+      'keydown.tab .tags': 'onTagsKeydownTab',
       'keyup.tab .tags': 'onTagsKeyupTab'
     },
 
@@ -275,16 +278,33 @@ function(_, Backbone, templates) {
       this.closeEdit(true, e.currentTarget);
     },
 
-    onEditKeyupTab: function(e) {
+    onEditDescKeyupTab: function(e) {
+      this.$tags.focus();
+    },
+
+    onEditTitleKeyupTab: function(e) {
       // TODO: Implement me
       // Check whether the current editable is title or description
       // and move to next editable accordingly
+      this.editables.desc.$view.click();
+
+    },
+
+    onEditKeydownTab: function(e) {
+      // Prevent changing focus to next input
+      e.preventDefault();
+    },
+
+    onTagsKeydownTab: function(e) {
+      // Prevent changing focus to next input
+      e.preventDefault();
     },
 
     onTagsKeyupTab: function(e) {
       // TODO: Implement me
       // If editor is open, move to the textarea.
       // Else, move to the first input of the next item.
+      this.$el.next().find('.title .view').click();
     },
 
     onTitleChange: function(model, newTitle, options) {

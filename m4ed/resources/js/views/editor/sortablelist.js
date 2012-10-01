@@ -79,7 +79,7 @@ function($, _, Backbone, hogan, BaseCollection, ListItemModel, ItemView, EditorV
       title = this.fixDuplicateTitle(title);
 
       var options = {wait: true};
-      if (this.collection.length > 0) options.at = 0;
+      // if (this.collection.length > 0) options.at = 0;
 
       // console.log('New item:');
       // console.log(title);

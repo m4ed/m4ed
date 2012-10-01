@@ -32,6 +32,16 @@ function(_, Backbone, ListItemView, EditorView) {
 
       return false;
 
+    },
+
+    onTagsKeyupTab: function(e) {
+      // This overrides the handler in ListItemView
+      e.preventDefault();
+      if (this.editor && this.editor.$el.is(':visible')) {
+        this.editor.textarea.$el.focus();
+      } else {
+        this.$el.next().find('.title .view').click();
+      }
     }
 
   });
