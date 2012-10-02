@@ -110,10 +110,13 @@ function(_, Backbone, templates) {
       'keyup .edit': 'onEditKeyup',
       'tagChange .tags': 'onTagChange',
       'keydown.tab .edit': 'onEditKeydownTab',
-      'keyup.tab .title .edit': 'onEditTitleKeyupTab',
-      'keyup.tab .desc .edit': 'onEditDescKeyupTab',
-      'keydown.tab .tags': 'onTagsKeydownTab',
-      'keyup.tab .tags': 'onTagsKeyupTab'
+      'keyup.tab .title .edit': 'onTitleEditKeyupTab',
+      'keyup.tab .desc .edit': 'onDescEditKeyupTab',
+      'keyup.tab .tags': 'onTagsKeyupTab',
+      'keydown.shift_tab .desc .edit': 'onDescEditKeydownShiftTab',
+      'keydown.shift_tab .title .edit': 'onTitleEditKeydownShiftTab',
+      'keydown.shift_tab .tags': 'onTagsKeydownShiftTab',
+      'keydown.tab .tags': 'onTagsKeydownTab'
     },
 
     onEditableClick: function(e) {
@@ -278,16 +281,27 @@ function(_, Backbone, templates) {
       this.closeEdit(true, e.currentTarget);
     },
 
-    onEditDescKeyupTab: function(e) {
+    onTitleEditKeydownShiftTab: function(e) {
+      e.preventDefault();
+      this.$el.prev().find('.tags').focus();
+    },
+
+    onDescEditKeydownShiftTab: function(e) {
+      e.preventDefault();
+      this.editables.title.$view.click();
+    },
+
+    onTagsKeydownShiftTab: function(e) {
+      e.preventDefault();
+      this.editables.desc.$view.click();
+    },
+
+    onDescEditKeyupTab: function(e) {
       this.$tags.focus();
     },
 
-    onEditTitleKeyupTab: function(e) {
-      // TODO: Implement me
-      // Check whether the current editable is title or description
-      // and move to next editable accordingly
+    onTitleEditKeyupTab: function(e) {
       this.editables.desc.$view.click();
-
     },
 
     onEditKeydownTab: function(e) {
@@ -301,9 +315,6 @@ function(_, Backbone, templates) {
     },
 
     onTagsKeyupTab: function(e) {
-      // TODO: Implement me
-      // If editor is open, move to the textarea.
-      // Else, move to the first input of the next item.
       this.$el.next().find('.title .view').click();
     },
 
