@@ -39,6 +39,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       this.dispatcher.on('insertAsset', this.onInsertAsset, this);
       this.dispatcher.on('textareaResized', this.onTextareaResize, this);
+      this.dispatcher.on('textareaReady', this.onTextareaReady, this);
 
       if (!this.model.has('text')) {
         this.model.fetch();
@@ -232,21 +233,39 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
 
       if (h < TEXTAREA_MIN_HEIGHT) h = TEXTAREA_MIN_HEIGHT;
 
-      // console.log('Textarea height: ' + h);
+      // console.log('Textarea height: ' + h);  
 
       if (this.$textarea.height() !== h) this.$textarea.animate({
         'height': h
-      }, 100);
+      }, 100, null, _.bind(function() {
+        this.$textarea.resizable({
+          alsoResize: this.$preview
+        });
+      }, this));
 
       if (this.$preview.height() !== h - 8) this.$preview.animate({
         'height': h - 8
       }, 100);
+
+      // TODO: This is a bit buggy
+
+      var winW = $(window).width();
+      if (winW > 958) {
+        var marginLeft = - ((winW - this.$el.prev().outerWidth()) / 2 + 20);
+        this.$el.outerWidth(winW + 60);
+        this.$el.css({'margin-left': marginLeft});
+        this.$el.css({'padding': '8px 28px 0px 28px'});
+        this.$el.outerWidth(winW); 
+      }    
+
+      return this;
 
     },
 
     toggle: function() {
       if (this.$el.is(':hidden')) {
         this.$el.slideDown(100, _.bind(function() {
+          // if (!this.$textarea) this.$textarea = this.$('.editor-textarea');
           this.updateDimensions();
           this.parent.scrollTop();
         }, this));
@@ -255,6 +274,17 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         this.$el.slideUp();
         this.globalDispatcher.trigger('editorClosed');
       }
+    },
+
+    onTextareaReady: function (e) {
+
+      console.log('textarea ready');
+
+      this.$textarea.resizable({
+        alsoResize: this.$preview ? this.$preview : this.$('.preview')
+      });
+
+      
     },
 
     generatePreview: function() {

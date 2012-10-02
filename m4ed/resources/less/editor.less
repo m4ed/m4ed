@@ -4,6 +4,8 @@
 @import "m4ed.less";   // m4ed base style
 @import "upload.less"; // jQuery File Upload
 
+@import "jquery-ui.less";
+
 @import "textext/textext.core.less";
 @import "textext/textext.plugin.tags.less";
 
@@ -202,9 +204,9 @@ input.edit {
 
   .editor-textarea {
     #font > #family > .monospace;
-    height: 294px;
+    // height: 294px;
     overflow: auto;
-    resize: vertical;
+    resize: auto;
     .user-select(text);
   }
 
