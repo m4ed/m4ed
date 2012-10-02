@@ -1,84 +1,156 @@
+
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="m4ed : m4ed - mobile learning platform" />
+    <meta charset="utf-8">
+    <title>m4ed - free and open sourced mobile learning platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <!-- Le styles -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+        background-image: url("img/06.jpg");
+        background-size: cover;
+      }
+    </style>
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
 
-    <title>m4ed</title>
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="img/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
   </head>
 
   <body>
-
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/m4ed/m4ed">View on GitHub</a>
-
-          <h1 id="project_title">m4ed</h1>
-          <h2 id="project_tagline">m4ed - mobile learning platform</h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/m4ed/m4ed/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/m4ed/m4ed/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">m4ed</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <!--<li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Developers <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">GitHub Repository</a></li>
+                <li><a href="#">Become a developer</a></li>
+                <li><a href="#">Demo Site</a></li>
+                <li><a href="#">Pivotal Tracker</a></li>
+                <li><a href="#">Technical Documentation</a></li>
+                <li><a href="#">Database Specification</a></li>
+                <li><a href="#">API Specification</a></li>
+                <li><a href="#">Architecture Specification</a></li>
+                <li><a href="#">Installation Instructions</a></li>
+              </ul>
+             </li>-->
+               <li><a href="#adi">Architecture and Developer Info</a></li>
+               <li><a href="#demo">Demo Site</a></li>
+               <li><a href="#cont">Content Guidelines</a></li>
+               <li><a href="#cred">Credits &amp; Contacts</a></li>
+          </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Requirements Documentation</h3>
-        <ul>
-          <li><a href="elicitation_letter.pdf">Elicitation letter</a></li>
-          <li><a href="requirements.pdf">Requirements documentation</a></li>
-        </ul>
+    <div class="container">
 
+      <div class="hero-unit" style="margin-top:-14px;margin-bottom:5px;padding-top:5px;padding-bottom:0px; background-image:url('img/gradient.png');background-repeat:repeat-x;">
+       <div class="row">
+        <div class="span12">
+          <!-- watch -->
+          <iframe src="http://ghbtns.com/github-btn.html?user=m4ed&repo=m4ed&type=watch&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="95px" height="20px"></iframe>
+          <iframe src="http://ghbtns.com/github-btn.html?user=m4ed&repo=m4ed&type=fork&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="95px" height="20px"></iframe>
+ <!-- tweet button -->
+          <iframe allowtransparency="true" frameborder="0" scrolling="no" src="https://platform.twitter.com/widgets/tweet_button.1347008535.html#_=1349182993262&amp;count=horizontal&amp;hashtags=m4ed%2Cmlearning&amp;id=twitter-widget-68&amp;lang=en&amp;original_referer=https%3A%2F%2Ftwitter.com%2Fabout%2Fresources%2Fbuttons%23tweet&amp;size=m&amp;text=THE%20mobile%20learning%20platform%20(open%20sourced%20%26%20free)&amp;url=http%3A%2F%2Fcode.m4ed.com&amp;via=m4eddev" class="twitter-share-button twitter-count-horizontal" style="width: 95px; height: 20px; " title="Twitter Tweet Button" data-twttr-rendered="true"></iframe>
+          <!-- follow twitter -->
 
-<pre><code>Rest is autogenerated</code></pre>
+          <iframe src="http://ghbtns.com/github-btn.html?user=m4ed&type=follow&count=true"
+  allowtransparency="true" frameborder="0" scrolling="0" width="135px" height="20px"></iframe>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
+    <iframe allowtransparency="true" frameborder="0" scrolling="no" src="https://platform.twitter.com/widgets/follow_button.1347008535.html#_=1349179674683&amp;align=right&amp;id=twitter-widget-1&amp;lang=en&amp;screen_name=m4eddev&amp;show_count=true&amp;show_screen_name=true&amp;size=m" class="twitter-follow-button" style="width: 200px; height: 20px; " title="Twitter Follow Button" data-twttr-rendered="true"></iframe>
+        </div>
+      </div>
     </div>
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit" style="padding-top:10px;padding-bottom:10px;margin-bottom:10px;">
+        <div class="row">
+          <div class="span4">
+        <img src="img/generic_idea1.png" />
+      </div>
+      <div class="span6">
+        <h1>M4ED - mobile learning platform</h1>
+        <p>m4ed is mobile optimized web based system that enables the creation of m-learning services that work on most of the available Mobile Internet connected devices. M4ed is an outcome of the Human Learning Project that has been conducted in co-operation with
+          Aalto University's Department of Media Technology 2012-2013</p>
+      <p><a class="btn btn-large btn-inverse" href="http://demo.m4ed.com" target="blank">demo.m4ed.com</a> <a class="btn btn-large btn-warning" href="https://github.com/m4ed/m4ed/wiki/Overview" target="blank" style="color:black;">Learn more of m4ed</a></p>
+      </div>
+    </div>
+  </div>
+       <div class="hero-unit" style="background-image: url('img/02.jpg'); background-size: closure; background-position: center top;" id="adi">
+        <div class="row">
+          <div class="span4">
+            <img src="img/code_screen.png" />
+          </div>
+          <div class="span6">
+            <h1>Architecture and Developer Info</h1>
+        <p>m4ed is open sourced and released under the MIT license. The source code is hosted in github and the technical documentation is maintained in the github project wiki.</p>
+        <p><a class="btn btn-inverse" href="https://github.com/m4ed/m4ed" target="blank">Source Code @ github</a> <a class="btn btn-warning" href="https://github.com/m4ed/m4ed/wiki/Technical" target="blank" style="color:black;">Technical Documentation</a> <a class="btn btn-inverse" href="https://www.pivotaltracker.com/projects/612359/overview" target="blank">Pivotal Tracker</a></p>
+         </div>
+        </div>
+      </div>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">m4ed maintained by <a href="https://github.com/m4ed">m4ed</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+
+
+      <div class="row">
+        <div class="span4">
+          <h2 id="demo">Demo Site</h2>
+          <p><img src="img/backpack.png" width="128px" style="float:left;" />We have a demo site running at <a href="http://demo.m4ed.com/" target="blank">demo.m4ed.com</a> where you can access the latest master branch build. <i>The databases are wiped empty without warning, so we take no responsibility for any loss of your edits there.</i> Registration is needed, but no real credentials are required and no cleartext passwords are stored. <b style="color:#ff0000;">Remember to try out the editor!</b>
+           </p>
+          <p><a class="btn btn-inverse" href="http://demo.m4ed.com" target="blank">demo.m4ed.com</a></p>
+        </div>
+        <div class="span4">
+          <h2 id="cont">Content guidelines</h2>
+          <p><img src="img/books.png" width="128px" style="float:left;" />We maintain a <a href="https://github.com/m4ed/m4ed/wiki">wiki for content creators @ github</a> where you learn how to make learning content with m4ed content editor and how to create your own m-learning services with the m4ed system.</p>
+          <p><a class="btn btn-warning" href="https://github.com/m4ed/m4ed/wiki/Content" target="blank" style="color:black;">Wiki for content creators</a></p>
+       </div>
+        <div class="span4">
+          <h2 id="cred">Credits & Contacts</h2>
+          <p><img src="img/globe.png" width="128px" style="float:left;" />The development work has been mostly done by the development team (Pekka Toiminen, Joonas Ruuskanen, Juha Rantanen) at <a href="http://media.tkk.fi/en/">Aalto University School of Science - Department of Media Technology</a> under the supervision of prof. Petri Vuorimaa.</p>
+          <p><a class="btn btn-inverse" href="https://github.com/m4ed/m4ed/wiki/About" target="blank">Click here for more info</a></p>
+        </div>
+      </div>
+      <hr>
+
+      <footer>
+        <p><b>&copy; m4ed - Pekka Toiminen, Joonas Ruuskanen, Juha Rantanen.(<i>email: first.last@aalto.fi</i>).</b><br /><small>Backgrounds: <a href="http://buzillo-stock.deviantart.com/art/grunge-textures-01-117072744">buzillo-stock</a> Icons: <a href="http://www.smashingmagazine.com/2012/06/18/freebie-academic-icon-set-10-png-psd-icons/"> PixelsDaily &amp; Smashing Magazine</a></small><br />
+        <iframe allowtransparency="true" frameborder="0" scrolling="no" src="https://platform.twitter.com/widgets/follow_button.1347008535.html#_=1349182265956&amp;align=right&amp;id=twitter-widget-1&amp;lang=en&amp;screen_name=PekkaToiminen&amp;show_count=false&amp;show_screen_name=true&amp;size=m" class="twitter-follow-button" style="width: 153px; height: 20px; " title="Twitter Follow Button" data-twttr-rendered="true"></iframe></p>
       </footer>
-    </div>
 
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-32814428-1");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+    </div> <!-- /container -->
 
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
 
   </body>
 </html>
