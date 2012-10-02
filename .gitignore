@@ -6,7 +6,6 @@
 *.txt.py
 *~
 *.sublime-*
-*.min.css
 *DS_Store
 
 deployment/fabconfigs/_*
@@ -34,3 +33,6 @@ bookenv/
 jyenv/
 pypyenv/
 env*/
+m4ed/
+bootstrap/
+
