@@ -1,0 +1,41 @@
+// LOGIN STYLE 
+// -----------------------------------------
+
+@import "m4ed.less";
+
+.well.login-box {
+
+  padding: 24px 24px 4px;
+  margin: 16px -25px; // Negative horizontal margin to remove padding and border space
+
+}
+
+.login-logo {
+  display: block;
+  width: 206px;
+  height: 82px;
+  margin: -4px 0 0 -7px;
+  background: url("../img/m4ed-logo-206x82.png") no-repeat;
+}
+
+@media (max-width: 979px) {
+  .login-logo {
+    background-image: url("../img/m4ed-logo-180x72.png");
+    width: 180px;
+    height: 72px;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-logo {
+    background-image: url("../img/m4ed-logo-125x50.png");
+    width: 125px;
+    height: 50px;
+    float: right;
+    margin: -12px -3px 0 0;
+  }
+  .well.login-box {
+    margin: 0px -25px;
+  }
+}

@@ -1,12 +1,4 @@
-define([
-  'jquery',
-  'views/student/multi',
-  'jquerypp/cookie'
-],
-function($, MultipleChoiceView) {
-  var initialize = function() {
-    // What do
-  };
+define(['jquery', 'jquerypp/cookie'], function($) {
 
   function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -24,7 +16,4 @@ function($, MultipleChoiceView) {
     }
   });
 
-  return {
-    initialize: initialize
-  };
 });

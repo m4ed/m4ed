@@ -36,6 +36,7 @@ requirejs.config({
     'jquery.elastislide': 'lib/jquery/plugins/jquery.elastislide',
     'jquery.hotkeys': 'lib/jquery/plugins/jquery.hotkeys',
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
+    'jquery.csrf': 'lib/jquery/plugins/jquery.csrf',
 
     // Utils
     'canvas-to-blob': 'lib/util/canvas-to-blob.min',
@@ -44,6 +45,8 @@ requirejs.config({
     'json': 'lib/util/json2',
 
     // Bootstrap
+
+    'bootstrap.alert': '../bootstrap/js/bootstrap-alert',
     'bootstrap.button': '../bootstrap/js/bootstrap-button',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',
     'bootstrap.popover': '../bootstrap/js/bootstrap-popover',
@@ -72,6 +75,7 @@ requirejs.config({
     'jquery.textext.prompt': ['jquery.textext'],
     'jquery.textext.focus': ['jquery.textext'],
 
+    'bootstrap.alert': ['jquery'],
     'bootstrap.button': ['jquery'],
     'bootstrap.collapse': ['jquery'],
     'bootstrap.modal': ['jquery'],

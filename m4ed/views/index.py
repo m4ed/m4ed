@@ -1,4 +1,9 @@
-from m4ed.resources import editor_less
+from m4ed.resources import (
+    editor_less,
+    student_less
+    )
+
+from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from pyramid.security import authenticated_userid
 
@@ -21,13 +26,16 @@ def get_edit_index(request):
 
 @view_config(
     route_name='index',
-    renderer='medium/index.mako')
+    renderer='student/index.mako')
 def get_index(request):
+    student_less.need()
+
+    authenticated = authenticated_userid(request)
+
+    if not authenticated:
+        return HTTPFound(location=request.route_url('login'))
+
     return {
-        'login_url': request.route_url('login'),
         'logout_url': request.route_url('logout'),
-        'register_url': request.route_url('register'),
-        # 'new_space_url': request.route_url('new_space'),
-        'authenticated': authenticated_userid(request),
         'spaces': request.context
     }

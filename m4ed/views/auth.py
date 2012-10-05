@@ -2,16 +2,22 @@ from pyramid.view import (
     view_config,
     forbidden_view_config
     )
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPNotAcceptable
+    )
 from pyramid.security import (
     remember,
     forget,
     authenticated_userid
     )
 
+from m4ed.resources import login_less
+
 import logging
 
 log = logging.getLogger(__name__)
+
 
 def valid_login(request):
     # Request context should be m4ed.factories.UserFactory at this point
@@ -21,9 +27,12 @@ def valid_login(request):
     return user
 
 
-@view_config(route_name='login', renderer='medium/auth/login.mako')
+@view_config(route_name='login', renderer='auth/login.mako')
 #@forbidden_view_config(renderer='medium/auth/login.mako')
 def login(request):
+
+    login_less.need()
+
     next = request.params.get('next') or request.route_url('index')
     if authenticated_userid(request):
         return HTTPFound(location=next)
@@ -36,12 +45,13 @@ def login(request):
             headers = remember(request, user.username)
             return HTTPFound(location=next, headers=headers)
         else:
-            message = 'invalid password'
+            message = 'Invalid password.'
 
     return dict(
         next=next,
-        message=message,
-        post_url=request.route_url('login'),
+        login_error=message,
+        login_url=request.route_url('login'),
+        register_url=request.route_url('register'),
         username=username,
         password=password
         )
@@ -58,19 +68,47 @@ def valid_registration(request):
         log.debug('{0} Failed to register: {1}'.format(
             request.remote_addr, message))
         data = result['data']
-        return (dict(
-            username=data['username'],
-            email=data['email']
-            ), message)
+        if data:
+            return (dict(
+                username=data['username'],
+                email=data['email']
+                ), message)
+        else:
+            return (None, message)
     else:
         user = result['user']
         return (user, message)
 
 
-@view_config(route_name='register', renderer='medium/auth/register.mako')
+@view_config(route_name='rest_signup', request_method='POST', renderer='json')
+def post_signup(request):
+
+    message = ''
+    user, message = valid_registration(request)
+
+    if message == '':
+        request.response.status = '200'
+        return {}
+    else:
+        request.response.status = '500'
+        return {'message': message}
+
+
+@view_config(route_name='rest_login', request_method='POST', renderer='json')
+def post_login(request):
+
+    if valid_login(request):
+        request.response.status = '200'
+        return {}
+    else:
+        request.response.status = '500'
+        return {'message': 'Login failed. Please check your username and password.'}
+
+
+@view_config(route_name='register')
 def register(request):
     next = request.params.get('next') or request.route_url('index')
-    if authenticated_userid(request):
+    if request.method == 'GET' or authenticated_userid(request):
         return HTTPFound(location=next)
 
     message = ''
@@ -105,12 +143,14 @@ def register(request):
             username = user.get('username')
             email = user.get('email')
 
-    return dict(
-        url=request.route_url('register'),
-        message=message,
-        username=username,
-        email=email
-    )
+    return HTTPFound(location=next)
+
+    # return dict(
+    #     url=request.route_url('register'),
+    #     message=message,
+    #     username=username,
+    #     email=email
+    # )
 
 
 @view_config(route_name='logout')

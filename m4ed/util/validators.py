@@ -81,22 +81,22 @@ _VALIDATORS = dict(
     item=Validator.parse({
         '?_id': AdaptTo(ObjectId),  # Every item has this except newly created ones
         '+cluster_id': AdaptTo(ObjectId),  # The cluster this item belongs to
-        'answers': {
+        '?answers': {
             'string': [
                 'string'
             ]
         },
         '+desc': valideer.String(min_length=1),
-        'html': 'string',
+        '?html': 'string',
         '+listIndex': AdaptTo(int),
         '+tags': ['string'],
-        'text': 'string',
+        '?text': 'string',
         '+title': valideer.String(min_length=1)
     }),
-    user_registration_form=Validator.parse({
+    user=Validator.parse({
         '+username': 'username',
-        '+pw1': 'password',
-        '+pw2': 'password',
+        '+password': 'password',
+        '+password2': 'password',
         '?email': 'email'
     })
 )
@@ -118,5 +118,5 @@ def get_item_validator():
     return get_validator('item')
 
 
-def get_user_registration_form_validator():
-    return get_validator('user_registration_form')
+def get_user_validator():
+    return get_validator('user')

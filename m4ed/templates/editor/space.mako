@@ -6,20 +6,11 @@
 
 <%namespace file="item.mako" import="*"/>
 <%namespace file="hogan/hogan_item.mako" import="*"/>
+<%namespace file="init.mako" import="*"/>
 
-<%namespace file="menus/context.mako" import="*"/>
-
-<%block name="title">m4ed - Content Editor</%block>
-
-<%block name="context_menu">
-  ${context_item()}
-</%block>
+<%block name="title">m4ed - ${space.title}</%block>
 
 <%block name="content">
-
-<!--   <header class="header">
-    <div class="location">${space.title}</div>
-  </header> -->
 
   <ul class="breadcrumb">
     <li><a href="/edit"><i class="icon-home icon-white"></i></a></li>
@@ -30,7 +21,7 @@
   <!-- The list of items -->
   <ul class="ui-sortable">
   % for cluster in space['clusters']:
-    <li id='${cluster._id}' data-index='${cluster.listIndex}'>
+    <li id='${cluster._id}'>
       ${item_template(cluster.title, cluster.desc, '/fanstatic/m4ed/img/48x48.gif', dumps(cluster.tags))}
     </li>
   % endfor
@@ -40,37 +31,7 @@
 
 <%block name="scripts">
 
-  <script>
-    require(['/fanstatic/m4ed/js/config.js'], function() {
-      require(['underscore', 'backbone', 'models/listitem', 'views/editor/spaceclusters', 'editor_app', 'domReady!'], function(_, Backbone, ListItemModel, SpaceClustersView, App) {
-
-        var ClusterModel = ListItemModel.extend({
-          urlRoot: '/api/clusters'
-        });
-
-        var ClusterCollection = Backbone.Collection.extend({
-          url: '/api/spaces/${space._id}/clusters',
-          model: ClusterModel
-        });
-
-        var clusters = new ClusterCollection(${dumps(space['clusters']) | n});
-
-        // Make a clone of BackBone.Events and use it as a global event dispatcher
-        var dispatcher = _.clone(Backbone.Events);
-
-        new SpaceClustersView({
-          el: '.container',
-          custom: {
-            'globalDispatcher': dispatcher,
-            'collection': clusters
-          }
-        });
-
-        App.initialize(dispatcher);
-
-      });
-    });
-  </script>
+  ${init_script('views/editor/spaceclusters', dumps(space['clusters']), '/api/spaces/' + str(space._id) + '/clusters', '/api/clusters')}
 
   <!-- Hogan templates -->
   ${hogan_item()}
