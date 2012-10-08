@@ -86,8 +86,10 @@ def post_signup(request):
     message = ''
     user, message = valid_registration(request)
 
-    if message == '':
+    if message == '' and user:
+        headers = remember(request, user['username'])
         request.response.status = '200'
+        request.response.headerlist.extend(headers)
         return {}
     else:
         request.response.status = '500'
@@ -97,8 +99,11 @@ def post_signup(request):
 @view_config(route_name='rest_login', request_method='POST', renderer='json')
 def post_login(request):
 
-    if valid_login(request):
+    user = valid_login(request)
+    if user:
+        headers = remember(request, user['username'])
         request.response.status = '200'
+        request.response.headerlist.extend(headers)
         return {}
     else:
         request.response.status = '500'

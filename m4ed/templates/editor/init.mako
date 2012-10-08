@@ -12,16 +12,16 @@
           model: Model
         });
 
-        var col = new Collection(${json_collection | n});
+        var collection = new Collection(${json_collection | n});
 
         // Make a clone of BackBone.Events and use it as a global event dispatcher
-        var disp = _.clone(Backbone.Events);
+        var globalDispatcher = _.clone(Backbone.Events);
 
         new View({
           el: '.container',
           custom: {
-            'globalDispatcher': disp,
-            'collection': col
+            'globalDispatcher': globalDispatcher,
+            'collection': collection
           }
         });
 

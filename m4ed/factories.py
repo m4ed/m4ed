@@ -536,17 +536,17 @@ class UserFactory(BaseFactory):
                 )
             data = validator.validate(data)
         except (KeyError):
-            return {'success': False, 'data': None, 'message': 'Invalid form'}
+            return {'success': False, 'data': None, 'message': 'Invalid form.'}
         except (ValidationError), e:
             print e
             return {'success': False, 'data': data, 'message': str(e)}
 
         # Check if we can find a user with this username already in our database
         if self.get(data['username']) is not None:
-            return {'success': False, 'data': data, 'message': 'Username alread taken'}
+            return {'success': False, 'data': data, 'message': 'Username already taken.'}
         # Check that the two passwords match
         if data['password'] != data['password2']:
-            return {'success': False, 'data': data, 'message': 'Passwords did not match'}
+            return {'success': False, 'data': data, 'message': 'Passwords did not match.'}
 
         work_factor = settings.get('bcrypt_log_rounds', '12')
         password = self.bcrypt_password(data['password'], work_factor)
