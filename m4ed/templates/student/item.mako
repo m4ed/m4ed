@@ -1,5 +1,7 @@
 <%inherit file="base.mako"/>
 
+<%namespace file="hogan/multiplechoice.mako" import="*"/>
+
 <%block name="title">m4ed - ${item.title}</%block>
 
 <%block name="content">
@@ -15,5 +17,8 @@
   <div class="well">
     ${item.html|n}
   </div>
+</%block>
 
+<%block name="hogan_templates">
+  ${hogan_multiplechoice()}
 </%block>

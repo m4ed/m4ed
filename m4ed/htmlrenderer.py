@@ -29,7 +29,7 @@ DEBUG = False
 MULTI_CHOICE_TEMPLATE = Template((
     '${html_tag}'
     '<script>'
-    'require(["models/multi", "views/multi"],'
+    'require(["student/models/multi", "student/views/multi"],'
     # MC = MultipleChoice
     # MCV = MultipleChoiceView
     # Using abbreviated terms since minifying is fun

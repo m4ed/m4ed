@@ -2,9 +2,10 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'hogan'
+    'hogan',
+    'student/views/templates'
 ],
-function($, _, Backbone, hogan) {
+function($, _, Backbone, hogan, templates) {
   var multipleChoiceView = Backbone.View.extend({
     tagName: 'div',
 
@@ -12,27 +13,9 @@ function($, _, Backbone, hogan) {
 
     initialize: function(options) {
       _.extend(this, options.custom);
-      console.log(this.block_id)
-      this.template = hogan.compile(
-        '{{#choices}}' +
-        '<div class="span3">' +
-          '<div>' +
-            '<button class="btn btn-primary" data-id="{{id}}">' +
-              '{{prefix}}' +
-            '</button>' +
-            '<span>' +
-              // & to unescape the text data
-              ' {{& html}}' +
-            '</span>' +
-            '<div class="hint {{hint_class}} hide">' +
-              '<p>{{& hint }}</p>' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '{{/choices}}'
-        )
+      this.template = templates.multipleChoice;
       $(this.block_id).append(this.render().el);
-      location_pathname = window.location.pathname
+      location_pathname = window.location.pathname;
       // Try to determine if this script was loaded in the preview window
       this.isPreview = location_pathname.indexOf('editor') >= 0;
       if (!this.isPreview) {
@@ -44,7 +27,7 @@ function($, _, Backbone, hogan) {
           // Assume that the second last item is the one we're looking for
           item_id = split_path.slice(-2);
         }
-        self.post_url = '/api/items/' + item_id + '/answer'
+        self.post_url = '/api/items/' + item_id + '/answer';
       }
     },
 
