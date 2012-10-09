@@ -4,7 +4,7 @@
 
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 <%namespace file="upload.mako" import="*"/>
 
 <%namespace file="hogan/hogan_assets.mako" import="*"/>
@@ -12,14 +12,9 @@
 <%namespace file="hogan/hogan_editor.mako" import="*"/>
 <%namespace file="hogan/hogan_item.mako" import="*"/>
 <%namespace file="hogan/hogan_upload.mako" import="*"/>
+<%namespace file="init.mako" import="*"/>
 
-<%namespace file="menus/context.mako" import="*"/>
-
-<%block name="title">m4ed - Content Editor</%block>
-
-<%block name="context_menu">
-  ${context_item()}
-</%block>
+<%block name="title">m4ed - ${cluster.title}</%block>
 
 <%block name="content">
 
@@ -30,11 +25,11 @@
     <li class="divider"> </li>
     <li>${cluster.title}</li>
   </ul>
+
   <!-- The list of items -->
   <ul class="ui-sortable">
-
   % for item in cluster['items']:
-    <li id='${item._id}' data-index='${item.listIndex}'>
+    <li id='${item._id}'>
       ${item_template(item.title, item.desc, '/fanstatic/m4ed/img/48x48.gif', dumps(item.tags))}
     </li>
   % endfor
@@ -47,38 +42,7 @@
 
 <%block name="scripts">
 
-  <script>
-    require(['/fanstatic/m4ed/js/config.js'], function() {
-      require(['underscore', 'backbone', 'models/listitem', 'views/editor/clusteritems', 'editor_app', 'domReady!'], function(_, Backbone, ListItemModel, ClusterItemsView, App) {
-
-        var ItemModel = ListItemModel.extend({
-          urlRoot: '/api/items'
-        });
-
-        var ItemCollection = Backbone.Collection.extend({
-          url: '/api/clusters/${cluster._id}/items',
-          model: ItemModel
-        });
-
-        var items = new ItemCollection(${dumps(cluster['items']) | n});
-
-
-        // Make a clone of BackBone.Events and use it as a global event dispatcher
-        var dispatcher = _.clone(Backbone.Events);
-
-        new ClusterItemsView({
-          el: '.container',
-          custom: {
-            'globalDispatcher': dispatcher,
-            'collection': items
-          }
-        });
-
-        App.initialize(dispatcher);
-
-      });
-    });
-  </script>
+  ${init_script('views/clusteritems', dumps(cluster['items']), '/api/clusters/' + str(cluster._id) + '/items', '/api/items')}
 
   <!-- Hogan templates -->
   ${hogan_item()}

@@ -36,6 +36,8 @@ def item(config):
 
 
 def api(config):
+    config.add_route('rest_login', '/login', factory='m4ed.factories:UserFactory')
+    config.add_route('rest_signup', '/signup', factory='m4ed.factories:UserFactory')
     config.add_route('rest_spaces', '/spaces', factory='m4ed.factories:SpaceFactory')
     config.include(space_api, route_prefix='/spaces')
 

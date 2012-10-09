@@ -29,25 +29,23 @@ DEBUG = False
 MULTI_CHOICE_TEMPLATE = Template((
     '${html_tag}'
     '<script>'
-    'require(["config"],'
-    'function(){'
-        'require(["models/multi", "views/student/multi"],'
-        # MC = MultipleChoice
-        # MCV = MultipleChoiceView
-        # Using abbreviated terms since minifying is fun
-        'function(MC,MCV){'
-            'new MCV({'
-                'model:new MC(${args}),'
-                'custom:{'
-                  'block_id:"#m4ed-${block_id}"'
-                '}'
-            '});'
+    'require(["models/multi", "views/multi"],'
+    # MC = MultipleChoice
+    # MCV = MultipleChoiceView
+    # Using abbreviated terms since minifying is fun
+    'function(MC,MCV){'
+        'new MCV({'
+            'model:new MC(${args}),'
+            'custom:{'
+              'block_id:"#m4ed-${block_id}"'
+            '}'
         '});'
     '});'
     '</script>'
     ))
 
 log = logging.getLogger(__name__)
+
 
 class CustomHtmlRenderer(HtmlRenderer):
     def __new__(cls, flags=0, **kwargs):

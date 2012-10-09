@@ -108,11 +108,11 @@ class BaseFactory(object):
                 # Ignore the request with 406 - Not Acceptable error
                 self.request.response.status = '406'
                 return {'err': True}
-            if not params.pop('_id', None):
-                # This should never ever happen but if it does, just respond with
-                # 503 - Service Unavailable error
-                self.request.response.status = '503'
-                return {'err': True}
+            # if not params.pop('_id', None):
+            #     # This should never ever happen but if it does, just respond with
+            #     # 503 - Service Unavailable error
+            #     self.request.response.status = '503'
+            #     return {'err': True}
         else:
             params = self.request.POST
 
@@ -234,6 +234,14 @@ class ItemFactory(BaseFactory):
         self.user_id = authenticated_userid(request)
         self.progress_collection = request.db.progress
 
+    @property
+    def _cluster_factory(self):
+        parent = self.__parent__
+        # Try to determine if the factory has been initialized before
+        if isinstance(parent, object.__class__):
+            parent = parent(self.request)
+        return parent
+
     def __getitem__(self, _id):
         try:
             query = dict(_id=ObjectId(_id))
@@ -327,6 +335,9 @@ class ItemFactory(BaseFactory):
             'tags': kwargs.pop('tags', []),
             'listIndex': kwargs.pop('listIndex', 0)
         })
+
+    def get_cluster_title(self, cluster_id):
+        return self._cluster_factory[cluster_id].title
 
     def save(self, item):
         params = self._read_params()
@@ -492,7 +503,7 @@ class UserFactory(BaseFactory):
         self.commit(user)
 
     def login(self):
-        params = self.request.POST
+        params = self._read_params()
         # Try to extract the login data
         try:
             username = params['username']
@@ -524,32 +535,32 @@ class UserFactory(BaseFactory):
 
     def create_user(self):
         request = self.request
-        params = request.POST
+        params = self._read_params()
         settings = request.registry.settings
-        validator = validators.get_user_registration_form_validator()
+        validator = validators.get_user_validator()
         try:
             data = dict(
                 username=params['username'],
-                pw1=params['pw1'],
-                pw2=params['pw2'],
+                password=params['password'],
+                password2=params['password2'],
                 email=params.get('email', None)
                 )
             data = validator.validate(data)
         except (KeyError):
-            return {'success': False, 'message': 'Invalid form'}
+            return {'success': False, 'data': None, 'message': 'Invalid form.'}
         except (ValidationError), e:
             print e
             return {'success': False, 'data': data, 'message': str(e)}
 
         # Check if we can find a user with this username already in our database
         if self.get(data['username']) is not None:
-            return {'success': False, 'data': data, 'message': 'Username alread taken'}
+            return {'success': False, 'data': data, 'message': 'Username already taken.'}
         # Check that the two passwords match
-        if data['pw1'] != data['pw2']:
-            return {'success': False, 'data': data, 'message': 'Passwords did not match'}
+        if data['password'] != data['password2']:
+            return {'success': False, 'data': data, 'message': 'Passwords did not match.'}
 
         work_factor = settings.get('bcrypt_log_rounds', '12')
-        password = self.bcrypt_password(data['pw1'], work_factor)
+        password = self.bcrypt_password(data['password'], work_factor)
         new_user = {
            'username': data['username'],
            'password': password,

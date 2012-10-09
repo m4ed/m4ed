@@ -3,7 +3,10 @@ from pyramid.view import (
     view_defaults
     )
 
-from m4ed.resources import editor_less
+from m4ed.resources import (
+    editor_less,
+    student_less
+    )
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
 #from m4ed.factories import SpaceFactory
@@ -22,9 +25,10 @@ def get_edit_space(request):
 
 @view_config(
     route_name='space',
-    renderer='medium/spaces/show.mako',
+    renderer='student/space.mako',
     permission='read')
 def get_space(request):
+    student_less.need()
     return {
         'space': request.context.stripped
     }
