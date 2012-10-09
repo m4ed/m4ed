@@ -1,6 +1,6 @@
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 
 <%block name="content">
 
@@ -16,7 +16,5 @@
     </li>
   % endfor
   </ul>
-
-  <p><a class="btn btn-small" href="${logout_url}">Logout</a></p>
 
 </%block>

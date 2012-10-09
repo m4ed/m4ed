@@ -234,6 +234,14 @@ class ItemFactory(BaseFactory):
         self.user_id = authenticated_userid(request)
         self.progress_collection = request.db.progress
 
+    @property
+    def _cluster_factory(self):
+        parent = self.__parent__
+        # Try to determine if the factory has been initialized before
+        if isinstance(parent, object.__class__):
+            parent = parent(self.request)
+        return parent
+
     def __getitem__(self, _id):
         try:
             query = dict(_id=ObjectId(_id))
@@ -327,6 +335,9 @@ class ItemFactory(BaseFactory):
             'tags': kwargs.pop('tags', []),
             'listIndex': kwargs.pop('listIndex', 0)
         })
+
+    def get_cluster_title(self, cluster_id):
+        return self._cluster_factory[cluster_id].title
 
     def save(self, item):
         params = self._read_params()

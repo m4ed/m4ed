@@ -3,7 +3,7 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/templates',
+  'views/templates',
   'bootstrap.tooltip'
 ],
 function($, _, Backbone, templates) {

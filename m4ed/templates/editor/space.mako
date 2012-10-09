@@ -4,7 +4,7 @@
 
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 <%namespace file="hogan/hogan_item.mako" import="*"/>
 <%namespace file="init.mako" import="*"/>
 
@@ -31,7 +31,7 @@
 
 <%block name="scripts">
 
-  ${init_script('views/editor/spaceclusters', dumps(space['clusters']), '/api/spaces/' + str(space._id) + '/clusters', '/api/clusters')}
+  ${init_script('views/spaceclusters', dumps(space['clusters']), '/api/spaces/' + str(space._id) + '/clusters', '/api/clusters')}
 
   <!-- Hogan templates -->
   ${hogan_item()}

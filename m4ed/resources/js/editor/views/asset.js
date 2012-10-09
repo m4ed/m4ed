@@ -2,7 +2,7 @@
 define([
   'underscore',
   'backbone',
-  'views/editor/asseteditor',
+  'views/asseteditor',
   'jquerypp/event/hover'
 ],
 function(_, Backbone, AssetEditorView) {

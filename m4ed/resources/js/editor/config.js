@@ -1,7 +1,11 @@
 requirejs.config({
-  baseUrl: 'fanstatic/m4ed/js',
+  baseUrl: '/fanstatic/m4ed/js',
   //enforceDefine: true,
   paths: {
+
+    'models': 'editor/models',
+    'views': 'editor/views',
+
     // Main components
     'jquery': 'lib/jquery/jquery.min',
     'underscore': 'lib/underscore/underscore',

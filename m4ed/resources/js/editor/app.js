@@ -3,9 +3,10 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/navigation',
+  'views/navigation',
   'jquery.hotkeys',
   'jquerypp/cookie',
+  'jquery.csrf',
   'bootstrap.collapse',
   'bootstrap.dropdown',
   'bootstrap.modal',
@@ -24,22 +25,6 @@ define([
       el: '.navbar-fixed-top',
       custom: {
         'globalDispatcher': dispatcher
-      }
-    });
-
-    function csrfSafeMethod(method) {
-      // these HTTP methods do not require CSRF protection
-      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-
-    // Fiddle with the ajax to include the csrf token
-    $.ajaxSetup({
-      crossDomain: false, // obviates need for sameOrigin test
-      beforeSend: function(xhr, settings) {
-        if (!csrfSafeMethod(settings.type)) {
-            var csrftoken = $.cookie('csrf_token');
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-        }
       }
     });
 

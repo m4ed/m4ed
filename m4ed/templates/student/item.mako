@@ -1,27 +1,19 @@
-## Template for items in student views
+<%inherit file="base.mako"/>
 
-<%def name="item_template(url, title, desc, icon)">
-  <a class="well item" href='${url}'>
+<%block name="title">m4ed - ${item.title}</%block>
 
-    <div class="btn btn-inverse btn-circle btn-remove" style="display: none;">
-      <i class="icon-remove icon-white"></i>
-    </div>
+<%block name="content">
 
-    <div class="item-icon">
-      <img src="${icon}" alt="item" />
-    </div>
-    <div class="handle">
-    </div>
+  <ul class="breadcrumb">
+    <li><a href="/"><i class="icon-home icon-white"></i></a></li>
+    <li class="divider"> </li>
+    <li><a href="/c/${item.cluster_id}">${cluster_title}</a></li>
+    <li class="divider"> </li>
+    <li>${item.title}</li>
+  </ul>
 
-    <div class="item-content">
-      <div class="title">
-        <span class="view">${title}</span>
+  <div class="well">
+    ${item.html|n}
+  </div>
 
-      </div>
-      <div class="desc">
-        <span class="view">${desc}</span>
-
-      </div>
-    </div>
-  </a>
-</%def>
+</%block>

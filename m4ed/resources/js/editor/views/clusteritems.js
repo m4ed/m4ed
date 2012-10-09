@@ -3,27 +3,17 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'collections/base',
-  'models/item',
-  'views/editor/sortablelist',
-  'views/editor/item',
-  'views/editor/editor',
-  'views/editor/upload',
+  'views/sortablelist',
+  'views/item',
+  'views/editor',
+  'views/upload',
   'jquery.ui.touch-punch'
 ],
-function($, _, Backbone, BaseCollection, ItemModel, SortableListView, ItemView, EditorView, UploadView) {
+function($, _, Backbone, SortableListView, ItemView, EditorView, UploadView) {
 
   var clusterItemsView = SortableListView.extend({
     
     initialize: function(options) {
-
-      // _.extend(options.custom, {
-      //   collection: new BaseCollection({
-      //     // url: this.model.url() + '/items',
-      //     url: '/api/items',
-      //     model: ItemModel
-      //   })
-      // });
       
       SortableListView.prototype.initialize.apply(this, arguments);
 

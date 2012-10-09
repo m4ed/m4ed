@@ -1,9 +1,9 @@
-// Filename: views/editor/space.js
+// Filename: editor/views/cluster.js
 define([
   'underscore',
   'backbone',
-  'views/editor/listitem',
-  'views/editor/editor'
+  'views/listitem',
+  'views/editor'
 ],
 function(_, Backbone, ListItemView, EditorView) {
 
@@ -16,7 +16,7 @@ function(_, Backbone, ListItemView, EditorView) {
     onItemClick: function(e) {
       // ListItemView.prototype.onItemClick.apply(this, arguments);
 
-      window.location.href = '/s/' + this.model.get('_id') + '/edit';
+      window.location.href = '/c/' + this.model.get('_id') + '/edit';
 
       return false;
 

@@ -3,7 +3,7 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/templates',
+  'views/templates',
   'jquery.ui',
   'jquery.fileupload-ui',
   'jquery.plugins'

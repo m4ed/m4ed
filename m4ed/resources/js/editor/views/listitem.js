@@ -1,11 +1,11 @@
-// Filename: views/editor/listitem.js
+// Filename: editor/views/listitem.js
 
 // NOTE: This view is extendable, not supposed to be used directly
 
 define([
   'underscore',
   'backbone',
-  'views/editor/templates',
+  'views/templates',
   'jquery.plugins',
   'jquery.textext.tags',
   'jquerypp/event/resize'

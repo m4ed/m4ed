@@ -25,9 +25,14 @@ function(_, Backbone) {
     },
 
     events: {
+      'click .normal-mode': 'onNormalModeClick',
       'click .action.add': 'onAddClick',
       'click .action.duplicate': 'onDuplicateClick',
       'click .action.toggle-deletion': 'onToggleDeletionClick'
+    },
+
+    onNormalModeClick: function(e) {
+      window.location.href = window.location.href.replace(/(\/edit.*)/, '');
     },
 
     onAddClick: function(e) {

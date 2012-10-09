@@ -7,14 +7,17 @@ define([
   'underscore',
   'backbone',
   'hogan',
-  'collections/base',
   'models/listitem',
-  'views/editor/item',
-  'views/editor/editor',
-  'views/editor/upload',
+  'views/item',
+  'views/editor',
+  'views/upload',
   'jquery.ui.touch-punch'
 ],
-function($, _, Backbone, hogan, BaseCollection, ListItemModel, ItemView, EditorView, UploadView) {
+function($, _, Backbone, hogan, ListItemModel, ItemView, EditorView, UploadView) {
+
+  var ListItemCollection = Backbone.Collection.extend({
+    model: ListItemModel
+  });
 
   var sortableListView = Backbone.View.extend({
 
@@ -25,10 +28,8 @@ function($, _, Backbone, hogan, BaseCollection, ListItemModel, ItemView, EditorV
 
       var url = options ? options.url : undefined;
       if (!this.collection) {
-        this.collection = new BaseCollection({
-          url: url,
-          model: ListItemModel
-        });
+        this.collection = new ListItemCollection();
+        this.collection.url = url;
       } 
 
       this.collection.on('add', this.onAdd, this);

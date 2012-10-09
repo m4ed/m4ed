@@ -3,29 +3,13 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'collections/base',
-  'views/editor/sortablelist',
-  'views/editor/space',
+  'views/sortablelist',
+  'views/space',
   'jquery.ui.touch-punch'
 ],
-function($, _, Backbone, BaseCollection, SortableListView, SpaceView) {
+function($, _, Backbone, SortableListView, SpaceView) {
 
   var rootView = SortableListView.extend({
-    
-    // initialize: function(options) {
-
-    //   // _.extend(options.custom, {
-    //   //   collection: new BaseCollection({
-    //   //     // url: this.model.url() + '/items',
-    //   //     url: '/api/items',
-    //   //     model: ItemModel
-    //   //   })
-    //   // });
-      
-    //   SortableListView.prototype.initialize.apply(this, arguments);
-
-
-    // },
 
     createItemView: function(model, options) {
 

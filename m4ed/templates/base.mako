@@ -15,6 +15,10 @@
     <%block name="icons">
     </%block>
 
+    <script src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
+    <%block name="require_config">
+      <script src="/fanstatic/m4ed/js/student/config.js"></script>
+    </%block>
   </%block>
 </head>
 <body>
@@ -40,8 +44,6 @@
   <!-- Le javascript
   ================================================== -->
   <!-- Placed at the end of the document so the pages load faster -->
-
-  <script src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 
   <%block name="scripts">
   </%block>

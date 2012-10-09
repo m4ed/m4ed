@@ -9,12 +9,6 @@
   <script data-main="/fanstatic/m4ed/js/student_main.js" src="/fanstatic/m4ed/js/lib/requirejs/require.js"></script>
 </head>
 <body>
-  <style>
-    .green { color: green; }
-    .red { color: red; }
-  </style>
-  <div class="well">
-    <div class="container" id="content">${html|n}</div>
-  </div>
+
 </body>
 </%block>

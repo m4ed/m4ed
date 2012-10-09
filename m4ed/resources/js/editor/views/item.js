@@ -1,9 +1,9 @@
-// Filename: views/editor/item.js
+// Filename: editor/views/item.js
 define([
   'underscore',
   'backbone',
-  'views/editor/listitem',
-  'views/editor/editor'
+  'views/listitem',
+  'views/editor'
 ],
 function(_, Backbone, ListItemView, EditorView) {
 

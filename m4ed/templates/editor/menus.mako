@@ -6,6 +6,7 @@
 
   <div class="nav-collapse context-menu"> 
     <ul class="nav pull-right">
+      <li><a class="normal-mode" href="#">Normal mode</a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           Context menu <b class="caret"></b>

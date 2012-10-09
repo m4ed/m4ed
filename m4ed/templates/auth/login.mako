@@ -50,118 +50,114 @@
   </script>
 
   <script>
-    require(['/fanstatic/m4ed/js/config.js'], function() {
-      require(['underscore', 'backbone', 'hogan', 'domReady!', 'jquery.csrf', 'bootstrap.alert'], function(_, Backbone, hogan) {
+    require(['underscore', 'backbone', 'hogan', 'domReady!', 'jquery.csrf', 'bootstrap.alert'], function(_, Backbone, hogan) {
 
-        // TODO: Attach validator to the models
-        var LoginModel = Backbone.Model.extend({
-          url: '/api/login'
-        });
+      // TODO: Attach validator to the models
+      var LoginModel = Backbone.Model.extend({
+        url: '/api/login'
+      });
 
-        var SignupModel = Backbone.Model.extend({
-          url: '/api/signup'
-        });
+      var SignupModel = Backbone.Model.extend({
+        url: '/api/signup'
+      });
 
-        var LoginView = Backbone.View.extend({
+      var LoginView = Backbone.View.extend({
 
-          el: $('.login-box'),
+        el: $('.login-box'),
 
-          initialize: function() {
+        initialize: function() {
 
-            this.dispatcher = _.clone(Backbone.Events);
+          this.dispatcher = _.clone(Backbone.Events);
 
-            this.dispatcher.on('change:message', this.onMessageChange, this);
+          this.dispatcher.on('change:message', this.onMessageChange, this);
 
-            this.templates = {};
-            this.templates.alertError = hogan.compile($('#alert-error-template').html());
-            this.$message = this.$('.message-wrapper');
-
-
-            var login = new LoginModel({
-              username: '',
-              password: ''
-            });
-
-            var signup = new SignupModel({
-              username: '',
-              password: '',
-              password2: '',
-              email: ''
-            });
-
-            new FormView({
-              el: $('.login-form'),
-              model: login,
-              custom: {
-                dispatcher: this.dispatcher
-              }
-            });
-
-            new FormView({
-              el: $('.signup-form'),
-              model: signup,
-              custom: {
-                dispatcher: this.dispatcher
-              }
-            });
-
-          },
-
-          onMessageChange: function(message) {
-            this.$message.empty();
-            if (message && message !== '') this.$message.append(this.templates.alertError.render({
-              'message': message
-            }));
-          }, 
+          this.templates = {};
+          this.templates.alertError = hogan.compile($('#alert-error-template').html());
+          this.$message = this.$('.message-wrapper');
 
 
-        });
+          var login = new LoginModel({
+            username: '',
+            password: ''
+          });
 
-        var FormView = Backbone.View.extend({
+          var signup = new SignupModel({
+            username: '',
+            password: '',
+            password2: '',
+            email: ''
+          });
 
-          initialize: function(options) {
-            _.extend(this, options.custom);
-          },
+          new FormView({
+            el: $('.login-form'),
+            model: login,
+            custom: {
+              dispatcher: this.dispatcher
+            }
+          });
 
-          events: {
-            "change input": "onInputChange",
-            "click .submit": "onSubmit"
-          },
+          new FormView({
+            el: $('.signup-form'),
+            model: signup,
+            custom: {
+              dispatcher: this.dispatcher
+            }
+          });
 
-          onInputChange: function(e) {
-            var target = $(e.currentTarget)
-              , data = {};
-            data[target.attr('name')] = target.val();
-            this.model.set(data);
-          },
+        },
 
-          onSubmit: function(e) {
-            e.preventDefault();
-            this.model.save({}, {
-              success: _.bind(this.onSubmitSuccess, this),
-              error: _.bind(this.onSubmitError, this)
-            });
-            return false;
-          },
+        onMessageChange: function(message) {
+          this.$message.empty();
+          if (message && message !== '') this.$message.append(this.templates.alertError.render({
+            'message': message
+          }));
+        }, 
 
-          onSubmitSuccess: function(model, response) {
-            window.location.href = '/';
-          },
-
-          onSubmitError: function(model, response) {
-            console.log(response.toJSON());
-            // Response should contain key 'message', nothin else
-            this.dispatcher.trigger('change:message', response.toJSON().message);
-          }
-
-        });
-
-        new LoginView();
 
       });
+
+      var FormView = Backbone.View.extend({
+
+        initialize: function(options) {
+          _.extend(this, options.custom);
+        },
+
+        events: {
+          "change input": "onInputChange",
+          "click .submit": "onSubmit"
+        },
+
+        onInputChange: function(e) {
+          var target = $(e.currentTarget)
+            , data = {};
+          data[target.attr('name')] = target.val();
+          this.model.set(data);
+        },
+
+        onSubmit: function(e) {
+          e.preventDefault();
+          this.model.save({}, {
+            success: _.bind(this.onSubmitSuccess, this),
+            error: _.bind(this.onSubmitError, this)
+          });
+          return false;
+        },
+
+        onSubmitSuccess: function(model, response) {
+          window.location.href = '/';
+        },
+
+        onSubmitError: function(model, response) {
+          console.log(response.toJSON());
+          // Response should contain key 'message', nothin else
+          this.dispatcher.trigger('change:message', response.toJSON().message);
+        }
+
+      });
+
+      new LoginView();
+
     });
-
-
 
   </script>
 

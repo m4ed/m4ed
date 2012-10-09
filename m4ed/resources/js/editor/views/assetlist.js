@@ -3,12 +3,15 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'collections/base',
-  'views/editor/asset',
-  'views/editor/templates',
+  'views/asset',
+  'views/templates',
   'jquery.elastislide'
 ],
-function($, _, Backbone, BaseCollection, AssetView, templates) {
+function($, _, Backbone, AssetView, templates) {
+
+  var AssetCollection = Backbone.Collection.extend({
+    url: '/api/assets'
+  });
 
   var AssetListView = Backbone.View.extend({
 
@@ -27,7 +30,7 @@ function($, _, Backbone, BaseCollection, AssetView, templates) {
       this.dispatcher.on('assetSelected', this.onAssetSelected, this);
       this.dispatcher.on('assetSwitch', this.onAssetSwitch, this);
 
-      this.assets = new BaseCollection({url: '/api/assets'});
+      this.assets = new AssetCollection();
       // Fetch will trigger the 'reset' event
       this.assets.on('reset', this.onReset, this);
       // Listen to any destroy events from the models in collection

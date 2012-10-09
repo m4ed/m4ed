@@ -6,6 +6,7 @@
 
   <div class="nav-collapse context-menu"> 
     <ul class="nav pull-right">
+      <li><a class="edit-mode" href="#">Edit mode</a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           Context menu <b class="caret"></b>
@@ -29,7 +30,7 @@
 
           <li class="divider"></li>
           <li class="disabled"><a href="#" class="logout"><i class="icon-envelope"></i> Messages</a></li>
-          <li class="disabled"><a href="#" class="logout"><i class="icon-off"></i> Logout</a></li>
+          <li><a href="/logout" class="logout"><i class="icon-off"></i> Logout</a></li>
 
         </ul>
       </li>

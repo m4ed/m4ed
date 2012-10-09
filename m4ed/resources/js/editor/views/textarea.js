@@ -2,7 +2,7 @@ define([
   'jquery',
   'underscore',
   'backbone',
-  'views/editor/templates',
+  'views/templates',
   'lib/wysiwym/textarea',
   'jquery.ui'
 ],

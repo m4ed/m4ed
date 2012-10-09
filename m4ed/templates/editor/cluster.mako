@@ -4,7 +4,7 @@
 
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 <%namespace file="upload.mako" import="*"/>
 
 <%namespace file="hogan/hogan_assets.mako" import="*"/>
@@ -42,7 +42,7 @@
 
 <%block name="scripts">
 
-  ${init_script('views/editor/clusteritems', dumps(cluster['items']), '/api/clusters/' + str(cluster._id) + '/items', '/api/items')}
+  ${init_script('views/clusteritems', dumps(cluster['items']), '/api/clusters/' + str(cluster._id) + '/items', '/api/items')}
 
   <!-- Hogan templates -->
   ${hogan_item()}

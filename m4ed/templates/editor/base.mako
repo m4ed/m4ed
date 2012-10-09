@@ -13,6 +13,10 @@
   <link rel="apple-touch-icon-precomposed" href="/fanstatic/m4ed/bootstrap/ico/apple-touch-icon-57-precomposed.png">
 </%block>
 
+<%block name="require_config">
+  <script src="/fanstatic/m4ed/js/editor/config.js"></script>
+</%block>
+
 <%block name="menus">
   ${quick_menu()}
   ${context_menu()}

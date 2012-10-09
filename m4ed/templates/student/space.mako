@@ -1,6 +1,6 @@
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 
 <%block name="title">m4ed - ${space.title}</%block>
 

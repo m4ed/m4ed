@@ -14,7 +14,7 @@ class UTF8(valideer.String):
 
     name = 'utf8'
 
-    def __init__(self, min_length=3, max_length=1024, must_contain=[], nullable=True):
+    def __init__(self, min_length=3, max_length=1024, must_contain=[], nullable=False):
         super(UTF8, self).__init__(
             min_length=min_length,
             max_length=max_length
@@ -32,7 +32,7 @@ class UTF8(valideer.String):
                 raise ValidationError(
                     ('Invalid email address {}. '
                     'A valid email address must contain at least '
-                    'one @ characters'.format(value))
+                    'one @ characters'.format(str(value)))
                     )
 
         return force_utf8(value)

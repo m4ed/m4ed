@@ -4,7 +4,7 @@
 
 <%inherit file="base.mako"/>
 
-<%namespace file="item.mako" import="*"/>
+<%namespace file="listitem.mako" import="*"/>
 <%namespace file="hogan/hogan_item.mako" import="*"/>
 <%namespace file="init.mako" import="*"/>
 
@@ -27,7 +27,7 @@
 
 <%block name="scripts">
 
-  ${init_script('views/editor/root', dumps(spaces_array), '/api/spaces', '/api/spaces')}
+  ${init_script('views/root', dumps(spaces_array), '/api/spaces', '/api/spaces')}
 
   <!-- Hogan templates -->
   ${hogan_item()}
