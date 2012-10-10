@@ -114,8 +114,23 @@ class CustomHtmlRenderer(HtmlRenderer):
         return self.answers
 
     def handle_image_macro(self, m_args):
-        # If there was anything passed with keyword 'data' render it
-        # using sundown
+        """
+        format:
+            [[img: id= url= alt= style= title=
+            data
+            ]]
+
+        args:
+            id = m4ed image reference
+          OR
+            url = external url when no id provided (no url arg present)
+
+            alt = image alt text
+            style = free style attributes
+            title = image title
+
+            data - rendered with sundown as is
+        """
         default = m_args.pop('default', None)
         if default:
             imgid = default
@@ -125,9 +140,18 @@ class CustomHtmlRenderer(HtmlRenderer):
             if data:
                 data = self.snippet_renderer.render(data)
             imgid = m_args.pop('id', None)
-        return '<img alt="{alt}" src="{src}" />{data}'.format(
+
+        argstr = ''
+        if 'title' in m_args:
+            argstr += 'title="{title} "'.format(title=m_args.pop('title', ''))
+        if 'style' in m_args:
+            argstr += 'style="{style}"'.format(style=m_args.pop('style', ''))
+
+        return '<img alt="{alt}" src="{src}" {argstr} />{data}'.format(
             alt=m_args.pop('alt', ''),
-            src=self.imgid_to_imgurl(imgid) if imgid else self._404_img,
+            src=self.imgid_to_imgurl(imgid) if imgid else \
+                m_args.pop('url', self._404_img),
+            argstr=argstr,
             data=data
             )
 
