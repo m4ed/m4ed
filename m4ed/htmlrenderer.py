@@ -283,7 +283,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             if start == -1:
                 return
             yield start
-            start += len(sub)
+            start += len(sub) - 1
 
     def preprocess(self, text, debug=True):
         if debug:
