@@ -56,6 +56,7 @@ for i in range(0, r):
         'cluster_id': cluster_id,
         'tags': ['tag1', 'tag2', 'tag3'],
         'text': '## Content for lesson {}'.format(i + 1),
+        'html': ''
     })
 # Clear the collection
 db.items.drop()
@@ -99,7 +100,7 @@ for i in range(1, r):
         'title': 'Asset #{}'.format(base62_id),
         'desc': 'Description of asset #{}'.format(base62_id),
         'name': 'Placeholder thumbnail #{}'.format(base62_id),
-        'url': 'http://placehold.it/320x240',
+        'url': '/fanstatic/m4ed/img/90x90.gif',
         'thumbnail_url': '/fanstatic/m4ed/img/90x90.gif',
         'delete_url': '',
         'delete_type': 'DELETE',

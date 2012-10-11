@@ -1,29 +1,38 @@
 <%def name="hogan_multiplechoice()">
-  <script id="multiplechoice-template" type="text/hogan">
-    {{#choices}}
-      <div>
-        <span class="label label-info">{{prefix}}</span>
-        {{& html}}
-      </div>
-    {{/choices}}
 
-    <table style="width: 100%;">
-      <tr>
+  <script id="legend-template" type="text/hogan">
+    <ul class="legend">
+    {{#choices}}
+      <li>
+        <span class="label label-info prefix">{{prefix}}</span>
+        {{& html}}
+      </li>
+    {{/choices}}
+    </ul>
+  </script>
+
+  <script id="answerbuttons" type="text/hogan">
+    <div>
       {{#choices}}
-        <td style="width: 20%;">
-          <button class="btn btn-primary btn-block" data-id="{{id}}">
-            <h2>{{prefix}}</h2>
+        <div class="btn-wrapper {{btn_wrapper_class}}" style="width: {{btn_width}};" >
+          <button class="btn btn-answer {{btn_class}}" data-id="{{id}}">
+            {{#show_prefix}}
+              <span class="prefix {{prefix_class}}">{{prefix}}</span>
+            {{/show_prefix}}
+            {{#show_content}}
+              <span class="content">{{& html}}</span>
+            {{/show_content}}
           </button>
-        </td>
+        </div>
       {{/choices}}
-      </tr>
-    </table>
+    </div>
   </script>
 
   <script id="alert-template" type="text/hogan">
-    <div class="hint alert alert-{{alert_class}}">
+    <div class="alert alert-{{alert_class}} answer-alert">
       <button type="button" class="close" data-dismiss="alert">×</button>
       {{& alert }}
     </div>
   </script>
+  
 </%def>

@@ -15,9 +15,12 @@ function($, _, Backbone, hogan, templates) {
       _.extend(this, options.custom);
 
       // This should be got from server
+      // this.showLegend = true;
       this.layout = 'inline';
 
-      this.template = templates.multipleChoice;
+      this.legendTemplate = templates.legend;
+      this.answerTemplate = templates.answerbuttons;
+      
       this.alertTemplate = templates.alert;
       $(this.block_id).append(this.render().el);
       location_pathname = window.location.pathname;
@@ -37,8 +40,40 @@ function($, _, Backbone, hogan, templates) {
     },
 
     render: function() {
-      this.$el.append(this.template.render(this.model.toJSON()));
+
+      var context = this.model.toJSON();
+
+      context.show_prefix = true;
+      context.prefix_class = 'on-top';
+      context.show_content = true;
+      context.btn_class = '';
+      // context.btn_wrapper_class = '';
+
+      var buttonCols;
+      buttonCols = 3;
+
+      var choicesLen = context.choices.length;
+      if (buttonCols > choicesLen) buttonCols = choicesLen;
+
+      if (context.show_prefix) context.btn_wrapper_class += ' btn-with-prefix';
+      if (context.show_content) context.btn_wrapper_class += ' btn-with-content';
+      // if (this.layout !== 'inline') context.btn_class += ' btn-fit';
+
+      context.btn_width = this.layout === 'inline' ? 'auto' : '100%';
+
+      if (this.layout !== 'inline' && buttonCols) {
+        if (buttonCols > 1) {
+        var btnW = (1 / buttonCols) * 100 - 1 + '%';
+        context.btn_width = btnW;
+        } else {
+          context.btn_width = '100%';
+        }
+      }
+
+      if (this.showLegend) this.$el.append(this.legendTemplate.render(context));
+      this.$el.append(this.answerTemplate.render(context));
       return this;
+
     },
 
     events: {
@@ -66,20 +101,30 @@ function($, _, Backbone, hogan, templates) {
 
       console.log(choice);
 
-      var $alert = $(this.alertTemplate.render({
-        'alert': choice.hint,
-        'alert_class': choice.hint_class
-      }));
+      var $newAlert;
+      if (choice.hint !== '') {
+        $newAlert = $(this.alertTemplate.render({
+          'alert': choice.hint,
+          'alert_class': choice.hint_class
+        }));
+      }
 
       if (this.layout === 'inline') {
-        if (this.$alert) {
-          this.$alert.replaceWith($alert);
-        } else {
-          this.$el.append($alert);          
+        if ($newAlert) {
+          // Test if an alert exists and is not closed (removed from DOM)
+          if (this.$alert && this.$alert.parent().length !== 0) {
+            this.$alert.replaceWith($newAlert);
+            if (this.$alert.is(':hidden')) this.$alert.show();
+          } else {
+            this.$el.append($newAlert);          
+          }
+          this.$alert = $newAlert;
+        } else if (this.$alert) {
+          this.$alert.remove();
+          this.$alert = undefined;    
         }
-        this.$alert = $alert;
       } else {
-        $target.after($alert);
+        $target.after($newAlert);
       }
 
       if (!this.isPreview) {
