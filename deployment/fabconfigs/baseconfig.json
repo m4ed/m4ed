@@ -454,6 +454,7 @@
       "nodejs_package": "https://github.com/joyent/node.git",
       "npm_installs": [
                        "requirejs",
+                       "hogan.js",
                        "less",
                        "jshint",     // required by less
                        "recess",     // required by less

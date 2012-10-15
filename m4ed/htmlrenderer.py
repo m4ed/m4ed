@@ -30,8 +30,8 @@ MULTI_CHOICE_TEMPLATE = Template((
     '${html_tag}'
     '<script>'
     'require(["student/models/multi", "student/views/multi"],'
-    # MC = MultipleChoice
-    # MCV = MultipleChoiceView
+    # MC <- returns MultipleChoice = student/models/multi.js
+    # MCV <- returns MultipleChoiceView = student/views/multi.js
     # Using abbreviated terms since minifying is fun
     'function(MC,MCV){'
         'new MCV({'
@@ -76,13 +76,14 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         self.htmlparser = HTMLParser()
 
+        # keep all keys in lowercase!
         self.funcs = {
             'img': self.handle_image_macro,
             'image': self.handle_image_macro,
             'math': self.handle_math_macro,
             'multi': self.handle_multiple_choice_macro,
             'multi-choice': self.handle_multiple_choice_macro,
-            'multiple-choice': self.handle_multiple_choice_macro,
+            'multiple-choice': self.handle_multiple_choice_macro
         }
 
         self.entities = {
@@ -328,7 +329,8 @@ class CustomHtmlRenderer(HtmlRenderer):
             func = macro.split(":", 1)
             # func name = func[0], rest is func[1]
             # if no args, it's all in func[0]
-            if func[0].lower() not in self.funcs:
+            func[0] = func[0].lower()
+            if func[0] not in self.funcs:
                 continue
             if len(func) > 1:
                 f_args = {}
@@ -348,10 +350,10 @@ class CustomHtmlRenderer(HtmlRenderer):
                             # do not override default arg if specified by user
                             f_args['default'] = arg[0].strip()
                 f_args["data"] = func_data[1] if len(func_data) > 1 else ""
-                f_args["block_id"] = block_id
-                ret = self.funcs[func[0].lower()](f_args)
+                f_args["block_id"] = f_args.get("name", block_id)
+                ret = self.funcs[func[0]](f_args)
             else:
-                ret = self.funcs[func[0].lower()]()
+                ret = self.funcs[func[0]]()
             block_id += 1
 
             # change is the difference between original and macro returned data
