@@ -31,8 +31,10 @@ requirejs.config({
     // Utils
     'json': 'lib/util/json2',
 
-    // Bootstrap
+    // Mediaelement.js
+    'mediaelement': 'lib/mediaelement/mediaelement',
 
+    // Bootstrap
     'bootstrap.alert': '../bootstrap/js/bootstrap-alert',
     'bootstrap.button': '../bootstrap/js/bootstrap-button',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',

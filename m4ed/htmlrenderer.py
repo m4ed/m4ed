@@ -23,6 +23,7 @@ from redis.exceptions import ConnectionError
 from m4ed.util import filters
 
 from string import Template
+from pyramid.renderers import render
 
 DEBUG = False
 
@@ -79,6 +80,7 @@ class CustomHtmlRenderer(HtmlRenderer):
         self.funcs = {
             'img': self.handle_image_macro,
             'image': self.handle_image_macro,
+            'audio': self.handle_audio_macro,
             'math': self.handle_math_macro,
             'multi': self.handle_multiple_choice_macro,
             'multi-choice': self.handle_multiple_choice_macro,
@@ -241,15 +243,61 @@ class CustomHtmlRenderer(HtmlRenderer):
         prev['html'] = self.snippet_renderer.render(temp['question_text'])
         prev['hint'] = self.snippet_renderer.render(temp['hint_text'])
 
-        self.post_process_blocks.append((
-            html_tag,
-            MULTI_CHOICE_TEMPLATE.substitute(
+        # import ipdb
+
+        # ipdb.set_trace()
+
+        print '*' * 70
+
+        rendered_str = MULTI_CHOICE_TEMPLATE.substitute(
+            html_tag=html_tag,
+            block_id=block_id,
+            args=json.dumps({'choices': multi_choice_args})
+            )
+
+        rendered_mako = render('m4ed:templates/macro/multi.mako',
+            dict(
                 html_tag=html_tag,
                 block_id=block_id,
                 args=json.dumps({'choices': multi_choice_args})
                 )
+            )
+
+        print "STRING"
+        print rendered_str
+        print "MAKO"
+        print rendered_mako
+
+        self.post_process_blocks.append((
+            html_tag,
+            rendered_mako
             ))
+
         return html_tag
+
+    def handle_audio_macro(self, m_args):
+        block_id = m_args.pop('block_id', None)
+        if block_id is None:
+            raise ValueError('block_id was undefined')
+        # If there was anything passed with keyword 'data' render it
+        # using sundown
+        # default = m_args.pop('default', None)
+        # if default:
+        #     imgid = default
+        #     data = ''
+        # else:
+        #     data = m_args.pop('data', None)
+        #     if data:
+        #         data = self.snippet_renderer.render(data)
+        #     imgid = m_args.pop('id', None)
+
+        audio = render('m4ed:templates/macro/audio.mako',
+                dict(
+                    block_id=block_id
+                    )
+                )
+        print audio
+        return audio
 
     def _find_all(self, text, sub):
         """Finds all occurrences of sub from text, return generators"""

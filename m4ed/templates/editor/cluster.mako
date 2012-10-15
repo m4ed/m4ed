@@ -15,6 +15,7 @@
 <%namespace file="init.mako" import="*"/>
 
 <%namespace file="../student/hogan/multiplechoice.mako" import="*"/>
+<%namespace file="../student/hogan/audio.mako" import="*"/>
 
 <%block name="title">m4ed - ${cluster.title}</%block>
 
@@ -55,6 +56,7 @@
 
   <!-- Hogan templates for preview-->
   ${hogan_multiplechoice()}
+  ${hogan_audio()}
 
   <!--
     File Upload locale temporarily here,
