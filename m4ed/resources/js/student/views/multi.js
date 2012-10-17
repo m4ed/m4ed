@@ -3,9 +3,9 @@ define([
     'underscore',
     'backbone',
     'hogan',
-    'student/views/templates'
+    'hogantemplates/multi'
 ],
-function($, _, Backbone, hogan, templates) {
+function($, _, Backbone, Hogan, templates) {
   var multipleChoiceView = Backbone.View.extend({
     tagName: 'div',
 
@@ -15,13 +15,16 @@ function($, _, Backbone, hogan, templates) {
       _.extend(this, options.custom);
 
       // This should be got from server
-      // this.showLegend = true;
+      this.showLegend = true;
       this.layout = 'inline';
 
-      this.legendTemplate = templates.legend;
-      this.answerTemplate = templates.answerbuttons;
+      this.templates = {
+        buttons:  new Hogan.Template(templates.buttons),
+        legend:   new Hogan.Template(templates.legend),
+        alert:    new Hogan.Template(templates.alert)
+      };
       
-      this.alertTemplate = templates.alert;
+      // this.alertTemplate = templates.alert;
       $(this.block_id).append(this.render().el);
       location_pathname = window.location.pathname;
       // Try to determine if this script was loaded in the preview window
@@ -42,6 +45,9 @@ function($, _, Backbone, hogan, templates) {
     render: function() {
 
       var context = this.model.toJSON();
+
+      // this.$el.append(this.template.render(context));
+      // return this;
 
       context.show_prefix = true;
       context.prefix_class = 'on-top';
@@ -70,8 +76,8 @@ function($, _, Backbone, hogan, templates) {
         }
       }
 
-      if (this.showLegend) this.$el.append(this.legendTemplate.render(context));
-      this.$el.append(this.answerTemplate.render(context));
+      if (this.showLegend) this.$el.append(this.templates.legend.render(context));
+      this.$el.append(this.templates.buttons.render(context));
       return this;
 
     },
@@ -103,7 +109,7 @@ function($, _, Backbone, hogan, templates) {
 
       var $newAlert;
       if (choice.hint !== '') {
-        $newAlert = $(this.alertTemplate.render({
+        $newAlert = $(this.templates.alert.render({
           'alert': choice.hint,
           'alert_class': choice.hint_class
         }));
