@@ -37,7 +37,7 @@
 
       </div>
 
-      <div class="preview"></div>
+      <div class="preview m4ed-page"></div>
       </div>
     </div>
     

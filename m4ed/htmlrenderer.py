@@ -252,7 +252,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             multi_choice_args.append({
                 'id': next_answer_id,
                 'prefix': line_starter,
-                'hint_class': 'green' if is_correct else 'red'
+                'hint_class': 'success' if is_correct else 'error'
             })
 
         # Special case for the last item in list

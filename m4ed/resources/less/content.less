@@ -1,0 +1,73 @@
+// CONTENT STYLE
+// -----------------------------------------
+
+// Answer buttons
+// -----------------------------------------
+
+.m4ed-page {
+
+  .legend {
+    margin-left: 0;
+    list-style-type: none;
+    .prefix {
+      margin-right: 4px;
+      float: left;
+    }
+  }
+
+  .btn-wrapper {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 4px;
+
+    .btn-answer {
+      position: relative;
+      padding: 10px;
+      width: 100%;
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    &.btn-with-prefix {
+      .prefix {
+        display: block;
+        font-weight: bold;
+        font-size: 28px;
+        line-height: 0px;
+        &.on-top {
+          position: absolute;
+          left: 16px;
+          top: 16px;
+        }
+      }
+    }
+
+    &.btn-with-content {
+      .content {
+        text-align: center;
+        text-indent: 0;
+      }
+      // min-width: 100px;
+    }
+
+    &.btn-with-prefix.btn-with-content {
+      .prefix {
+        font-size: 24px;
+        line-height: 24px;
+        margin-right: 8px;
+        float: left;
+      }
+      .content {
+        text-align: left;
+      }
+      // min-width: 200px;
+    }
+
+  }
+
+  .answer-alert {
+    margin-top: 4px;
+    margin-bottom: 8px;
+  }
+    
+}

@@ -4,7 +4,8 @@ define([
 ],
 function($, hogan) {
   return {
-    multipleChoice: hogan.compile($('#multiplechoice-template').html()),
-    alert: hogan.compile($('#alert-template').html())
+    legend: hogan.compile($('#legend-template').html()),
+    alert: hogan.compile($('#alert-template').html()),
+    answerbuttons: hogan.compile($('#answerbuttons').html())
   };
 });
