@@ -50,9 +50,9 @@ function($, _, Backbone, Hogan, templates) {
       // return this;
 
       context.show_prefix = true;
-      context.prefix_class = 'on-top';
-      context.show_content = true;
-      context.btn_class = '';
+      // context.prefix_class = 'on-top';
+      // context.show_content = true;
+      context.btn_class = 'btn-primary';
       // context.btn_wrapper_class = '';
 
       var buttonCols;
@@ -105,13 +105,16 @@ function($, _, Backbone, Hogan, templates) {
       // The choice selection could be better
       var choice = this.model.get('choices')[answer_id-1];
 
+      console.log(this.model.toJSON());
+
       console.log(choice);
 
       var $newAlert;
       if (choice.hint !== '') {
         $newAlert = $(this.templates.alert.render({
-          'alert': choice.hint,
-          'alert_class': choice.hint_class
+          'message': choice.hint,
+          'alert_class': choice.hint_class,
+          'strong': choice.hint_strong
         }));
       }
 

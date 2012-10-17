@@ -26,23 +26,9 @@ from string import Template
 
 DEBUG = False
 
-MULTI_CHOICE_TEMPLATE = Template((
-    '${html_tag}'
-    '<script>'
-    'require(["student/models/multi", "student/views/multi"],'
-    # MC <- returns MultipleChoice = student/models/multi.js
-    # MCV <- returns MultipleChoiceView = student/views/multi.js
-    # Using abbreviated terms since minifying is fun
-    'function(MC,MCV){'
-        'new MCV({'
-            'model:new MC(${args}),'
-            'custom:{'
-              'block_id:"#m4ed-${block_id}"'
-            '}'
-        '});'
-    '});'
-    '</script>'
-    ))
+MACRO_VIEWS_PATH = 'student/views'
+MACRO_MODELS_PATH = 'student/models'
+
 
 log = logging.getLogger(__name__)
 
@@ -113,6 +99,48 @@ class CustomHtmlRenderer(HtmlRenderer):
 
     def get_answers(self):
         return self.answers
+
+    def render_bb_macro(self,
+                        block_id='',
+                        bb_model='',
+                        bb_view='base',
+                        bb_model_args='',
+                        bb_view_args=''):
+
+        if bb_model:
+            bb_model_req = '"' + MACRO_MODELS_PATH + '/' + bb_model + '", '
+            bb_model_var = 'Model,'
+            new_bb_model = 'model:new Model(' + bb_model_args + '),'
+
+        bb_view_req = '"' + MACRO_VIEWS_PATH + '/' + bb_view + '"'
+
+        if bb_view_args:
+            bb_view_args = 'options: ' + bb_view_args + ','
+
+        macro_template = Template((
+            '<span id="m4ed-${block_id}"></span>'
+            '<script>'
+                'require([${model_req}${view_req}],'
+                'function(${model_var}View){'
+                    'new View({'
+                        '${new_model}'
+                        'custom:{'
+                            '${view_options}'
+                            'block_id:"#m4ed-${block_id}"'
+                        '}'
+                    '});'
+                '});'
+            '</script>'
+            ))
+
+        return macro_template.substitute(
+            block_id=block_id,
+            model_req=bb_model_req,
+            model_var=bb_model_var,
+            view_req=bb_view_req,
+            new_model=new_bb_model,
+            view_options=bb_view_args
+            )
 
     def handle_image_macro(self, m_args):
         """
@@ -185,7 +213,7 @@ class CustomHtmlRenderer(HtmlRenderer):
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
-        html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
+        # html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
         data = m_args.pop('data', '')
         multi_choice_args = []
         temp_args = []
@@ -266,15 +294,21 @@ class CustomHtmlRenderer(HtmlRenderer):
         prev['html'] = self.snippet_renderer.render(temp['question_text'])
         prev['hint'] = self.snippet_renderer.render(temp['hint_text'])
 
+        bb_model_args = json.dumps({'choices': multi_choice_args})
+
+        html_block = "<m4ed-{block_id} />".format(block_id=block_id)
+        script_block = self.render_bb_macro(
+            block_id=block_id,
+            bb_model='multi',
+            bb_view='multi',
+            bb_model_args=bb_model_args
+            )
+
         self.post_process_blocks.append((
-            html_tag,
-            MULTI_CHOICE_TEMPLATE.substitute(
-                html_tag=html_tag,
-                block_id=block_id,
-                args=json.dumps({'choices': multi_choice_args})
-                )
+            html_block,
+            script_block
             ))
-        return html_tag
+        return html_block
 
     def _find_all(self, text, sub):
         """Finds all occurrences of sub from text, return generators"""
