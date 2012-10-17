@@ -108,10 +108,18 @@ class CustomHtmlRenderer(HtmlRenderer):
                         bb_model_args='',
                         bb_view_args=''):
 
+        bb_model_req = ""
+        bb_model_var = ""
+        new_bb_model = ""
+
         if bb_model:
             bb_model_req = '"' + MACRO_MODELS_PATH + '/' + bb_model + '", '
             bb_model_var = 'Model,'
             new_bb_model = 'model:new Model(' + bb_model_args + '),'
+        else:
+            bb_model_req = '"backbone", '
+            bb_model_var = 'Backbone,'
+            new_bb_model = 'model:new Backbone.Model(' + bb_model_args + '),'
 
         bb_view_req = '"' + MACRO_VIEWS_PATH + '/' + bb_view + '"'
 
@@ -327,13 +335,21 @@ class CustomHtmlRenderer(HtmlRenderer):
         #         data = self.snippet_renderer.render(data)
         #     imgid = m_args.pop('id', None)
 
-        audio = render('m4ed:templates/macro/audio.mako',
-                dict(
-                    block_id=block_id
-                    )
-                )
-        print audio
-        return audio
+        bb_model_args = json.dumps({'url': m_args.get('url', '')})
+
+        html_block = "<m4ed-{block_id} />".format(block_id=block_id)
+        script_block = self.render_bb_macro(
+            block_id=block_id,
+            bb_view='audio',
+
+            bb_model_args=bb_model_args
+            )
+
+        self.post_process_blocks.append((
+            html_block,
+            script_block
+            ))
+        return html_block
 
     def _find_all(self, text, sub):
         """Finds all occurrences of sub from text, return generators"""

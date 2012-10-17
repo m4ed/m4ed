@@ -3,10 +3,10 @@ define([
     'underscore',
     'backbone',
     'hogan',
-    'student/views/templates',
+    'hogantemplates/audio',
     'mediaelement'
 ],
-function($, _, Backbone, hogan, templates, mejs) {
+function($, _, Backbone, Hogan, template, mejs) {
   var audioView = Backbone.View.extend({
 
     tagName: 'div',
@@ -17,7 +17,7 @@ function($, _, Backbone, hogan, templates, mejs) {
 
       _.extend(this, options.custom);
 
-      this.template = this.templates.audio;
+      this.template = new Hogan.Template(template);
 
       $(this.block_id).append(this.render().el);
 
@@ -64,7 +64,8 @@ function($, _, Backbone, hogan, templates, mejs) {
             console.log('Failed to initialize MediaElement');
           }
       });
-
+      
+      console.log('Audio initialized.');
 
     },
 
@@ -74,11 +75,13 @@ function($, _, Backbone, hogan, templates, mejs) {
     },
 
     events: {
-      'click play': onPlayClick
+      'click .play': 'onPlayClick'
     },
 
-    play: function(e) {
-      this.mediaelement.play();
+    onPlayClick: function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.mediaElement.play();
     }
 
   });

@@ -48,6 +48,9 @@ requirejs.config({
     'tmpl': 'lib/util/tmpl.min',
     'json': 'lib/util/json2',
 
+    // Mediaelement.js
+    'mediaelement': 'lib/mediaelement/mediaelement',
+
     // Bootstrap
 
     'bootstrap.alert': '../bootstrap/js/bootstrap-alert',
