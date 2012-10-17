@@ -3,21 +3,32 @@ define([
     'underscore',
     'backbone',
     'hogan',
-    'student/views/templates'
+    'hogantemplates/multi'
 ],
-function($, _, Backbone, hogan, templates) {
+function($, _, Backbone, Hogan, templates) {
   var multipleChoiceView = Backbone.View.extend({
     tagName: 'div',
 
-    className: 'multiple-choice row',
+    className: 'multiple-choice',
 
     initialize: function(options) {
       _.extend(this, options.custom);
-      this.template = templates.multipleChoice;
+
+      // This should be got from server
+      this.showLegend = true;
+      this.layout = 'inline';
+
+      this.templates = {
+        buttons:  new Hogan.Template(templates.buttons),
+        legend:   new Hogan.Template(templates.legend),
+        alert:    new Hogan.Template(templates.alert)
+      };
+      
+      // this.alertTemplate = templates.alert;
       $(this.block_id).append(this.render().el);
       location_pathname = window.location.pathname;
       // Try to determine if this script was loaded in the preview window
-      this.isPreview = location_pathname.indexOf('editor') >= 0;
+      this.isPreview = location_pathname.indexOf('/edit') >= 0;
       if (!this.isPreview) {
         split_path = location_pathname.split('/');
         // Try the last item from the path first
@@ -32,8 +43,43 @@ function($, _, Backbone, hogan, templates) {
     },
 
     render: function() {
-      this.$el.append(this.template.render(this.model.toJSON()));
+
+      var context = this.model.toJSON();
+
+      // this.$el.append(this.template.render(context));
+      // return this;
+
+      context.show_prefix = true;
+      // context.prefix_class = 'on-top';
+      // context.show_content = true;
+      context.btn_class = 'btn-primary';
+      // context.btn_wrapper_class = '';
+
+      var buttonCols;
+      buttonCols = 3;
+
+      var choicesLen = context.choices.length;
+      if (buttonCols > choicesLen) buttonCols = choicesLen;
+
+      if (context.show_prefix) context.btn_wrapper_class += ' btn-with-prefix';
+      if (context.show_content) context.btn_wrapper_class += ' btn-with-content';
+      // if (this.layout !== 'inline') context.btn_class += ' btn-fit';
+
+      context.btn_width = this.layout === 'inline' ? 'auto' : '100%';
+
+      if (this.layout !== 'inline' && buttonCols) {
+        if (buttonCols > 1) {
+        var btnW = (1 / buttonCols) * 100 - 1 + '%';
+        context.btn_width = btnW;
+        } else {
+          context.btn_width = '100%';
+        }
+      }
+
+      if (this.showLegend) this.$el.append(this.templates.legend.render(context));
+      this.$el.append(this.templates.buttons.render(context));
       return this;
+
     },
 
     events: {
@@ -41,18 +87,54 @@ function($, _, Backbone, hogan, templates) {
     },
 
     onAnswerClick: function(e) {
-      var $t = this.$(e.currentTarget);
-      if ($t.hasClass('answered')) {
+      var $target = this.$(e.currentTarget);
+      if ($target.hasClass('disabled')) {
         return;
       }
-      block_id = $t.parents('span').attr('id');
-      answer_id = $t.data('id');
+      block_id = $target.parents('span').attr('id');
+      answer_id = $target.data('id');
       full_id = [block_id, answer_id].join('-');
       console.log(full_id);
 
-      $t.toggleClass('answered');
+      $target.toggleClass('disabled');
       // console.log('.hint' + this.model.get('hint_class'))
-      $t.siblings('.hint').toggleClass('hide');
+      // $target.siblings('.hint').toggleClass('hide');
+
+      
+
+      // The choice selection could be better
+      var choice = this.model.get('choices')[answer_id-1];
+
+      console.log(this.model.toJSON());
+
+      console.log(choice);
+
+      var $newAlert;
+      if (choice.hint !== '') {
+        $newAlert = $(this.templates.alert.render({
+          'message': choice.hint,
+          'alert_class': choice.hint_class,
+          'strong': choice.hint_strong
+        }));
+      }
+
+      if (this.layout === 'inline') {
+        if ($newAlert) {
+          // Test if an alert exists and is not closed (removed from DOM)
+          if (this.$alert && this.$alert.parent().length !== 0) {
+            this.$alert.replaceWith($newAlert);
+            if (this.$alert.is(':hidden')) this.$alert.show();
+          } else {
+            this.$el.append($newAlert);          
+          }
+          this.$alert = $newAlert;
+        } else if (this.$alert) {
+          this.$alert.remove();
+          this.$alert = undefined;    
+        }
+      } else {
+        $target.after($newAlert);
+      }
 
       if (!this.isPreview) {
         $.ajax({
@@ -71,7 +153,7 @@ function($, _, Backbone, hogan, templates) {
       }
     }
 
-  })
+  });
 
   return multipleChoiceView;
 

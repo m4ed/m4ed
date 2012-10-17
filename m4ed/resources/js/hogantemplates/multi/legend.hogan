@@ -1,0 +1,8 @@
+<ul class="legend">
+  {{#choices}}
+  <li>
+    <span class="label label-info prefix">{{prefix}}</span>
+    {{& html}}
+  </li>
+  {{/choices}}
+</ul>

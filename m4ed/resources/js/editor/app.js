@@ -7,6 +7,7 @@ define([
   'jquery.hotkeys',
   'jquerypp/cookie',
   'jquery.csrf',
+  'bootstrap.alert',
   'bootstrap.collapse',
   'bootstrap.dropdown',
   'bootstrap.modal',

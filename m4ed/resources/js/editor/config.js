@@ -12,7 +12,7 @@ requirejs.config({
     'backbone': 'lib/backbone/backbone',
 
     // Hogan templates
-    'hogan': 'lib/hogan/hogan',
+    'hogan': 'lib/hogan/hogan-2.0.0.amd',
 
     // Require.js plugins
     'domReady': 'lib/requirejs/domReady',

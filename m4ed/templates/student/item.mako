@@ -15,7 +15,7 @@
     <li>${item.title}</li>
   </ul>
 
-  <div class="well">
+  <div class="well m4ed-page">
     ${item.html|n}
   </div>
 
