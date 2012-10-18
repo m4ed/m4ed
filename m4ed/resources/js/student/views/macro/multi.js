@@ -1,13 +1,10 @@
 define([
-    'jquery',
-    'underscore',
-    'backbone',
+    'student/views/base',
     'hogan',
     'hogantemplates/multi'
 ],
-function($, _, Backbone, Hogan, templates) {
-  var multipleChoiceView = Backbone.View.extend({
-    tagName: 'div',
+function(BaseView, Hogan, templates) {
+  var multipleChoiceView = BaseView.extend({
 
     className: 'multiple-choice',
 
@@ -27,8 +24,10 @@ function($, _, Backbone, Hogan, templates) {
       // this.alertTemplate = templates.alert;
       $(this.block_id).append(this.render().el);
       location_pathname = window.location.pathname;
+
       // Try to determine if this script was loaded in the preview window
       this.isPreview = location_pathname.indexOf('/edit') >= 0;
+      
       if (!this.isPreview) {
         split_path = location_pathname.split('/');
         // Try the last item from the path first

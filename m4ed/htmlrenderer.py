@@ -26,8 +26,8 @@ from string import Template
 
 DEBUG = False
 
-MACRO_VIEWS_PATH = 'student/views'
-MACRO_MODELS_PATH = 'student/models'
+MACRO_VIEWS_PATH = 'student/views/macro'
+MACRO_MODELS_PATH = 'student/models/macro'
 
 
 log = logging.getLogger(__name__)
@@ -308,7 +308,6 @@ class CustomHtmlRenderer(HtmlRenderer):
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
             block_id=block_id,
-            bb_model='multi',
             bb_view='multi',
             bb_model_args=bb_model_args
             )

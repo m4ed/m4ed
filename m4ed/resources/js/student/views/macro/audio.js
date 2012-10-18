@@ -1,20 +1,27 @@
 define([
-    'student/views/macro/base',
+    'jquery',
+    'underscore',
+    'backbone',
+    'hogan',
     'hogantemplates/audio',
     'mediaelement'
 ],
-function(BaseView, template, mejs) {
-  var audioView = BaseView.extend({
+function($, _, Backbone, Hogan, template, mejs) {
+  var audioView = Backbone.View.extend({
+
+    tagName: 'div',
 
     className: 'audio',
 
     initialize: function(options) {
 
-      BaseView.prototype.initialize.apply(this, options);
+      _.extend(this, options.custom);
 
-      this.$audio = this.$('audio')[0];
+      this.template = new Hogan.Template(template);
 
-      this.mediaElement = new mejs.MediaElement(this.$audio, {
+      $(this.block_id).append(this.render().el);
+
+      this.mediaElement = new mejs.MediaElement(this.$('audio')[0], {
           // shows debug errors on screen
           // enablePluginDebug: false,
           // remove or reorder to change plugin priority
@@ -54,12 +61,17 @@ function(BaseView, template, mejs) {
           // },
           // fires when a problem is detected
           error: function () { 
-            console.log('Failed to initialize MediaElement.');
+            console.log('Failed to initialize MediaElement');
           }
       });
       
       console.log('Audio initialized.');
 
+    },
+
+    render: function() {
+      this.$el.append(this.template.render(this.model.toJSON()));
+      return this;
     },
 
     events: {
