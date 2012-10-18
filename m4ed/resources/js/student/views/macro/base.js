@@ -15,8 +15,8 @@ function($, _, Backbone, Hogan) {
       _.extend(this, options.custom);
       // A template must be required like
       // 'hogantemplates/<templatename>'
-      // and passed as argument 'template'
-      this.template = new Hogan.Template(template); 
+      // and passed as 'options.template'
+      this.template = new Hogan.Template(options.template); 
       $(this.block_id).append(this.render().el);
     },
 

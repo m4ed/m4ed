@@ -1,25 +1,17 @@
 define([
-    'jquery',
-    'underscore',
-    'backbone',
-    'hogan',
+    'student/views/macro/base',
     'hogantemplates/audio',
     'mediaelement'
 ],
-function($, _, Backbone, Hogan, template, mejs) {
-  var audioView = Backbone.View.extend({
-
-    tagName: 'div',
+function(BaseView, template, mejs) {
+  var audioView = BaseView.extend({
 
     className: 'audio',
 
     initialize: function(options) {
 
-      _.extend(this, options.custom);
-
-      this.template = new Hogan.Template(template);
-
-      $(this.block_id).append(this.render().el);
+      options.template = template;
+      BaseView.prototype.initialize.apply(this, arguments);
 
       this.mediaElement = new mejs.MediaElement(this.$('audio')[0], {
           // shows debug errors on screen
@@ -67,11 +59,6 @@ function($, _, Backbone, Hogan, template, mejs) {
       
       console.log('Audio initialized.');
 
-    },
-
-    render: function() {
-      this.$el.append(this.template.render(this.model.toJSON()));
-      return this;
     },
 
     events: {

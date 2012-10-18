@@ -1,5 +1,5 @@
 define([
-    'student/views/base',
+    'student/views/macro/base',
     'hogan',
     'hogantemplates/multi'
 ],

@@ -1,8 +1,5 @@
 <%inherit file="base.mako"/>
 
-<%namespace file="hogan/multiplechoice.mako" import="*"/>
-<%namespace file="hogan/audio.mako" import="*"/>
-
 <%block name="title">m4ed - ${item.title}</%block>
 
 <%block name="content">
@@ -21,9 +18,4 @@
 
   <div class="well sound-test">
   </div>
-</%block>
-
-<%block name="hogan_templates">
-  ${hogan_multiplechoice()}
-  ${hogan_audio()}
 </%block>
