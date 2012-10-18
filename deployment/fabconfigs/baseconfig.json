@@ -455,8 +455,8 @@
       "npm_installs": [
                        "requirejs",
                        "hogan.js",
-                       "batchtransform",
-                       "fs-extra",   // required by batchtransform
+                       "batchfile",
+                       "fs-extra",   // required by batchfile?
                        "less",
                        "jshint",     // required by less
                        "recess",     // required by less
