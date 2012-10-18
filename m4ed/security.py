@@ -8,6 +8,7 @@ from pyramid.events import (
 
 from pyramid.httpexceptions import HTTPUnauthorized
 
+
 def groupfinder(userid, request, debug=False):
     #print 'X' * 100
     #print request.context
@@ -35,8 +36,11 @@ def groupfinder(userid, request, debug=False):
 @subscriber(ContextFound)
 def csrf_validation_event(event):
     request = event.request
+    user = request.user
+
     # No need to check csrf for anything else but POST, PUT and DELETE
-    if request.method not in ('POST', 'PUT', 'DELETE'):
+    # we return also csrf token for /api/login POST (no user)
+    if request.method not in ('POST', 'PUT', 'DELETE') or not user:
         if 'csrf_token' not in request.cookies.keys():
             request.response.set_cookie(
                 'csrf_token',
@@ -45,7 +49,6 @@ def csrf_validation_event(event):
             )
         return
     print '\n\nWE ARE CHECKING CSRF SINCE THIS WAS A POST, PUT OR DELETE\n'
-    user = request.user
     supplied_csrf = (request.params.get('csrf_token') or
                      request.headers.get('X-Csrftoken'))
     session_csrf = request.session.get_csrf_token()
