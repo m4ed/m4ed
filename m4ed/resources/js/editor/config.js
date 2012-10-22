@@ -41,6 +41,7 @@ requirejs.config({
     'jquery.hotkeys': 'lib/jquery/plugins/jquery.hotkeys',
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
     'jquery.csrf': 'lib/jquery/plugins/jquery.csrf',
+    'jquery.postmessage': 'lib/jquery/plugins/jquery.postmessage',
 
     // Utils
     'canvas-to-blob': 'lib/util/canvas-to-blob.min',
