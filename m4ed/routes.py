@@ -31,6 +31,7 @@ def cluster(config):
 
 
 def item(config):
+    config.add_route('preview_item', '/{item_id}/preview', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
     config.add_route('item', '/{item_id}', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
     config.add_route('item_mini', '/{item_id}.mini', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
 

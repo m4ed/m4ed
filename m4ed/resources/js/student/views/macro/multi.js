@@ -29,8 +29,8 @@ function(BaseView, Hogan, templates) {
       location_pathname = window.location.pathname;
 
       // Try to determine if this script was loaded in the preview window
-      this.isPreview = location_pathname.indexOf('/edit') >= 0;
-
+      this.isPreview = location_pathname.indexOf('/preview') >= 0;
+      
       if (!this.isPreview) {
         split_path = location_pathname.split('/');
         // Try the last item from the path first

@@ -27,6 +27,7 @@ requirejs.config({
     // Other jQuery plugins
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
     'jquery.csrf': 'lib/jquery/plugins/jquery.csrf',
+    'jquery.postmessage': 'lib/jquery/plugins/jquery.postmessage',
 
     // Utils
     'json': 'lib/util/json2',
