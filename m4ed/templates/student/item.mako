@@ -16,6 +16,4 @@
     ${item.html|n}
   </div>
 
-  <div class="well sound-test">
-  </div>
 </%block>

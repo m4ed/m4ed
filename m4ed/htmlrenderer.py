@@ -106,7 +106,8 @@ class CustomHtmlRenderer(HtmlRenderer):
                         bb_model='',
                         bb_view='base',
                         bb_model_args='',
-                        bb_view_args=''):
+                        bb_view_args='',
+                        bb_escape=''):
 
         bb_model_req = ""
         bb_model_var = ""
@@ -139,7 +140,7 @@ class CustomHtmlRenderer(HtmlRenderer):
                         '}'
                     '});'
                 '});'
-            '</script>'
+            '<${escape_string}/script>'
             ))
 
         return macro_template.substitute(
@@ -148,7 +149,8 @@ class CustomHtmlRenderer(HtmlRenderer):
             model_var=bb_model_var,
             view_req=bb_view_req,
             new_model=new_bb_model,
-            view_options=bb_view_args
+            view_options=bb_view_args,
+            escape_string=bb_escape
             )
 
     def handle_image_macro(self, m_args):
@@ -168,7 +170,9 @@ class CustomHtmlRenderer(HtmlRenderer):
             title = image title
 
             data - rendered with sundown as is
+
         """
+
         default = m_args.pop('default', None)
         if default:
             imgid = default
@@ -219,9 +223,33 @@ class CustomHtmlRenderer(HtmlRenderer):
         return ''.join(res)
 
     def handle_multiple_choice_macro(self, m_args):
+        print "IN MULTIPLE CHOICE MACRO"
+        print "\033[33m" + str(m_args) + "\033[0m"
+
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
+
+        # process the macro args
+        btn_layouts = ('inline', 'fit')
+        btn_classes = ('btn-primary', 'btn-info', 'btn-success', 'btn-warning',
+                      'btn-danger', 'btn-inverse', '', 'btn-link')
+        label_classes = ('label-info', 'label-info', 'label-success',
+                         'label-warning', 'label-important', 'label-inverse',
+                         '', 'label-info')
+
+        # layout != inline -> fit
+
+        default_view = {'show_legend': True, 'show_prefix': True,
+                        'show_content': False, 'layout': 'inline',
+                        'legend_class': 'label-info',
+                        'btn_class': 'btn-primary', 'btn_cols': 0,
+                        'prefix_class': ''}
+
+        bb_view_args = default_view
+
+        default_view.update(m_args)
+
         # html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
         data = m_args.pop('data', '')
         multi_choice_args = []
@@ -304,12 +332,14 @@ class CustomHtmlRenderer(HtmlRenderer):
         prev['hint'] = self.snippet_renderer.render(temp['hint_text'])
 
         bb_model_args = json.dumps({'choices': multi_choice_args})
+        bb_view_args = json.dumps(bb_view_args)
 
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
             block_id=block_id,
             bb_view='multi',
-            bb_model_args=bb_model_args
+            bb_model_args=bb_model_args,
+            bb_view_args=bb_view_args
             )
 
         self.post_process_blocks.append((
@@ -319,6 +349,7 @@ class CustomHtmlRenderer(HtmlRenderer):
         return html_block
 
     def handle_audio_macro(self, m_args):
+        print "IN AUDIO MACRO"
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
@@ -341,13 +372,17 @@ class CustomHtmlRenderer(HtmlRenderer):
             block_id=block_id,
             bb_view='audio',
 
-            bb_model_args=bb_model_args
+            bb_model_args=bb_model_args,
+            bb_escape="\\"
             )
 
+
+        script_block = script_block.replace('"', "\\\"")
+
         self.post_process_blocks.append((
-            html_block,
-            script_block
-            ))
+             html_block,
+             script_block
+             ))
         return html_block
 
     def _find_all(self, text, sub):
@@ -437,6 +472,9 @@ class CustomHtmlRenderer(HtmlRenderer):
             else:
                 text = text[:m[0]] + ret + text[m[1]:]
 
+            print "\033[43m" + "*" * 40 + "\033[0m"
+            print "text is now: " + text
+
             # now we need to re-adjust indexes
             for x, i in enumerate(macros):
                 start = i[0]
@@ -508,10 +546,17 @@ class CustomHtmlRenderer(HtmlRenderer):
     def postprocess(self, text, debug=True):
         """preprocess --> markdownrender --> [text] postprocess"""
         if debug:
-            #print '------------------------- postprocessing -------------------------'
+            print '------------------------- postprocessing -------------------------'
             _mark = time.time()
+            print text
+            print '------------------------- postprocessing -------------------------'
+
+        self.post_process_blocks.reverse()
         for tag, block in self.post_process_blocks:
-            #print tag, block
+            print "Postprocess tag: " + tag
+            print "Postprocess block: " + block
+            print "current text: " + text
+            print "\n*3"
             text = text.replace(tag, block)
         #self.post_process_blocks = list()
 

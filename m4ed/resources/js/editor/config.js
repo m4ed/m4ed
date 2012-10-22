@@ -7,6 +7,7 @@ requirejs.config({
     'views': 'editor/views',
 
     // Main components
+    //'jquery': 'lib/jquery/jquery.full',
     'jquery': 'lib/jquery/jquery.min',
     'underscore': 'lib/underscore/underscore',
     'backbone': 'lib/backbone/backbone',

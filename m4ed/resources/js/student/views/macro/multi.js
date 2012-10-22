@@ -12,22 +12,25 @@ function(BaseView, Hogan, templates) {
       _.extend(this, options.custom);
 
       // This should be got from server
-      this.showLegend = true;
-      this.layout = 'inline';
+      //this.showLegend = true;
+      this.showLegend = this.options.show_legend;
+      //this.layout = 'inline';
+      this.layout = this.options.layout;
 
       this.templates = {
         buttons:  new Hogan.Template(templates.buttons),
         legend:   new Hogan.Template(templates.legend),
         alert:    new Hogan.Template(templates.alert)
       };
-      
+
       // this.alertTemplate = templates.alert;
-      $(this.block_id).append(this.render().el);
+      $(this.block_id).append(this.el);
+      this.render();
       location_pathname = window.location.pathname;
 
       // Try to determine if this script was loaded in the preview window
       this.isPreview = location_pathname.indexOf('/edit') >= 0;
-      
+
       if (!this.isPreview) {
         split_path = location_pathname.split('/');
         // Try the last item from the path first
@@ -48,14 +51,19 @@ function(BaseView, Hogan, templates) {
       // this.$el.append(this.template.render(context));
       // return this;
 
-      context.show_prefix = true;
-      // context.prefix_class = 'on-top';
+      context.show_prefix = this.options.show_prefix;
+      //context.prefix_class = 'on-top';
+      context.prefix_class = this.options.prefix_class;
       // context.show_content = true;
-      context.btn_class = 'btn-primary';
+      context.show_content = this.options.show_content;
+      //context.btn_class = 'btn-primary';
+      context.btn_class = this.options.btn_class;
       // context.btn_wrapper_class = '';
+      context.label_class = this.options.legend_class;
 
       var buttonCols;
       buttonCols = 3;
+      buttonCols = this.options.btn_cols;
 
       var choicesLen = context.choices.length;
       if (buttonCols > choicesLen) buttonCols = choicesLen;
@@ -99,7 +107,7 @@ function(BaseView, Hogan, templates) {
       // console.log('.hint' + this.model.get('hint_class'))
       // $target.siblings('.hint').toggleClass('hide');
 
-      
+
 
       // The choice selection could be better
       var choice = this.model.get('choices')[answer_id-1];
@@ -124,12 +132,12 @@ function(BaseView, Hogan, templates) {
             this.$alert.replaceWith($newAlert);
             if (this.$alert.is(':hidden')) this.$alert.show();
           } else {
-            this.$el.append($newAlert);          
+            this.$el.append($newAlert);
           }
           this.$alert = $newAlert;
         } else if (this.$alert) {
           this.$alert.remove();
-          this.$alert = undefined;    
+          this.$alert = undefined;
         }
       } else {
         $target.after($newAlert);
@@ -138,7 +146,7 @@ function(BaseView, Hogan, templates) {
       if (!this.isPreview) {
         $.ajax({
           type: 'POST',
-          // 
+          //
           url: self.post_url,
           data: {
             'answer_id': answer_id,

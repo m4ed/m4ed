@@ -1,2 +1,1 @@
-<audio src="{{ url }}"></audio>
-<a href="#" class="play">Play sound</a>
+<audio src="{{ url }}"></audio><a href="#" class="play">Play sound</a>

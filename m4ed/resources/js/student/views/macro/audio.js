@@ -13,6 +13,14 @@ function(BaseView, template, mejs) {
       options.template = template;
       BaseView.prototype.initialize.apply(this, arguments);
 
+      console.log('Audio initialized but not yet rendered.');
+
+    },
+
+    render: function() {
+
+      BaseView.prototype.render.apply(this, arguments);
+
       this.mediaElement = new mejs.MediaElement(this.$('audio')[0], {
           // shows debug errors on screen
           // enablePluginDebug: false,
@@ -28,36 +36,34 @@ function(BaseView, template, mejs) {
           // silverlightName: 'silverlightmediaelement.xap',
           // default if the <video width> is not specified
           // defaultVideoWidth: 480,
-          // default if the <video height> is not specified     
+          // default if the <video height> is not specified
           // defaultVideoHeight: 270,
           // overrides <video width>
           // pluginWidth: -1,
-          // overrides <video height>       
+          // overrides <video height>
           // pluginHeight: -1,
           // rate in milliseconds for Flash and Silverlight to fire the timeupdate event
           // larger number is less accurate, but less strain on plugin->JavaScript bridge
           // timerRate: 250,
           // method that fires when the Flash or Silverlight object is ready
-          // success: function (mediaElement, domObject) { 
-               
+          // success: function (mediaElement, domObject) {
+
           //     // add event listener
           //     mediaElement.addEventListener('timeupdate', function(e) {
-                   
+
           //         document.getElementById('current-time').innerHTML = mediaElement.currentTime;
-                   
+
           //     }, false);
-               
+
           //     // call the play method
           //     mediaElement.play();
-               
+
           // },
           // fires when a problem is detected
-          error: function () { 
+          error: function () {
             console.log('Failed to initialize MediaElement');
           }
       });
-      
-      console.log('Audio initialized.');
 
     },
 
