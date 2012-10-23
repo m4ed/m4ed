@@ -1,0 +1,14 @@
+<div>
+  {{#choices}}
+    <div class="btn-wrapper {{btn_wrapper_class}}" style="width: {{btn_width}};" >
+      <button class="btn btn-answer {{btn_class}}" data-id="{{id}}">
+        {{#show_prefix}}
+          <span class="prefix {{prefix_class}}">{{prefix}}</span>
+        {{/show_prefix}}
+        {{#show_content}}
+          <span class="content">{{& html}}</span>
+        {{/show_content}}
+      </button>
+    </div>
+  {{/choices}}
+</div>

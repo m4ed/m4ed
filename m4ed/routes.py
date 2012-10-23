@@ -31,11 +31,14 @@ def cluster(config):
 
 
 def item(config):
+    config.add_route('preview_item', '/{item_id}/preview', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
     config.add_route('item', '/{item_id}', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
     config.add_route('item_mini', '/{item_id}.mini', factory='m4ed.factories:ItemFactory', traverse='/{item_id}')
 
 
 def api(config):
+    config.add_route('rest_login', '/login', factory='m4ed.factories:UserFactory')
+    config.add_route('rest_signup', '/signup', factory='m4ed.factories:UserFactory')
     config.add_route('rest_spaces', '/spaces', factory='m4ed.factories:SpaceFactory')
     config.include(space_api, route_prefix='/spaces')
 

@@ -4,6 +4,9 @@ from js.lesscss import LessResource
 library = Library('m4ed', 'resources')
 
 editor_less = LessResource(library, 'less/editor.less')
+student_less = LessResource(library, 'less/student.less')
+preview_less = LessResource(library, 'less/preview.less')
+login_less = LessResource(library, 'less/login.less')
 
 
 def pserve():  # pragma: no cover

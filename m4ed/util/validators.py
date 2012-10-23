@@ -14,7 +14,7 @@ class UTF8(valideer.String):
 
     name = 'utf8'
 
-    def __init__(self, min_length=3, max_length=1024, must_contain=[], nullable=True):
+    def __init__(self, min_length=3, max_length=1024, must_contain=[], nullable=False):
         super(UTF8, self).__init__(
             min_length=min_length,
             max_length=max_length
@@ -32,7 +32,7 @@ class UTF8(valideer.String):
                 raise ValidationError(
                     ('Invalid email address {}. '
                     'A valid email address must contain at least '
-                    'one @ characters'.format(value))
+                    'one @ characters'.format(str(value)))
                     )
 
         return force_utf8(value)
@@ -81,22 +81,22 @@ _VALIDATORS = dict(
     item=Validator.parse({
         '?_id': AdaptTo(ObjectId),  # Every item has this except newly created ones
         '+cluster_id': AdaptTo(ObjectId),  # The cluster this item belongs to
-        'answers': {
+        '?answers': {
             'string': [
                 'string'
             ]
         },
         '+desc': valideer.String(min_length=1),
-        'html': 'string',
+        '?html': 'string',
         '+listIndex': AdaptTo(int),
         '+tags': ['string'],
-        'text': 'string',
+        '?text': 'string',
         '+title': valideer.String(min_length=1)
     }),
-    user_registration_form=Validator.parse({
+    user=Validator.parse({
         '+username': 'username',
-        '+pw1': 'password',
-        '+pw2': 'password',
+        '+password': 'password',
+        '+password2': 'password',
         '?email': 'email'
     })
 )
@@ -118,5 +118,5 @@ def get_item_validator():
     return get_validator('item')
 
 
-def get_user_registration_form_validator():
-    return get_validator('user_registration_form')
+def get_user_validator():
+    return get_validator('user')

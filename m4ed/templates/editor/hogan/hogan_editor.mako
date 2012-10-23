@@ -4,41 +4,41 @@
   <script id="editor-template" type="text/hogan">
     <div class="row">
       <div class="span6">
-      <!-- The Markdown editor -->
-      <div class="btn-toolbar editor-buttons">
-      </div>
-      <textarea class="span6 editor-textarea">{{text}}</textarea>
-      </div>
-      <div class="span6">
-      <!-- Buttons for preview -->
-      <div class="btn-toolbar preview-buttons">
+        <!-- The Markdown editor -->
+        <div class="btn-toolbar editor-buttons">
+        </div>
+        <textarea class="span6 editor-textarea">{{text}}</textarea>
+        </div>
+        <div class="span6">
+        <!-- Buttons for preview -->
+        <div class="btn-toolbar preview-buttons">
 
-        <div class="btn-group">
-          <button class="btn dropdown-toggle" data-toggle="dropdown">
-            <i class="icon-size-small"></i> Small
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a href="#"><i class="icon-size-mini"></i> Mini</a></li>
-            <li><a href="#"><i class="icon-size-medium"></i> Medium</a></li>
-            <li><a href="#"><i class="icon-size-large"></i> Large</a></li>
-          </ul>
+          <div class="btn-group">
+            <button class="btn dropdown-toggle" data-toggle="dropdown">
+              <i class="icon-size-small"></i> Small
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#"><i class="icon-size-mini"></i> Mini</a></li>
+              <li><a href="#"><i class="icon-size-medium"></i> Medium</a></li>
+              <li><a href="#"><i class="icon-size-large"></i> Large</a></li>
+            </ul>
+          </div>
+
+          <div class="btn-group pull-right publish">
+            <button class="btn disabled">Publish</button>
+            <button class="btn dropdown-toggle disabled" data-toggle="dropdown">
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#"><i class="icon-undo"></i> Revert changes</a></li>
+            </ul>
+          </div>
+
         </div>
 
-        <div class="btn-group pull-right publish">
-          <button class="btn disabled">Publish</button>
-          <button class="btn dropdown-toggle disabled" data-toggle="dropdown">
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu">
-            <li><a href="#"><i class="icon-undo"></i> Revert changes</a></li>
-          </ul>
-        </div>
-
-
-      </div>
-
-      <div class="preview"></div>
+        <iframe class="preview" id="preview-{{ _id }}" src="{{ preview_url }}">
+        </iframe>
       </div>
     </div>
     

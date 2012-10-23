@@ -1,6 +1,6 @@
 ## Hogan template for item (needed on add)
 
-<%namespace file="../item.mako" import="*"/>
+<%namespace file="../listitem.mako" import="*"/>
 
 <%def name="hogan_item()">
   <script id="item-template" type="text/hogan">

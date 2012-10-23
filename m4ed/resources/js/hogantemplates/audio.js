@@ -1,0 +1,1 @@
+define(function() { return function(c,p,i){var _=this;_.b(i=i||"");_.b("<audio src=\"");_.b(_.v(_.f("url",c,p,0)));_.b("\"></audio><a href=\"#\" class=\"play\">Play sound</a>");return _.fl();;} });

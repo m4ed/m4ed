@@ -3,7 +3,10 @@ from pyramid.view import (
     view_defaults
     )
 
-from m4ed.resources import editor_less
+from m4ed.resources import (
+    editor_less,
+    student_less
+    )
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import authenticated_userid
 
@@ -14,10 +17,6 @@ from pyramid.security import authenticated_userid
     permission='write')
 def get_edit_cluster(request):
     editor_less.need()
-
-    # import pdb
-    # pdb.set_trace()
-
     return {
         'cluster': request.context.stripped,
         'space_title': request.context.get_space_title()
@@ -26,9 +25,11 @@ def get_edit_cluster(request):
 
 @view_config(
     route_name='cluster',
-    renderer='medium/clusters/show.mako',
+    renderer='student/cluster.mako',
     permission='read')
 def get_cluster(request):
+    student_less.need()
     return {
-        'cluster': request.context.stripped
+        'cluster': request.context.stripped,
+        'space_title': request.context.get_space_title()
     }
