@@ -11,5 +11,4 @@
 
 <%block name="scripts">
   ${init_script()}
-  <%block name="hogan_templates"></%block>
 </%block>
