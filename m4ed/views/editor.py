@@ -43,7 +43,7 @@ def post_preview(request):
             ),
         extensions=EXT_TABLES
     ).render(text)
-    print html
+    #print html
     return {
         'html': html
     }

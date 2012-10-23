@@ -275,7 +275,7 @@ class ItemFactory(BaseFactory):
     def commit(self, item):
         is_model = isinstance(item, self.model)
         # NOTE: Validation WILL convert the item to a dictionary
-        print item
+        #print item
         item = self.validate(item)
         if not item:
             print 'Item validation failed.'
@@ -646,13 +646,13 @@ class SpaceFactory(BaseFactory):
         clusters = list()
 
         for child in self._cluster_factory:
-            print child
+            #print child
             if has_permission('read', child, self.request):
                 # Pop grandchildren
                 # child.pop('items')
                 clusters.append(child)
 
-        print s
+        #print s
 
         s['clusters'] = clusters
 

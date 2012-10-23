@@ -136,6 +136,7 @@ class AssetsView(object):
         #     return {'result': 'error', 'why': 'diaf'}
 
         post_param = dict(request.POST)
+        print "-" * 30 + " post_param@api.py:"
         print post_param
 
         file_path = post_param.get('path')
