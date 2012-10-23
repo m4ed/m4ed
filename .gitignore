@@ -9,6 +9,7 @@
 *.min.css
 *DS_Store
 
+m4ed/resources/js/hogantemplates/*.js
 deployment/fabconfigs/_*
 deployment/nginx/_*
 deployment/nginx/configs/_*
