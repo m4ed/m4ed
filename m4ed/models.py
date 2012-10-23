@@ -111,6 +111,12 @@ class Item(MongoDict):
     def get_cluster_title(self):
         return self.__parent__.get_cluster_title(self.cluster_id)
 
+    def get_next(self):
+        return self.__parent__.get_next(self.cluster_id, self._id)
+
+    def get_previous(self):
+        return self.__parent__.get_previous(self.cluster_id, self._id)
+
 
 class User(MongoDict):
     @property

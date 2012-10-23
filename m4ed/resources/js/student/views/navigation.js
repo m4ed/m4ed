@@ -17,7 +17,7 @@ function(_, Backbone) {
     },
 
     onEditModeClick: function(e) {
-      var href = window.location.href.replace(/(#.*)/, '');
+      var href = window.location.href.replace(/(#.*|\/$)/, '');
       href += '/edit';
       window.location.href = href;
     }

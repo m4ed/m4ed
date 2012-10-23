@@ -275,7 +275,7 @@ class ItemFactory(BaseFactory):
     def commit(self, item):
         is_model = isinstance(item, self.model)
         # NOTE: Validation WILL convert the item to a dictionary
-        print item
+        #print item
         item = self.validate(item)
         if not item:
             print 'Item validation failed.'
@@ -338,6 +338,30 @@ class ItemFactory(BaseFactory):
 
     def get_cluster_title(self, cluster_id):
         return self._cluster_factory[cluster_id].title
+
+    def get_neighbour(self, cluster_id, item_id, direction='next'):
+        # get id of the next item
+        items = self._cluster_factory[cluster_id]['items']
+        item_ids = [item['_id'] for item in items]
+        index = item_ids.index(item_id)
+        if direction == 'next':
+            index += 1
+            if index >= len(item_ids):
+                return None
+            else:
+                return item_ids[index]
+        else:
+            index -= 1
+            if index <= 0:
+                return None
+            else:
+                return item_ids[index]
+
+    def get_next(self, cluster_id, item_id):
+        return self.get_neighbour(cluster_id, item_id, 'next')
+
+    def get_previous(self, cluster_id, item_id):
+        return self.get_neighbour(cluster_id, item_id, 'prev')
 
     def save(self, item):
         params = self._read_params()
@@ -622,13 +646,13 @@ class SpaceFactory(BaseFactory):
         clusters = list()
 
         for child in self._cluster_factory:
-            print child
+            #print child
             if has_permission('read', child, self.request):
                 # Pop grandchildren
                 # child.pop('items')
                 clusters.append(child)
 
-        print s
+        #print s
 
         s['clusters'] = clusters
 

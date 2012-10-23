@@ -26,23 +26,9 @@ from string import Template
 
 DEBUG = False
 
-MULTI_CHOICE_TEMPLATE = Template((
-    '${html_tag}'
-    '<script>'
-    'require(["models/multi", "views/multi"],'
-    # MC = MultipleChoice
-    # MCV = MultipleChoiceView
-    # Using abbreviated terms since minifying is fun
-    'function(MC,MCV){'
-        'new MCV({'
-            'model:new MC(${args}),'
-            'custom:{'
-              'block_id:"#m4ed-${block_id}"'
-            '}'
-        '});'
-    '});'
-    '</script>'
-    ))
+MACRO_VIEWS_PATH = 'student/views/macro'
+MACRO_MODELS_PATH = 'student/models/macro'
+
 
 log = logging.getLogger(__name__)
 
@@ -76,13 +62,15 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         self.htmlparser = HTMLParser()
 
+        # keep all keys in lowercase!
         self.funcs = {
             'img': self.handle_image_macro,
             'image': self.handle_image_macro,
+            'audio': self.handle_audio_macro,
             'math': self.handle_math_macro,
             'multi': self.handle_multiple_choice_macro,
             'multi-choice': self.handle_multiple_choice_macro,
-            'multiple-choice': self.handle_multiple_choice_macro,
+            'multiple-choice': self.handle_multiple_choice_macro
         }
 
         self.entities = {
@@ -113,9 +101,78 @@ class CustomHtmlRenderer(HtmlRenderer):
     def get_answers(self):
         return self.answers
 
+    def render_bb_macro(self,
+                        block_id='',
+                        bb_model='',
+                        bb_view='base',
+                        bb_model_args='',
+                        bb_view_args='',
+                        bb_escape=''):
+
+        bb_model_req = ""
+        bb_model_var = ""
+        new_bb_model = ""
+
+        if bb_model:
+            bb_model_req = '"' + MACRO_MODELS_PATH + '/' + bb_model + '", '
+            bb_model_var = 'Model,'
+            new_bb_model = 'model:new Model(' + bb_model_args + '),'
+        else:
+            bb_model_req = '"backbone", '
+            bb_model_var = 'Backbone,'
+            new_bb_model = 'model:new Backbone.Model(' + bb_model_args + '),'
+
+        bb_view_req = '"' + MACRO_VIEWS_PATH + '/' + bb_view + '"'
+
+        if bb_view_args:
+            bb_view_args = 'options: ' + bb_view_args + ','
+
+        macro_template = Template((
+            '<span id="m4ed-${block_id}"></span>'
+            '<script>'
+                'require([${model_req}${view_req}],'
+                'function(${model_var}View){'
+                    'new View({'
+                        '${new_model}'
+                        'custom:{'
+                            '${view_options}'
+                            'block_id:"#m4ed-${block_id}"'
+                        '}'
+                    '});'
+                '});'
+            '<${escape_string}/script>'
+            ))
+
+        return macro_template.substitute(
+            block_id=block_id,
+            model_req=bb_model_req,
+            model_var=bb_model_var,
+            view_req=bb_view_req,
+            new_model=new_bb_model,
+            view_options=bb_view_args,
+            escape_string=bb_escape
+            )
+
     def handle_image_macro(self, m_args):
-        # If there was anything passed with keyword 'data' render it
-        # using sundown
+        """
+        format:
+            [[img: id= url= alt= style= title=
+            data
+            ]]
+
+        args:
+            id = m4ed image reference
+          OR
+            url = external url when no id provided (no url arg present)
+
+            alt = image alt text
+            style = free style attributes
+            title = image title
+
+            data - rendered with sundown as is
+
+        """
+
         default = m_args.pop('default', None)
         if default:
             imgid = default
@@ -125,14 +182,23 @@ class CustomHtmlRenderer(HtmlRenderer):
             if data:
                 data = self.snippet_renderer.render(data)
             imgid = m_args.pop('id', None)
-        return '<img alt="{alt}" src="{src}" />{data}'.format(
+
+        argstr = ''
+        if 'title' in m_args:
+            argstr += 'title="{title} "'.format(title=m_args.pop('title', ''))
+        if 'style' in m_args:
+            argstr += 'style="{style}"'.format(style=m_args.pop('style', ''))
+
+        return '<img alt="{alt}" src="{src}" {argstr} />{data}'.format(
             alt=m_args.pop('alt', ''),
-            src=self.imgid_to_imgurl(imgid) if imgid else self._404_img,
+            src=self.imgid_to_imgurl(imgid) if imgid else \
+                m_args.pop('url', self._404_img),
+            argstr=argstr,
             data=data
             )
 
-    def handle_math_macro(self, m_args):
-        if DEBUG:
+    def handle_math_macro(self, m_args, debug=DEBUG):
+        if debug:
             print "m_args: ", m_args
         try:
             data = m_args.pop('data', None)
@@ -157,10 +223,34 @@ class CustomHtmlRenderer(HtmlRenderer):
         return ''.join(res)
 
     def handle_multiple_choice_macro(self, m_args):
+        if DEBUG:
+            print "--> multiple choice macro"
+
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
-        html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
+
+        # process the macro args
+        btn_layouts = ('inline', 'fit')
+        btn_classes = ('btn-primary', 'btn-info', 'btn-success', 'btn-warning',
+                      'btn-danger', 'btn-inverse', '', 'btn-link')
+        label_classes = ('label-info', 'label-info', 'label-success',
+                         'label-warning', 'label-important', 'label-inverse',
+                         '', 'label-info')
+
+        # layout != inline -> fit
+
+        default_view = {'show_legend': True, 'show_prefix': True,
+                        'show_content': False, 'layout': 'inline',
+                        'legend_class': 'label-info',
+                        'btn_class': 'btn-primary', 'btn_cols': 0,
+                        'prefix_class': ''}
+
+        bb_view_args = default_view
+
+        default_view.update(m_args)
+
+        # html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
         data = m_args.pop('data', '')
         multi_choice_args = []
         temp_args = []
@@ -227,7 +317,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             multi_choice_args.append({
                 'id': next_answer_id,
                 'prefix': line_starter,
-                'hint_class': 'green' if is_correct else 'red'
+                'hint_class': 'success' if is_correct else 'error'
             })
 
         # Special case for the last item in list
@@ -241,15 +331,72 @@ class CustomHtmlRenderer(HtmlRenderer):
         prev['html'] = self.snippet_renderer.render(temp['question_text'])
         prev['hint'] = self.snippet_renderer.render(temp['hint_text'])
 
+        bb_model_args = json.dumps({'choices': multi_choice_args})
+        bb_view_args = json.dumps(bb_view_args)
+
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        bb_escape = "" if m_args["root_level"] else "\\"
+
+        html_block = "<m4ed-{block_id} />".format(block_id=block_id)
+        script_block = self.render_bb_macro(
+            block_id=block_id,
+            bb_view='multi',
+            bb_model_args=bb_model_args,
+            bb_view_args=bb_view_args,
+            bb_escape=bb_escape
+            )
+
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        if not m_args["root_level"]:
+            script_block = script_block.replace('"', "\\\"")
+
         self.post_process_blocks.append((
-            html_tag,
-            MULTI_CHOICE_TEMPLATE.substitute(
-                html_tag=html_tag,
-                block_id=block_id,
-                args=json.dumps({'choices': multi_choice_args})
-                )
+            html_block,
+            script_block
             ))
-        return html_tag
+        return html_block
+
+    def handle_audio_macro(self, m_args, debug=DEBUG):
+        if debug:
+            print "--> in audio macro"
+        block_id = m_args.pop('block_id', None)
+        if block_id is None:
+            raise ValueError('block_id was undefined')
+        # If there was anything passed with keyword 'data' render it
+        # using sundown
+        # default = m_args.pop('default', None)
+        # if default:
+        #     imgid = default
+        #     data = ''
+        # else:
+        #     data = m_args.pop('data', None)
+        #     if data:
+        #         data = self.snippet_renderer.render(data)
+        #     imgid = m_args.pop('id', None)
+
+        bb_model_args = json.dumps({'url': m_args.get('url', '')})
+
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        bb_escape = "" if m_args["root_level"] else "\\"
+
+        html_block = "<m4ed-{block_id} />".format(block_id=block_id)
+        script_block = self.render_bb_macro(
+            block_id=block_id,
+            bb_view='audio',
+
+            bb_model_args=bb_model_args,
+            bb_escape=bb_escape
+            )
+
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        if not m_args["root_level"]:
+            script_block = script_block.replace('"', "\\\"")
+
+        self.post_process_blocks.append((
+             html_block,
+             script_block
+             ))
+        return html_block
 
     def _find_all(self, text, sub):
         """Finds all occurrences of sub from text, return generators"""
@@ -259,9 +406,9 @@ class CustomHtmlRenderer(HtmlRenderer):
             if start == -1:
                 return
             yield start
-            start += len(sub)
+            start += len(sub) - 1
 
-    def preprocess(self, text, debug=True):
+    def preprocess(self, text, debug=DEBUG):
         if debug:
             #print 'markdown PRE ---->'
             _mark = time.time()
@@ -285,18 +432,21 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         stack = []
         macros = []
+        root_levels = []
         while ends:
             while (len(starts) > 0) and (starts[0] < ends[0]):
                 stack.append(starts.pop(0))
             if stack:
+                root_levels.append(False) if len(stack) > 1 else root_levels.append(True)
                 macro = ((stack.pop(), ends.pop(0) + 2))
                 macros.append(macro)
             else:
-                # handles "]][[" situation
+                # handles only the "]][[" situation
                 ends.pop(0)
 
         # macros are in such order that innermost ones come first so we can
         # process them as they are. [[3. [[1.]] [[2.]]]] [[4.]]
+
         block_id = 0
         while len(macros) > 0:
             m = macros.pop(0)
@@ -304,10 +454,11 @@ class CustomHtmlRenderer(HtmlRenderer):
             func = macro.split(":", 1)
             # func name = func[0], rest is func[1]
             # if no args, it's all in func[0]
-            if func[0].lower() not in self.funcs:
+            func[0] = func[0].lower()
+            if func[0] not in self.funcs:
                 continue
+            f_args = {"root_level": root_levels.pop(0)}
             if len(func) > 1:
-                f_args = {}
                 func_data = func[1].split("\n", 1)
                 func_args = self.parse_quotes(func_data[0])
                 func_args = func_args.strip().split(",")
@@ -324,10 +475,10 @@ class CustomHtmlRenderer(HtmlRenderer):
                             # do not override default arg if specified by user
                             f_args['default'] = arg[0].strip()
                 f_args["data"] = func_data[1] if len(func_data) > 1 else ""
-                f_args["block_id"] = block_id
-                ret = self.funcs[func[0].lower()](f_args)
+                f_args["block_id"] = f_args.get("name", block_id)
+                ret = self.funcs[func[0]](f_args)
             else:
-                ret = self.funcs[func[0].lower()]()
+                ret = self.funcs[func[0]](f_args)
             block_id += 1
 
             # change is the difference between original and macro returned data
@@ -405,13 +556,14 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         return text
 
-    def postprocess(self, text, debug=True):
+    def postprocess(self, text, debug=DEBUG):
         """preprocess --> markdownrender --> [text] postprocess"""
         if debug:
             #print '------------------------- postprocessing -------------------------'
             _mark = time.time()
+
+        self.post_process_blocks.reverse()
         for tag, block in self.post_process_blocks:
-            #print tag, block
             text = text.replace(tag, block)
         #self.post_process_blocks = list()
 
@@ -426,7 +578,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             return self._404_img
         return a['url']
 
-    def math_to_img(self, math, debug=False):
+    def math_to_img(self, math, debug=DEBUG):
         redis_db = self.redis_db
         if debug:
             print math

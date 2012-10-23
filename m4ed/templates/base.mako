@@ -39,6 +39,8 @@
   <div class="container">
     <%block name="content">
     </%block>
+    <%block name="footer">
+    </%block>
   </div>
 
   <!-- Le javascript

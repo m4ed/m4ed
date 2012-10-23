@@ -9,7 +9,8 @@ define([
   'views/templates',
   'lib/util/util',
   'jquery.ui',
-  'jquery.plugins'
+  'jquery.plugins',
+  'jquery.postmessage'
 ],
 function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates, util) {
 
@@ -54,6 +55,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
     render: function() {
       var $el = this.$el;
       // Render the template with the model data
+      
+      var baseUrl = location.protocol + '//' + location.host;
+      this.model.set({'preview_url': baseUrl + '/i/' + this.model.get('_id') + '/preview'});
 
       $el.html(templates.editor.render(this.model.toJSON()));
 
@@ -84,7 +88,6 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         });
         this.$editorButtons.append(buttonList.render().el);
       }
-
 
       this.textarea = new TextareaView({
         el: $el.find('.editor-textarea'),
@@ -182,8 +185,9 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
       return this.textarea.$el.val();
     },
 
-    setPreviewHTML: function(html) {
-      this.$('.preview').html(html);
+    updatePreview: function(html) {
+      // Posting the new html to the iframe
+      this.$('.preview').postMessage(html);
     },
 
     updateDimensions: function() {
@@ -238,8 +242,8 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         'height': h
       }, 100);
 
-      if (this.$preview.height() !== h - 8) this.$preview.animate({
-        'height': h - 8
+      if (this.$preview.height() !== h + 8) this.$preview.animate({
+        'height': h + 8
       }, 100);
 
     },
@@ -268,21 +272,21 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         'url': '/misaka',
         'data': {'md': mdContent},
         'type': 'POST',
-        error: _.bind(this.onAjaxError, this),
-        success: _.bind(this.onAjaxSuccess, this),
-        complete: _.bind(this.onAjaxComplete, this)
+        error: _.bind(this.onMisakaError, this),
+        success: _.bind(this.onMisakaSuccess, this),
+        complete: _.bind(this.onMisakaComplete, this)
       });
     },
 
-    onAjaxError: function(jqXHR, textStatus, errorThrown) {
-      this.setPreviewHTML(errorThrown);
+    onMisakaError: function(jqXHR, textStatus, errorThrown) {
+      this.updatePreview(errorThrown);
     },
 
-    onAjaxSuccess: function(data, textStatus, jqXHR) {
-      this.setPreviewHTML(data.html);
+    onMisakaSuccess: function(data, textStatus, jqXHR) {
+      this.updatePreview(data.html);
     },
 
-    onAjaxComplete: function(jqXHR, textStatus) {
+    onMisakaComplete: function(jqXHR, textStatus) {
       this.activeXhr = null;
     },
 

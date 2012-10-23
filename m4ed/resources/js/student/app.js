@@ -5,7 +5,8 @@ define([
   'bootstrap.dropdown',
   'bootstrap.modal',
   'bootstrap.transition',
-  'bootstrap.button'
+  'bootstrap.button',
+  'bootstrap.alert'
 ],
 function() {
   var initialize = function() {

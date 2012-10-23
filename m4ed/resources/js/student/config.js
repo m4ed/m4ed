@@ -12,7 +12,7 @@ requirejs.config({
     'backbone': 'lib/backbone/backbone',
 
     // Hogan templates
-    'hogan': 'lib/hogan/hogan',
+    'hogan': 'lib/hogan/hogan-2.0.0.amd',
 
     // Require.js plugins
     'domReady': 'lib/requirejs/domReady',
@@ -27,12 +27,15 @@ requirejs.config({
     // Other jQuery plugins
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
     'jquery.csrf': 'lib/jquery/plugins/jquery.csrf',
+    'jquery.postmessage': 'lib/jquery/plugins/jquery.postmessage',
 
     // Utils
     'json': 'lib/util/json2',
 
-    // Bootstrap
+    // Mediaelement.js
+    'mediaelement': 'lib/mediaelement/mediaelement',
 
+    // Bootstrap
     'bootstrap.alert': '../bootstrap/js/bootstrap-alert',
     'bootstrap.button': '../bootstrap/js/bootstrap-button',
     'bootstrap.tooltip': '../bootstrap/js/bootstrap-tooltip',

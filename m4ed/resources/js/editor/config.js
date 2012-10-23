@@ -7,12 +7,13 @@ requirejs.config({
     'views': 'editor/views',
 
     // Main components
+    //'jquery': 'lib/jquery/jquery.full',
     'jquery': 'lib/jquery/jquery.min',
     'underscore': 'lib/underscore/underscore',
     'backbone': 'lib/backbone/backbone',
 
     // Hogan templates
-    'hogan': 'lib/hogan/hogan',
+    'hogan': 'lib/hogan/hogan-2.0.0.amd',
 
     // Require.js plugins
     'domReady': 'lib/requirejs/domReady',
@@ -41,12 +42,16 @@ requirejs.config({
     'jquery.hotkeys': 'lib/jquery/plugins/jquery.hotkeys',
     'jquery.plugins': 'lib/jquery/plugins/jquery.plugins',
     'jquery.csrf': 'lib/jquery/plugins/jquery.csrf',
+    'jquery.postmessage': 'lib/jquery/plugins/jquery.postmessage',
 
     // Utils
     'canvas-to-blob': 'lib/util/canvas-to-blob.min',
     'load-image': 'lib/util/load-image.min',
     'tmpl': 'lib/util/tmpl.min',
     'json': 'lib/util/json2',
+
+    // Mediaelement.js
+    'mediaelement': 'lib/mediaelement/mediaelement',
 
     // Bootstrap
 

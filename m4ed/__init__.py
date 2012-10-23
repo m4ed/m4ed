@@ -7,6 +7,7 @@ from pyramid_beaker import session_factory_from_settings
 import pymongo
 import redis
 import zmq
+import subprocess
 
 from bson import ObjectId
 
@@ -36,6 +37,9 @@ def main(global_config, **settings):
     )
 
     config.registry.settings['assets'] = parse_asset_settings(settings)
+
+    if config.registry.settings['hogan.compile']:
+        subprocess.call([config.registry.settings['hogan.compile']])
 
     # Set up the mongo connection
     mongo_host = config.registry.settings['db.mongo.host']

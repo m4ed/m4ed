@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 def valid_login(request):
     # Request context should be m4ed.factories.UserFactory at this point
     user = request.context.login()
+    print "-" * 20 + " valid_login:"
+    print user
     if not user:
         return False
     return user
@@ -100,6 +102,7 @@ def post_signup(request):
 def post_login(request):
 
     user = valid_login(request)
+
     if user:
         headers = remember(request, user['username'])
         request.response.status = '200'
