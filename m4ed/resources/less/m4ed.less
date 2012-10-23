@@ -12,6 +12,19 @@
 // Global classes
 // -----------------------------------------
 
+.basic-shadow {
+  .box-shadow(0 0 6px rgba(0,0,0,.8));
+}
+
+.inner-shadow {
+  .box-shadow(inset 0 0 32px rgba(0,0,0,.2));
+}
+
+.btn-m4ed {
+  .buttonBackground(@btnM4edBackground, @btnM4edBackgroundHighlight);
+  .basic-shadow;
+}
+
 .hidden {
   display: none;
 }
@@ -30,6 +43,17 @@
 .well {
   padding: 8px;
   margin: 8px -9px; // Negative horizontal margin to remove padding and border space
+}
+
+.container > .navbar {
+  .navbar-inner {
+    padding: 0 8px;
+  }
+  margin: 8px -9px;
+}
+
+.footer {
+  margin: 8px -9px;   
 }
 
 .alert {
@@ -101,7 +125,7 @@ body {
 
   margin-top: 8px;
 
-  .box-shadow(0 0 6px rgba(0,0,0,.8));
+  .basic-shadow;
 
   .icon-home {
     margin: 7px 0 7px 4px;

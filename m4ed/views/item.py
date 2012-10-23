@@ -17,7 +17,9 @@ def get_item(request):
         item.html = ''
     return {
         'item': item,
-        'cluster_title': request.context.get_cluster_title()
+        'cluster_title': request.context.get_cluster_title(),
+        'next_id': request.context.get_next(),
+        'prev_id': request.context.get_previous()
     }
 
 

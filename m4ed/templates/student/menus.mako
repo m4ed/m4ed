@@ -1,4 +1,4 @@
-<%def name="context_menu()">
+<%def name="context_menu(edit_class='edit-mode', edit_href='#')">
 
   <a class="btn btn-navbar btn-large-icon" data-toggle="collapse" data-target=".nav-collapse.context-menu">
     <i class="icon-quick large"></i> 
@@ -6,13 +6,12 @@
 
   <div class="nav-collapse context-menu"> 
     <ul class="nav pull-right">
-      <li><a class="edit-mode" href="#">Edit mode</a></li>
+      <li><a class="${edit_class}" href="${edit_href}">Edit mode</a></li>
       <li class="dropdown">
         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
           Context menu <b class="caret"></b>
         </a>
         <ul class="dropdown-menu">
-
           <li class="disabled">
             <a href="#" class="profile">
               <div class="avatar">

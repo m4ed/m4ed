@@ -339,6 +339,30 @@ class ItemFactory(BaseFactory):
     def get_cluster_title(self, cluster_id):
         return self._cluster_factory[cluster_id].title
 
+    def get_neighbour(self, cluster_id, item_id, direction='next'):
+        # get id of the next item
+        items = self._cluster_factory[cluster_id]['items']
+        item_ids = [item['_id'] for item in items]
+        index = item_ids.index(item_id)
+        if direction == 'next':
+            index += 1
+            if index >= len(item_ids):
+                return None
+            else:
+                return item_ids[index]
+        else:
+            index -= 1
+            if index <= 0:
+                return None
+            else:
+                return item_ids[index]
+
+    def get_next(self, cluster_id, item_id):
+        return self.get_neighbour(cluster_id, item_id, 'next')
+
+    def get_previous(self, cluster_id, item_id):
+        return self.get_neighbour(cluster_id, item_id, 'prev')
+
     def save(self, item):
         params = self._read_params()
         if params.get('err') is True:
