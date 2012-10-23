@@ -197,8 +197,8 @@ class CustomHtmlRenderer(HtmlRenderer):
             data=data
             )
 
-    def handle_math_macro(self, m_args):
-        if DEBUG:
+    def handle_math_macro(self, m_args, debug=DEBUG):
+        if debug:
             print "m_args: ", m_args
         try:
             data = m_args.pop('data', None)
@@ -223,8 +223,8 @@ class CustomHtmlRenderer(HtmlRenderer):
         return ''.join(res)
 
     def handle_multiple_choice_macro(self, m_args):
-        print "IN MULTIPLE CHOICE MACRO"
-        print "\033[33m" + str(m_args) + "\033[0m"
+        if DEBUG:
+            print "--> multiple choice macro"
 
         block_id = m_args.pop('block_id', None)
         if block_id is None:
@@ -334,13 +334,21 @@ class CustomHtmlRenderer(HtmlRenderer):
         bb_model_args = json.dumps({'choices': multi_choice_args})
         bb_view_args = json.dumps(bb_view_args)
 
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        bb_escape = "" if m_args["root_level"] else "\\"
+
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
             block_id=block_id,
             bb_view='multi',
             bb_model_args=bb_model_args,
-            bb_view_args=bb_view_args
+            bb_view_args=bb_view_args,
+            bb_escape=bb_escape
             )
+
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        if not m_args["root_level"]:
+            script_block = script_block.replace('"', "\\\"")
 
         self.post_process_blocks.append((
             html_block,
@@ -348,8 +356,9 @@ class CustomHtmlRenderer(HtmlRenderer):
             ))
         return html_block
 
-    def handle_audio_macro(self, m_args):
-        print "IN AUDIO MACRO"
+    def handle_audio_macro(self, m_args, debug=DEBUG):
+        if debug:
+            print "--> in audio macro"
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
@@ -367,17 +376,21 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         bb_model_args = json.dumps({'url': m_args.get('url', '')})
 
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        bb_escape = "" if m_args["root_level"] else "\\"
+
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
             block_id=block_id,
             bb_view='audio',
 
             bb_model_args=bb_model_args,
-            bb_escape="\\"
+            bb_escape=bb_escape
             )
 
-
-        script_block = script_block.replace('"', "\\\"")
+        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        if not m_args["root_level"]:
+            script_block = script_block.replace('"', "\\\"")
 
         self.post_process_blocks.append((
              html_block,
@@ -395,7 +408,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             yield start
             start += len(sub) - 1
 
-    def preprocess(self, text, debug=True):
+    def preprocess(self, text, debug=DEBUG):
         if debug:
             #print 'markdown PRE ---->'
             _mark = time.time()
@@ -419,18 +432,21 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         stack = []
         macros = []
+        root_levels = []
         while ends:
             while (len(starts) > 0) and (starts[0] < ends[0]):
                 stack.append(starts.pop(0))
             if stack:
+                root_levels.append(False) if len(stack) > 1 else root_levels.append(True)
                 macro = ((stack.pop(), ends.pop(0) + 2))
                 macros.append(macro)
             else:
-                # handles "]][[" situation
+                # handles only the "]][[" situation
                 ends.pop(0)
 
         # macros are in such order that innermost ones come first so we can
         # process them as they are. [[3. [[1.]] [[2.]]]] [[4.]]
+
         block_id = 0
         while len(macros) > 0:
             m = macros.pop(0)
@@ -441,8 +457,8 @@ class CustomHtmlRenderer(HtmlRenderer):
             func[0] = func[0].lower()
             if func[0] not in self.funcs:
                 continue
+            f_args = {"root_level": root_levels.pop(0)}
             if len(func) > 1:
-                f_args = {}
                 func_data = func[1].split("\n", 1)
                 func_args = self.parse_quotes(func_data[0])
                 func_args = func_args.strip().split(",")
@@ -462,7 +478,7 @@ class CustomHtmlRenderer(HtmlRenderer):
                 f_args["block_id"] = f_args.get("name", block_id)
                 ret = self.funcs[func[0]](f_args)
             else:
-                ret = self.funcs[func[0]]()
+                ret = self.funcs[func[0]](f_args)
             block_id += 1
 
             # change is the difference between original and macro returned data
@@ -471,9 +487,6 @@ class CustomHtmlRenderer(HtmlRenderer):
                 text = ret + text[m[1]:]
             else:
                 text = text[:m[0]] + ret + text[m[1]:]
-
-            print "\033[43m" + "*" * 40 + "\033[0m"
-            print "text is now: " + text
 
             # now we need to re-adjust indexes
             for x, i in enumerate(macros):
@@ -543,20 +556,14 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         return text
 
-    def postprocess(self, text, debug=True):
+    def postprocess(self, text, debug=DEBUG):
         """preprocess --> markdownrender --> [text] postprocess"""
         if debug:
-            print '------------------------- postprocessing -------------------------'
+            #print '------------------------- postprocessing -------------------------'
             _mark = time.time()
-            print text
-            print '------------------------- postprocessing -------------------------'
 
         self.post_process_blocks.reverse()
         for tag, block in self.post_process_blocks:
-            print "Postprocess tag: " + tag
-            print "Postprocess block: " + block
-            print "current text: " + text
-            print "\n*3"
             text = text.replace(tag, block)
         #self.post_process_blocks = list()
 
@@ -571,7 +578,7 @@ class CustomHtmlRenderer(HtmlRenderer):
             return self._404_img
         return a['url']
 
-    def math_to_img(self, math, debug=False):
+    def math_to_img(self, math, debug=DEBUG):
         redis_db = self.redis_db
         if debug:
             print math
