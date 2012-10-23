@@ -352,7 +352,7 @@ class ItemFactory(BaseFactory):
                 return item_ids[index]
         else:
             index -= 1
-            if index <= 0:
+            if index < 0:
                 return None
             else:
                 return item_ids[index]
