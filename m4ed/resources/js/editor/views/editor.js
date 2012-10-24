@@ -243,13 +243,13 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
         'height': h
       }, 100, null, _.bind(function() {
         this.$textarea.resizable({
-          alsoResize: this.$preview
+          // alsoResize: this.$preview
         });
       }, this));
 
-      if (this.$preview.height() !== h + 8) this.$preview.animate({
-        'height': h + 8
-      }, 100);
+      // if (this.$preview.height() !== h + 8) this.$preview.animate({
+      //   'height': h + 8
+      // }, 100);
 
       // TODO: This is a bit buggy
 
