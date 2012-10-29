@@ -68,9 +68,8 @@ class CustomHtmlRenderer(HtmlRenderer):
             'image': self.handle_image_macro,
             'audio': self.handle_audio_macro,
             'math': self.handle_math_macro,
-            'multi': self.handle_multiple_choice_macro,
-            'multi-choice': self.handle_multiple_choice_macro,
-            'multiple-choice': self.handle_multiple_choice_macro
+            'mc': self.handle_multiple_choice_macro,
+            'multi': self.handle_multiple_choice_macro
         }
 
         self.entities = {
@@ -223,32 +222,143 @@ class CustomHtmlRenderer(HtmlRenderer):
         return ''.join(res)
 
     def handle_multiple_choice_macro(self, m_args):
-        if DEBUG:
-            print "--> multiple choice macro"
+        """
+        Prepares and renders template for multiple choice buttons
+
+        Default Macro Arguments:
+            this macro uses user-friendly way to deal with preset
+            button layouts. Instead of key=value pairs, the default
+            argument is used the same way as css shorthands.
+
+
+            Generic format when using presets is:
+            [[mc: preset_name #columns color_class]]
+
+            #columns -- (int) specifies number of columns the layout spans
+                        0 = inline, all buttons in a row
+                        1 = one button / row
+                        2 = two buttons / row
+                        3 = three...
+
+            color_class -- ("primary") specifies the bootstrap-related
+                           btn class (btn-primary, btn-success etc.). If
+                           custom color classes are used, then they MUST
+                           contain the btn- prefix in the css.
+
+                           bootstrap color classes are: primary, info,
+                           success, warning, danger, inverse, default,
+                           link.
+
+                           button colors that don't have direct counterpart
+                           in the labels used in legend are mapped as
+                           follows: primary --> info, danger --> important,
+                                    link --> info
+
+            preset_name -- ("default") specifies the combination of items
+                           that are rendered as the multiple-choice question
+                           and also defaults values for their #columns and
+                           color_class.
+
+                           "default" -- legend, button prefixes,
+                                        no content on buttons,
+                                        #columns = 0
+
+                           "block" -- no legend, no button prefixes,
+                                      content on buttons, #columns = 1
+
+                           "block-p" -- same as above but with button prefixes
+
+                           "rate" -- no legend, button prefixes,
+                                     no content on buttons, #columns = 0
+
+                           "images" -- no legend, no button prefixes,
+                                       content on buttons, #columns = 0
+
+                           "images-p" -- same as above but with prefixes
+
+                           "color" -- like default, but no prefixes on buttons
+                                      or in legend. Only colors that cycle
+                                      through the given list of color classes.
+
+        Macro Arguments:
+            these will be implemented later, currently the macro uses the
+            presets
+
+        """
+
+        log.debug("\033[102m htmlrenderer -> handle_multiple_choice_macro \033[0m")
 
         block_id = m_args.pop('block_id', None)
         if block_id is None:
             raise ValueError('block_id was undefined')
 
-        # process the macro args
-        btn_layouts = ('inline', 'fit')
-        btn_classes = ('btn-primary', 'btn-info', 'btn-success', 'btn-warning',
-                      'btn-danger', 'btn-inverse', '', 'btn-link')
-        label_classes = ('label-info', 'label-info', 'label-success',
-                         'label-warning', 'label-important', 'label-inverse',
-                         '', 'label-info')
+        #[[mc: preset_name #columns color_class]]
+        #preset: legend, prefix, content, columns
+        ps = {'default':  {'name': 'default', 'btn_class': 'btn-primary',
+                           'leg_class': 'label-info', 'pre_class': '',
+                           'leg': True,  'pre': True,  'con': False, 'col': 0},
+              'block':    {'leg': False, 'pre': False,  'con': True,  'col': 1},
+              'block-p':  {'leg': False, 'pre': True,  'con': True,  'col': 1},
+              'rate':     {'leg': False, 'pre': True,  'con': False, 'col': 0},
+              'images':   {'leg': False, 'pre': False, 'con': True,  'col': 0},
+              'images-p': {'leg': False, 'pre': True,  'con': True,  'col': 0},
+              'color':    {'leg': True,  'pre': False, 'con': False, 'col': 0}}
 
-        # layout != inline -> fit
+        leg_btn_map = {'primary': 'info', 'danger': 'important',
+                       'link': 'info'}
 
-        default_view = {'show_legend': True, 'show_prefix': True,
-                        'show_content': False, 'layout': 'inline',
-                        'legend_class': 'label-info',
-                        'btn_class': 'btn-primary', 'btn_cols': 0,
-                        'prefix_class': ''}
+        params = ps['default']
+        defaults = m_args.pop('default', '').lower().split(' ')
 
-        bb_view_args = default_view
+        while defaults:
+            log.debug('preset raw defaults: ' + str(defaults))
 
-        default_view.update(m_args)
+            # check preset name, jump out if defaults exhausted
+            if defaults[0] in ps:
+                name = defaults.pop(0)
+                params.update(ps[name])
+                params['name'] = name
+                if name == 'color':
+                    params['btn_class'] = ['primary', 'success', 'warning',
+                                           'danger', 'info', 'inverse']
+                if not defaults:
+                    break
+
+            # check #columns, jump out if defaults exhausted
+            if defaults[0].isdigit():
+                params["col"] = int(defaults.pop(0))
+                if not defaults:
+                    break
+
+            # check color(s), map 'default' -> ''
+            if params['name'] == 'color':
+                params['btn_class'] = ['' if c == 'default' else 'btn-' + c \
+                                       for c in defaults]
+                params['leg_class'] = ['label-' + leg_btn_map.get(c, c) \
+                                       for c in defaults]
+
+                # TODO: REMOVE THESE 2 WHEN 'color' IMPLEMENTED IN multi.js
+                params['btn_class'] = params['btn_class'][0]
+                params['leg_class'] = params['leg_class'][0]
+            else:
+                c = defaults[0]
+                params['btn_class'] = '' if c == 'default' else 'btn-' + c
+                params['leg_class'] = 'label-' + leg_btn_map.get(c, c)
+
+            # break from the while loop always, we used it so that we
+            # can break out from it when defaults is exhausted.
+            break
+
+        # set the layout class based on #columns
+        params['layout'] = 'inline' if params['col'] < 1 else 'fit'
+
+        # set the prefix class for images
+        params['pre_class'] = '' if params['name'] not in ('images', \
+                              'images-p') else 'on-top'
+
+        log.debug("\033[31m%s\033[0m: %s" % (params['name'], params))
+
+        #default_view.update(m_args)
 
         # html_tag = '<span id="m4ed-{block_id}"></span>'.format(block_id=block_id)
         data = m_args.pop('data', '')
@@ -332,10 +442,11 @@ class CustomHtmlRenderer(HtmlRenderer):
         prev['hint'] = self.snippet_renderer.render(temp['hint_text'])
 
         bb_model_args = json.dumps({'choices': multi_choice_args})
-        bb_view_args = json.dumps(bb_view_args)
+        bb_view_args = json.dumps(params)
 
-        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        # IMPORTANT! THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
         bb_escape = "" if m_args["root_level"] else "\\"
+        ##
 
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
@@ -346,14 +457,17 @@ class CustomHtmlRenderer(HtmlRenderer):
             bb_escape=bb_escape
             )
 
-        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        # IMPORTANT! THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
         if not m_args["root_level"]:
             script_block = script_block.replace('"', "\\\"")
+        ##
 
         self.post_process_blocks.append((
             html_block,
             script_block
             ))
+
+        log.debug("\033[42m htmlrenderer <- handle_multiple_choice_macro \033[0m")
         return html_block
 
     def handle_audio_macro(self, m_args, debug=DEBUG):
@@ -376,8 +490,9 @@ class CustomHtmlRenderer(HtmlRenderer):
 
         bb_model_args = json.dumps({'url': m_args.get('url', '')})
 
-        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        # IMPORTANT! THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
         bb_escape = "" if m_args["root_level"] else "\\"
+        ##
 
         html_block = "<m4ed-{block_id} />".format(block_id=block_id)
         script_block = self.render_bb_macro(
@@ -388,9 +503,10 @@ class CustomHtmlRenderer(HtmlRenderer):
             bb_escape=bb_escape
             )
 
-        # THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
+        # IMPORTANT! THIS MUST BE DONE WITH ALL MACROS THAT UTILIZE BB-MODELS!
         if not m_args["root_level"]:
             script_block = script_block.replace('"', "\\\"")
+        ##
 
         self.post_process_blocks.append((
              html_block,

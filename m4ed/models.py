@@ -100,6 +100,10 @@ class Item(MongoDict):
             #(Allow, Authenticated, 'answer')
         ]
 
+    # This model has init_data (MongoDict init) from
+    # ItemFactory's __getitem__ in following format:
+    # {"item": item data, "cluster":cluster data, "space": space data, "navi": navigation related}
+
     def check_answer(self):
         return self.__parent__.check_answer(self)
 
@@ -108,14 +112,14 @@ class Item(MongoDict):
         print is_correct, block_id, answer_id
         return self.__parent__.mark_answer(self, is_correct, block_id, answer_id)
 
-    def get_cluster_title(self):
-        return self.__parent__.get_cluster_title(self.cluster_id)
+    # def get_cluster_title(self):
+    #     return self.__parent__.get_cluster_title(self.cluster_id)
 
-    def get_next(self):
-        return self.__parent__.get_next(self.cluster_id, self._id)
+    # def get_next(self):
+    #     return self.__parent__.get_next(self.cluster_id, self._id)
 
-    def get_previous(self):
-        return self.__parent__.get_previous(self.cluster_id, self._id)
+    # def get_previous(self):
+    #     return self.__parent__.get_previous(self.cluster_id, self._id)
 
 
 class User(MongoDict):

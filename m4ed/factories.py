@@ -1,3 +1,8 @@
+# TODO: refactor ItemFactory to use model.item, model.cluster etc.
+# change it everywhere, get rid of obsolete functions etc.
+# affects api.py, item.py, models.py...
+
+
 from pyramid.security import (
     authenticated_userid,
     effective_principals,
@@ -29,7 +34,8 @@ from m4ed.models import (
     Item,
     User,
     Space,
-    Cluster
+    Cluster,
+    MongoDict as mdict
     )
 
 import bcrypt
@@ -43,6 +49,7 @@ from m4ed.htmlrenderer import CustomHtmlRenderer
 
 import time
 import logging
+
 
 log = logging.getLogger(__name__)
 
@@ -233,6 +240,7 @@ class ItemFactory(BaseFactory):
         self.__parent__ = ClusterFactory
         self.user_id = authenticated_userid(request)
         self.progress_collection = request.db.progress
+        self.parent_data = {}
 
     @property
     def _cluster_factory(self):
@@ -252,13 +260,41 @@ class ItemFactory(BaseFactory):
         if not item:
             raise KeyError
 
+        item = mdict({"item": mdict(item)})
+
+        # A BIT PROBLEMATIC, WE HAVE NO CONTEXT YET!
+        query = dict(_id=item.item.cluster_id)
+        item.cluster = mdict(self._cluster_factory.collection.find_one(query))
+        query = dict(_id=item.cluster.space_id)
+        item.space = mdict(self._cluster_factory._space_factory.collection.find_one(query))
+
+        items = self.collection.find({'cluster_id': item.item.cluster_id})
+        from pprint import pprint
+        #pprint(list(items))
+        items.sort('listIndex', direction=ASCENDING)
+        #pprint(list(items))
+        items = list(items)
+
+        item.navi = mdict({})
+
+        # how about combining these ;)
+        item.navi.next = self.get_sibling(items, item.item._id, 'next')
+        item.navi.prev = self.get_sibling(items, item.item._id, 'prev')
+
+
+        #item.navi = mdict({"next": 1, "prev": 1})
+        #item.cluster = mdict({"title": "herkkua"})
+        #item.space = mdict({"title": "jepander"})
         return self.model(item, name=str(_id), parent=self)
 
     def __iter__(self):
         cluster_id = self.request.matchdict.get('cluster_id', None)
         if cluster_id:
             items = self.collection.find({'cluster_id': ObjectId(cluster_id)})
+        elif 'cluster_id' in self.request.context:
+            items = self.collection.find({'cluster_id': self.request.context['cluster_id']})
         else:
+            # TODO: we return now all. What should we do instead?
             items = self.collection.find()
         items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
@@ -272,11 +308,14 @@ class ItemFactory(BaseFactory):
         misaka_renderer = Markdown(renderer=renderer, extensions=EXT_TABLES)
         return (renderer, misaka_renderer)
 
-    def commit(self, item):
-        is_model = isinstance(item, self.model)
+    def commit(self, data):
+        is_model = isinstance(data, self.model)
         # NOTE: Validation WILL convert the item to a dictionary
         #print item
-        item = self.validate(item)
+        if is_model:
+            item = self.validate(data.item)
+        else:
+            item = self.validate(data)
         if not item:
             print 'Item validation failed.'
             return None
@@ -339,6 +378,24 @@ class ItemFactory(BaseFactory):
     def get_cluster_title(self, cluster_id):
         return self._cluster_factory[cluster_id].title
 
+    def get_sibling(self, items, item_id, direction='next'):
+        # get id of the next item
+        item_ids = [item['_id'] for item in items]
+        index = item_ids.index(item_id)
+        if direction == 'next':
+            index += 1
+            if index >= len(item_ids):
+                return None
+            else:
+                return item_ids[index]
+        else:
+            index -= 1
+            if index < 0:
+                return None
+            else:
+                return item_ids[index]
+
+
     def get_neighbour(self, cluster_id, item_id, direction='next'):
         # get id of the next item
         items = self._cluster_factory[cluster_id]['items']
@@ -357,13 +414,17 @@ class ItemFactory(BaseFactory):
             else:
                 return item_ids[index]
 
+
+    def populate_parent_data(self, cluster_id, item_id):
+        return True
+
     def get_next(self, cluster_id, item_id):
         return self.get_neighbour(cluster_id, item_id, 'next')
 
     def get_previous(self, cluster_id, item_id):
         return self.get_neighbour(cluster_id, item_id, 'prev')
 
-    def save(self, item):
+    def save(self, data):
         params = self._read_params()
         if params.get('err') is True:
             return params
@@ -382,24 +443,24 @@ class ItemFactory(BaseFactory):
             return {'err': True}
 
         if 'listIndex' in kwargs:
-            item['listIndex'] = kwargs.pop('listIndex')
+            data.item['listIndex'] = kwargs.pop('listIndex')
         if 'title' in kwargs:
-            item['title'] = kwargs.pop('title')
+            data.item['title'] = kwargs.pop('title')
         if 'desc' in kwargs:
-            item['desc'] = kwargs.pop('desc')
+            data.item['desc'] = kwargs.pop('desc')
         if 'tags' in kwargs:
-            item['tags'] = kwargs.pop('tags')
+            data.item['tags'] = kwargs.pop('tags')
         if 'text' in kwargs:
-            item['text'] = kwargs.pop('text')
+            data.item['text'] = kwargs.pop('text')
         if 'cluster_id' in kwargs:
-            item['cluster_id'] = kwargs.pop('cluster_id')
+            data.item['cluster_id'] = kwargs.pop('cluster_id')
 
         renderer, misaka_renderer = self._get_renderers()
-        item['html'] = misaka_renderer.render(item['text'])
-        item['answers'] = renderer.get_answers()
+        data.item['html'] = misaka_renderer.render(data.item['text'])
+        data.item['answers'] = renderer.get_answers()
 
         # Save changes to mongo
-        return item.commit()
+        return data.commit()
 
     def remove(self, item):
         # Pop the item ID since we can't update it
@@ -805,6 +866,7 @@ class ClusterFactory(BaseFactory):
         except InvalidId:
             raise KeyError
 
+        # get cluster data from mongo
         s = self.collection.find_one(query)
         if not s:
             raise KeyError

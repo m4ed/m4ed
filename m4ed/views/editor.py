@@ -17,7 +17,6 @@ from misaka import (
     permission='write')
 def get_editor(request):
     editor_less.need()
-
     return {
         'project': 'm4ed',
         'items': request.context
