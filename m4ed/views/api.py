@@ -30,18 +30,21 @@ def get_asset_url(request):
 class ItemView(object):
     def __init__(self, request):
         self.request = request
-        self.item = request.context
+        # TODO: we have info about cluster and space here also!!
+        # WHERE'S THE STRIP?
+        #self.item = request.context
+        self.model = request.context.stripped
 
     @view_config(request_method='GET', permission='read')
     def get(self):
-        log.debug(self.item)
-        return self.item
+        log.debug(self.model.item)
+        return self.model.item
 
     @view_config(request_method='PUT', permission='write')
     def put(self):
 
         # Request context should be m4ed.models.Item
-        res = self.item.save()
+        res = self.model.save()
         if res is None:
             self.request.response.status = '500'
             log.debug(('PUT request denied with {0}.'
@@ -53,7 +56,7 @@ class ItemView(object):
 
     @view_config(request_method='DELETE', permission='write')
     def delete(self):
-        self.item.remove()
+        self.model.remove()
         self.request.response.status = '200'
         return {}
 
