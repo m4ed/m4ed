@@ -10,6 +10,11 @@
 @import "textext/textext.plugin.tags.less";
 
 
+// Disable horisontal scrolling
+body {
+  overflow-x: hidden;
+}
+
 // Item list
 // -----------------------------------------
 
@@ -169,11 +174,10 @@ input.edit {
 
 .editor {
 
-  .wrapper-table {
-    width: 100%;
-  }
+  // background-color: @grayLight;
 
-  padding-bottom: 0;
+  padding: 8px 8px 0px 8px;
+  position: relative;
 
   .btn-toolbar {
     height: auto;
@@ -203,6 +207,112 @@ input.edit {
 
   }
 
+  // Editor layout
+  // -----------------------------------------
+
+  width: auto;
+  height: auto;
+  .box-sizing(border-box);
+
+  .layout {
+    .box-sizing(border-box);
+    display: block;
+
+  }
+
+  .grab-icon-vertical {
+    position: absolute;
+    .opacity(50); 
+    top: 50%;
+    background-image: url("../img/handle-icon.png");
+    width: 8px;
+    height: 9px;
+    margin-top: -5px;
+    margin-left: 4px;
+  }
+
+  .grab-icon-horizontal {
+    position: absolute;
+    .opacity(50); 
+    left: 50%;
+    background-image: url("../img/handle-icon-h.png");
+    width: 10px;
+    height: 9px;
+    margin-left: -5px;
+    margin-top: 3px;
+  } 
+
+  .top, .horizontal-handle, .bottom {
+    width: 100%;
+  }
+
+  .top {
+    position: relative;
+    padding-bottom: 8px;
+    // border-bottom: 1px solid rgba(0,0,0,0.2);
+    // padding: 8px;
+    .clearfix();
+  }
+
+  .bottom {
+    position: relative;
+    padding-top: 8px;
+    // border-top: 1px solid rgba(255,255,255,0.9);
+    // padding: 8px;
+  }
+
+  .left, .vertical-handle, .right {
+    height: 100%;
+    // top: 0;
+    // position: absolute;
+    // float: left;
+  }
+
+  .left, .right {
+    // padding-top: 30px;
+    position: relative;
+    float: left;
+    width: 50%;
+  }
+
+  .left {
+    // border-right: 1px solid rgba(0,0,0,0.2);
+    padding-right: 8px;
+  }
+
+  .right {
+    padding-left: 8px;
+    // border-left: 1px solid rgba(255,255,255,1);
+    float: right;
+  }
+
+  .horizontal-handle, .vertical-handle {
+    z-index: 2;
+    background: transparent;
+  }
+
+  .horizontal-handle {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    top: auto;
+    height: 16px;
+    &:hover {
+      cursor: row-resize;
+    }
+  }
+
+  .vertical-handle {
+    position: absolute;
+    top: 0;
+    left: auto;
+    width: 16px;
+    right: -8px;
+    &:hover {
+      cursor: col-resize;
+    }
+  }
+
   // Editor textarea
   // -----------------------------------------
 
@@ -210,9 +320,13 @@ input.edit {
     #font > #family > .monospace;
     // height: 294px;
     overflow: auto;
-    resize: auto;
+    display: block;
+    height: 100%;
     width: 100%;
+    resize: none;
+    margin: 0;
     .user-select(text);
+    .box-sizing(border-box);
   }
 
 
@@ -222,10 +336,11 @@ input.edit {
   .preview {
     height: 100%;
     width: 100%;
-    // overflow: auto;
-    // padding: 8px;
-    margin-bottom: 8px;
+    display: block;
+    overflow: auto;
+    padding: 0px;
     .user-select(auto);
+    .box-sizing(border-box);
     background-color: @infoBackground;
     border: 1px solid @infoBorder;
     .border-radius(3px);
