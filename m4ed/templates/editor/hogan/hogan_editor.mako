@@ -13,6 +13,9 @@
 
         <div class='layout vertical-handle'>
           <div class='grab-icon-vertical'>
+           <div class='dot'></div>
+           <div class='dot'></div>
+           <div class='dot'></div>
           </div>
         </div>
 
@@ -52,6 +55,9 @@
 
       <div class='layout horizontal-handle'>
         <div class='grab-icon-horizontal'>
+          <div class='dot'></div>
+          <div class='dot'></div>
+          <div class='dot'></div>
         </div>
       </div>
 

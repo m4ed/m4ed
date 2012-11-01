@@ -222,24 +222,33 @@ input.edit {
 
   .grab-icon-vertical {
     position: absolute;
-    .opacity(50); 
+    .opacity(60); 
     top: 50%;
-    background-image: url("../img/handle-icon.png");
-    width: 8px;
-    height: 9px;
-    margin-top: -5px;
-    margin-left: 4px;
+    width: 5px;
+    height: 15px;
+    margin-top: -7px;
+    margin-left: 2px;
+    .dot {
+      background-image: url("../img/handle-dot.png");
+      width: 5px;
+      height: 5px;
+    }
   }
 
   .grab-icon-horizontal {
     position: absolute;
-    .opacity(50); 
+    .opacity(60); 
     left: 50%;
-    background-image: url("../img/handle-icon-h.png");
-    width: 10px;
-    height: 9px;
-    margin-left: -5px;
-    margin-top: 3px;
+    width: 15px;
+    height: 5px;
+    margin-left: -7px;
+    margin-top: 2px;
+    .dot {
+      background-image: url("../img/handle-dot.png");
+      float: left;
+      width: 5px;
+      height: 5px;
+    }
   } 
 
   .top, .horizontal-handle, .bottom {
@@ -248,7 +257,7 @@ input.edit {
 
   .top {
     position: relative;
-    padding-bottom: 8px;
+    padding-bottom: 4px;
     // border-bottom: 1px solid rgba(0,0,0,0.2);
     // padding: 8px;
     .clearfix();
@@ -256,7 +265,7 @@ input.edit {
 
   .bottom {
     position: relative;
-    padding-top: 8px;
+    padding-top: 4px;
     // border-top: 1px solid rgba(255,255,255,0.9);
     // padding: 8px;
   }
@@ -277,11 +286,11 @@ input.edit {
 
   .left {
     // border-right: 1px solid rgba(0,0,0,0.2);
-    padding-right: 8px;
+    padding-right: 4px;
   }
 
   .right {
-    padding-left: 8px;
+    padding-left: 4px;
     // border-left: 1px solid rgba(255,255,255,1);
     float: right;
   }
@@ -293,10 +302,10 @@ input.edit {
 
   .horizontal-handle {
     position: absolute;
-    bottom: -8px;
+    bottom: -4px;
     left: 0;
     top: auto;
-    height: 16px;
+    height: 8px;
     &:hover {
       cursor: row-resize;
     }
@@ -306,8 +315,8 @@ input.edit {
     position: absolute;
     top: 0;
     left: auto;
-    width: 16px;
-    right: -8px;
+    width: 8px;
+    right: -4px;
     &:hover {
       cursor: col-resize;
     }
