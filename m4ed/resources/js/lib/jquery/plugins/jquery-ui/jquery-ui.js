@@ -1891,7 +1891,7 @@ $.widget("ui.resizable", $.ui.mouse, {
 
 			//Create a wrapper element and set the wrapper to the new current internal element
 			this.element.wrap(
-				$('<div class="ui-wrapper" style="overflow: hidden;"></div>').css({
+				$('<div class="ui-wrapper"></div>').css({
 					position: this.element.css('position'),
 					width: this.element.outerWidth(),
 					height: this.element.outerHeight(),
