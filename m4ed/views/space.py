@@ -19,7 +19,7 @@ from pyramid.security import authenticated_userid
 def get_edit_space(request):
     editor_less.need()
     return {
-        'space': request.context.stripped
+        'space': request.context.space
     }
 
 
@@ -30,7 +30,7 @@ def get_edit_space(request):
 def get_space(request):
     student_less.need()
     return {
-        'space': request.context.stripped
+        'space': request.context.space
     }
 
 

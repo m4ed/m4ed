@@ -18,8 +18,8 @@ from pyramid.security import authenticated_userid
 def get_edit_cluster(request):
     editor_less.need()
     return {
-        'cluster': request.context.stripped,
-        'space_title': request.context.get_space_title()
+        'cluster': request.context.stripped.cluster,
+        'space_title': request.context.stripped.space.title
     }
 
 
@@ -30,6 +30,6 @@ def get_edit_cluster(request):
 def get_cluster(request):
     student_less.need()
     return {
-        'cluster': request.context.stripped,
-        'space_title': request.context.get_space_title()
+        'cluster': request.context.stripped.cluster,
+        'space_title': request.context.stripped.space.title
     }
