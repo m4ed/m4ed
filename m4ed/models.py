@@ -54,6 +54,7 @@ class MongoDict(dict):
         return self.__parent__.commit(self)
 
     def remove(self):
+        print self.__parent__
         self.__parent__.remove(self)
 
     # Only set the attribute if it already exists in both this object

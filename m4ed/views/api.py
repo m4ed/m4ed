@@ -177,6 +177,7 @@ class SpaceView(object):
     def __init__(self, request):
         self.request = request
         self.space = request.context
+        print self.space
         # Pop items since they are available at rest_space_items
         self.space.pop('clusters')
         self.api_safe_space = self.space.stripped

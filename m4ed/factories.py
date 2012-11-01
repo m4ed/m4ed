@@ -76,6 +76,7 @@ class BaseFactory(object):
     def __init__(self, request, collection, model,
                  validator=None, name=None, parent=RootFactory):
         self.request = request
+        print request.matchdict
         self._id = request.matchdict.get('id')
         if isinstance(collection, basestring):
             self.collection = request.db[collection]
@@ -106,15 +107,18 @@ class BaseFactory(object):
         items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
 
-    def _read_params(self):
+    def _read_params(self, init_mode=False):
         if self.request.is_xhr:
             try:
                 params = self.request.json_body
             except ValueError:
                 # If we get a value error, the request didn't have a json body
                 # Ignore the request with 406 - Not Acceptable error
-                self.request.response.status = '406'
-                return {'err': True}
+                if init_mode:
+                    params = {}
+                else:
+                    self.request.response.status = '406'
+                    return {'err': True}
             # if not params.pop('_id', None):
             #     # This should never ever happen but if it does, just respond with
             #     # 503 - Service Unavailable error
@@ -229,7 +233,7 @@ class ItemFactory(BaseFactory):
         #(Allow, 'g:superuser', ALL_PERMISSIONS)
     ]
 
-    def __init__(self, request):
+    def __init__(self, request, _id=None):
         BaseFactory.__init__(
             self,
             request=request,
@@ -241,34 +245,48 @@ class ItemFactory(BaseFactory):
         self.user_id = authenticated_userid(request)
         self.progress_collection = request.db.progress
         self.parent_data = {}
+        self._id = _id
+        if not self._id:
+            self._id = request.matchdict.get("item_id", None)
+        if not self._id:
+            self._id = self._read_params(init_mode=True).get("_id", None)
 
     @property
     def _cluster_factory(self):
         parent = self.__parent__
         # Try to determine if the factory has been initialized before
         if isinstance(parent, object.__class__):
-            parent = parent(self.request)
+            log.debug("\033[32m ItemF inits PARENT ClusterF \033[0m" + self.item.cluster_id)
+            parent = parent(self.request, _id=self.item.cluster_id)
         return parent
 
     def __getitem__(self, _id):
+        """returns model: item, cluster, space, navi"""
         try:
             query = dict(_id=ObjectId(_id))
         except InvalidId:
             raise KeyError
-        item = self.collection.find_one(query)
+        data = self.collection.find_one(query)
 
-        if not item:
+        if not data:
             raise KeyError
 
-        item = mdict({"item": mdict(item)})
+        item = mdict({"item": mdict(data)})
+        item.cluster = mdict(self._cluster_factory.cluster)
+        item.space = mdict(self._cluster_factory._space_factory.space)
+
+
 
         # A BIT PROBLEMATIC, WE HAVE NO CONTEXT YET!
-        query = dict(_id=item.item.cluster_id)
-        item.cluster = mdict(self._cluster_factory.collection.find_one(query))
-        query = dict(_id=item.cluster.space_id)
-        item.space = mdict(self._cluster_factory._space_factory.collection.find_one(query))
+        #query = dict(_id=item.item.cluster_id)
+        #item.cluster = mdict(self._cluster_factory.collection.find_one(query))
+        #query = dict(_id=item.cluster.space_id)
+        #item.space = mdict(self._cluster_factory._space_factory.collection.find_one(query))
 
         items = self.collection.find({'cluster_id': item.item.cluster_id})
+
+        items = self.__iter__()
+
         from pprint import pprint
         #pprint(list(items))
         items.sort('listIndex', direction=ASCENDING)
@@ -288,16 +306,21 @@ class ItemFactory(BaseFactory):
         return self.model(item, name=str(_id), parent=self)
 
     def __iter__(self):
-        cluster_id = self.request.matchdict.get('cluster_id', None)
-        if cluster_id:
-            items = self.collection.find({'cluster_id': ObjectId(cluster_id)})
-        elif 'cluster_id' in self.request.context:
-            items = self.collection.find({'cluster_id': self.request.context['cluster_id']})
-        else:
-            # TODO: we return now all. What should we do instead?
-            items = self.collection.find()
+        # Returns all items(as models) in cluster
+        # cluster_id = self.request.matchdict.get('cluster_id', None)
+        # if cluster_id:
+        #     items = self.collection.find({'cluster_id': ObjectId(cluster_id)})
+        # elif 'cluster_id' in self.request.context:
+        #     items = self.collection.find({'cluster_id': self.request.context['cluster_id']})
+        # else:
+        #     # TODO: we return now all. What should we do instead?
+        #     items = []
+        #     #items = self.collection.find()
+
+        items = self.collection.find({'cluster_id': self.item.cluster_id})
         items.sort('listIndex', direction=ASCENDING)
         return (self.model(item, name=str(item['_id']), parent=self) for item in items)
+
 
     def _get_renderers(self):
         renderer = CustomHtmlRenderer(
@@ -380,7 +403,8 @@ class ItemFactory(BaseFactory):
 
     def get_sibling(self, items, item_id, direction='next'):
         # get id of the next item
-        item_ids = [item['_id'] for item in items]
+        item_ids = [item['_id'] for item in self]
+        #item_ids = [item['_id'] for item in items]
         index = item_ids.index(item_id)
         if direction == 'next':
             index += 1
@@ -673,7 +697,7 @@ class SpaceFactory(BaseFactory):
         #(Allow, Authenticated, 'read')
     ]
 
-    def __init__(self, request):
+    def __init__(self, request, _id=None):
         BaseFactory.__init__(
             self,
             request=request,
@@ -682,6 +706,11 @@ class SpaceFactory(BaseFactory):
             validator=validators.get_space_validator()
             )
         self._children = ClusterFactory
+        self._id = _id
+        if not self._id:
+            self._id = request.matchdict.get("space_id", None)
+        if not self._id:
+            self._id = self._read_params(init_mode=True).get("_id", None)
 
     @property
     def _cluster_factory(self):
@@ -813,10 +842,12 @@ class SpaceFactory(BaseFactory):
             _id = ObjectId(_id)
 
         for cluster in self._cluster_factory:
+            print cluster
             self._cluster_factory.remove(cluster)
 
         space.pop('__name__', None)
         space.pop('__parent__', None)
+        print self.collection
         self.collection.remove(
             {'_id': _id},
             safe=True
@@ -830,7 +861,7 @@ class ClusterFactory(BaseFactory):
         #(Allow, Authenticated, 'read')
     ]
 
-    def __init__(self, request):
+    def __init__(self, request, _id=None):
         BaseFactory.__init__(
             self,
             request=request,
@@ -840,13 +871,19 @@ class ClusterFactory(BaseFactory):
             )
         self.__parent__ = SpaceFactory
         self._children = ItemFactory
+        self._id = _id
+        if not self._id:
+            self._id = request.matchdict.get("cluster_id", None)
+        if not self._id:
+            self._id = self._read_params(init_mode=True).get("_id", None)
 
     @property
     def _item_factory(self):
         children = self._children
         # Try to determine if the factory has been initialized before
         if isinstance(children, object.__class__):
-            children = children(self.request)
+            log.debug("\033[32m ClusterF inits ItemF \033[0m" + self._id)
+            children = children(self.request, _id=self._id)
         return children
 
     @property
@@ -854,10 +891,12 @@ class ClusterFactory(BaseFactory):
         parent = self.__parent__
         # Try to determine if the factory has been initialized before
         if isinstance(parent, object.__class__):
-            parent = parent(self.request)
+            log.debug("\033[32m ClusterF inits SpaceF \033[0m" + self.cluster.space_id)
+            parent = parent(self.request, _id=self.cluster.space_id)
         return parent
 
     def __getitem__(self, _id):
+        """returns model: space, cluster, items"""
         # Try first to convert the given _id.
         # If this fails just raise KeyError to
         # for a 404 response from Pyramid
@@ -867,12 +906,14 @@ class ClusterFactory(BaseFactory):
             raise KeyError
 
         # get cluster data from mongo
-        s = self.collection.find_one(query)
-        if not s:
+        cluster_data = self.collection.find_one(query)
+        if not cluster_data:
             raise KeyError
 
-        items = list()
+        model = mdict({"cluster": cluster_data})
 
+        # get items that belong to this cluster
+        items = list()
         for child in self._item_factory:
             if has_permission('read', child, self.request):
                 # Pop fields that aren't needed via cluster api
@@ -886,9 +927,9 @@ class ClusterFactory(BaseFactory):
                     child.pop('answers')
                 items.append(child)
 
-        s['items'] = items
-
-        return self.model(s, name=str(_id), parent=self)
+        model.items = items
+        model.space = mdict(self._space_factory.space)
+        return self.model(model, name=str(_id), parent=self)
 
     # Old create function for form POST
     #
@@ -925,8 +966,8 @@ class ClusterFactory(BaseFactory):
             'listIndex': kwargs.pop('listIndex', 0)
         })
 
-    def get_space_title(self, space_id):
-        return self._space_factory[space_id].title
+    #def get_space_title(self, space_id):
+    #    return self._space_factory[space_id].title
 
     def save(self, cluster):
         params = self._read_params()
