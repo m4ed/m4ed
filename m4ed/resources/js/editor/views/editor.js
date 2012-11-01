@@ -17,7 +17,7 @@ function($, _, Backbone, AssetListView, TextareaView,  ButtonListView, templates
   var MIN_HEIGHT = 200;
   var MIN_WIDTH = 200;
 
-  var BASE_MARGIN = 8;
+  var BASE_MARGIN = 4;
   var BASE_DURATION = 100;
   var THROTTLE_LIMIT = 100;
 
