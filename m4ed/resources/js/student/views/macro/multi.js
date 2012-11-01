@@ -13,7 +13,7 @@ function(BaseView, Hogan, templates) {
 
       // This should be got from server
       //this.showLegend = true;
-      this.showLegend = this.options.show_legend;
+      this.showLegend = this.options.leg;
       //this.layout = 'inline';
       this.layout = this.options.layout;
 
@@ -30,7 +30,7 @@ function(BaseView, Hogan, templates) {
 
       // Try to determine if this script was loaded in the preview window
       this.isPreview = location_pathname.indexOf('/preview') >= 0;
-      
+
       if (!this.isPreview) {
         split_path = location_pathname.split('/');
         // Try the last item from the path first
@@ -50,20 +50,20 @@ function(BaseView, Hogan, templates) {
 
       // this.$el.append(this.template.render(context));
       // return this;
-
-      context.show_prefix = this.options.show_prefix;
+      context.show_prefix = this.options.pre;
       //context.prefix_class = 'on-top';
-      context.prefix_class = this.options.prefix_class;
+      context.prefix_class = this.options.pre_class;
       // context.show_content = true;
-      context.show_content = this.options.show_content;
+      context.show_content = this.options.con;
       //context.btn_class = 'btn-primary';
       context.btn_class = this.options.btn_class;
       // context.btn_wrapper_class = '';
-      context.label_class = this.options.legend_class;
+      //TODO: handle "colors" case
+      context.label_class = this.options.leg_class;
 
       var buttonCols;
-      buttonCols = 3;
-      buttonCols = this.options.btn_cols;
+      //buttonCols = 3;
+      buttonCols = this.options.col;
 
       var choicesLen = context.choices.length;
       if (buttonCols > choicesLen) buttonCols = choicesLen;
